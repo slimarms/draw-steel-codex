@@ -70,8 +70,9 @@ local g_boonsBanesStyles = {
         bgcolor = Styles.RichBlack03,
         borderWidth = 1,
         borderColor = Styles.Gold02,
-        cornerRadius = 6,
+        cornerRadius = 3,
         hpad = 6,
+        hmargin = 2,
         vmargin = 2,
     },
     gui.Style{
@@ -121,7 +122,7 @@ local g_boonsBanesStyles = {
     },
 }
 
-local g_boonsLabels = { "BANEx2", "BANE", "NONE", "EDGE", "EDGEx2" }
+local g_boonsLabels = { "BANE", "BANE", "X", "EDGE", "EDGE" }
 
 local g_modifierPanelStyles = {
     gui.Style{
@@ -1996,14 +1997,15 @@ function GameHud.CreateEmbeddedRollDialog()
             local iconPanel = nil
             if i ~= 3 then
                 local children = {}
-                for j=1, cond(i==1 or i == 4, 2, 1) do
+                for j=1, cond(i==1 or i == 5, 2, 1) do
                     local y = 0
-                    if i == 1 or i == 4 then
+                    if i == 1 or i == 5 then
                         y = cond(j == 1, 2, -2)
                     end
                     children[#children + 1] = gui.Panel {
                         classes = { "icon", cond(i < 3, "boonIcon", "baneIcon") },
                         y = y,
+                        interactable = false,
                     }
                 end
                 iconPanel = gui.Panel{
@@ -2015,12 +2017,13 @@ function GameHud.CreateEmbeddedRollDialog()
                     children = children,
                 }
             end
+            local label = gui.Label{
+                text = text,
+            }
             boonsBanesLabels[#boonsBanesLabels + 1] = gui.Panel {
                 classes = {"boonBaneEntry", cond(i <= 2, "bane", cond(i >= 4, "boon"))},
-                iconPanel,
-                gui.Label{
-                    text = text,
-                },
+                cond(i < 4, iconPanel, label),
+                cond(i < 4, label, iconPanel),
                 press = function(element)
                     local delta = (i - 3) - m_currentBoons
                     m_boons = m_boons + delta
