@@ -3274,6 +3274,7 @@ function creature.TakeDamage(self, amount, note, info)
                 banes = eventArg.banes,
                 hasability = eventArg.hasability,
                 ability = eventArg.ability,
+                usedability = eventArg.ability,
             }
             attacker:DispatchEvent("dealdamage", args)
         end
@@ -3378,6 +3379,7 @@ function creature.TakeDamage(self, amount, note, info)
             banes = eventArg.banes,
             hasability = eventArg.hasability,
             ability = eventArg.ability,
+            usedability = eventArg.ability,
         }
         attacker:DispatchEvent("dealdamage", args)
     end
