@@ -893,6 +893,9 @@ end
 creature.RegisterSymbol {
     symbol = "object",
     lookup = function(c)
+        if c:try_get("treatAsObject", false) then
+            return true
+        end
         local token = dmhub.LookupToken(c)
         if token ~= nil and token.valid then
             return token.isObject

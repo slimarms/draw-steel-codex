@@ -1060,6 +1060,13 @@ local function CreateActionBar()
 
             g_creature = g_token.properties
 
+            if g_creature:try_get("treatAsObject", false) then
+                element:SetClass("hidden", true)
+                element:HaltEventPropagation()
+                element:FireEventTree("closemenu")
+                return
+            end
+
             element:SetClass("hidden", false)
 
             if g_prevCharid ~= g_token.charid then
@@ -4444,14 +4451,16 @@ local function CalculateSpellTargetFocusing(symbols)
         elseif g_currentAbility.objectTarget == false then
             allTokens = dmhub.allTokens
         elseif g_currentAbility.targetAllegiance == "none" then
-            allTokens = dmhub.allObjectTokens
+            allTokens = dmhub.allTokensIncludingObjects
         else
             if targeting == "all" or g_currentAbility.objectTarget == "conditional" then
                 allTokens = dmhub.allTokensIncludingObjects
             elseif targeting == false then
                 allTokens = dmhub.allTokens
             else
-                allTokens = dmhub.allObjectTokens
+                -- targeting == true (Objects): use allTokensIncludingObjects so that
+                -- creatures tagged treatAsObject appear as valid targets.
+                allTokens = dmhub.allTokensIncludingObjects
             end
         end
 
@@ -4462,6 +4471,21 @@ local function CalculateSpellTargetFocusing(symbols)
                 end
 
                 local canTarget = true
+
+                -- For objectTarget abilities, respect the Creatures/Objects/Both setting.
+                if g_currentAbility.objectTarget == true then
+                    local treatAsObject = (not targetToken.isObject) and
+                                          targetToken.properties ~= nil and
+                                          targetToken.properties:try_get("treatAsObject", false)
+                    if targeting == false and treatAsObject then
+                        -- "Creatures" mode: exclude creature-objects.
+                        canTarget = false
+                    elseif targeting == true and (not treatAsObject) and (not targetToken.isObject) then
+                        -- "Objects" mode: exclude regular creatures.
+                        canTarget = false
+                    end
+                end
+
                 if (spell.targetType == 'self' or spell.targetType == 'all') and targetToken.charid ~= g_token.charid then
                     canTarget = false
                 end
