@@ -51,6 +51,18 @@ TacPanelSizes.Fonts = {
     maxStamina = 16,
     recoveryValue = 24,
     recoveryCount = 16,
+
+    tempStamValue = 12,     -- Health bar: temp stam number
+    tempStamLabel = 10,     -- Health bar: "TEMP" label
+    tempStamClear = 8,      -- Health bar: clear button X
+}
+TacPanelSizes.HealthBar = {
+    segmentHeight = 10,
+    diamondSize = 12,
+    separatorWidth = 1,
+    statusBoxHeight = 16,
+    statusBoxMargin = 4,
+    clearBtnSize = 12,
 }
 TacPanelSizes.TokenIcon = {
     height = 20,
@@ -472,6 +484,181 @@ TacPanelStyles.Stamina = {
     {
         selectors = {"recovery-pip", "filled"},
         bgcolor = HEALTHY_FILL,
+    },
+    -- Health bar styles
+    {   -- The outer bar row container
+        selectors = {"panel", "health-bar"},
+        width = "98%",
+        vpad = 8,
+        height = "auto",
+        flow = "horizontal",
+    },
+    {   -- Vertical column pairing a segment with its status box
+        selectors = {"panel", "health-column"},
+        height = "auto",
+        flow = "vertical",
+        valign = "top",
+    },
+    {   -- Each segment: outlined box, transparent interior
+        selectors = {"panel", "health-segment"},
+        width = "100%",
+        height = TacPanelSizes.HealthBar.segmentHeight,
+        bgimage = "panels/square.png",
+        bgcolor = "clear",
+        borderWidth = 1,
+        flow = "none",
+    },
+    {
+        selectors = {"panel", "health-segment", "dying"},
+        borderColor = DYING_FILL,
+    },
+    {
+        selectors = {"panel", "health-segment", "winded"},
+        borderColor = WINDED_FILL,
+    },
+    {
+        selectors = {"panel", "health-segment", "healthy"},
+        borderColor = HEALTHY_FILL,
+    },
+    {   -- The fill panel inside each segment (left-aligned, height 100%)
+        selectors = {"panel", "health-fill"},
+        height = "100%",
+        halign = "left",
+        bgimage = "panels/square.png",
+    },
+    {
+        selectors = {"panel", "health-fill", "dying"},
+        bgcolor = DYING_FILL,
+    },
+    {
+        selectors = {"panel", "health-fill", "winded"},
+        bgcolor = WINDED_FILL,
+    },
+    {
+        selectors = {"panel", "health-fill", "healthy"},
+        bgcolor = HEALTHY_FILL,
+    },
+    {   -- White separator on right edge of dying and winded segments
+        selectors = {"panel", "health-separator"},
+        width = TacPanelSizes.HealthBar.separatorWidth,
+        height = "100%",
+        halign = "right",
+        bgimage = "panels/square.png",
+        bgcolor = "white",
+    },
+    {   -- Diamond positioner: floating panel whose width% positions the diamond
+        selectors = {"panel", "health-diamond-positioner"},
+        height = TacPanelSizes.HealthBar.segmentHeight,
+        halign = "left",
+        valign = "top",
+        flow = "none",
+    },
+    {   -- The diamond itself: rotated square, offset by half its size
+        selectors = {"panel", "health-diamond"},
+        width = TacPanelSizes.HealthBar.diamondSize,
+        height = TacPanelSizes.HealthBar.diamondSize,
+        halign = "right",
+        valign = "center",
+        bgimage = "panels/square.png",
+        bgcolor = "white",
+        x = TacPanelSizes.HealthBar.diamondSize / 2,
+    },
+    {
+        selectors = {"panel", "health-diamond", "has-temp"},
+        bgcolor = TEMP_STAM,
+    },
+    {   -- Status box base: outlined box with transparent fill, centered label
+        selectors = {"panel", "health-status"},
+        width = "100%",
+        height = TacPanelSizes.HealthBar.statusBoxHeight,
+        tmargin = TacPanelSizes.HealthBar.statusBoxMargin,
+        bgimage = "panels/square.png",
+        borderWidth = 1,
+        halign = "left",
+        valign = "top",
+    },
+    {
+        selectors = {"panel", "health-status", "winded"},
+        borderColor = WINDED_FILL,
+        bgcolor = WINDED_FILL .. "0F",
+    },
+    {
+        selectors = {"panel", "health-status", "dying"},
+        borderColor = DYING_FILL,
+        bgcolor = DYING_FILL .. "0F",
+    },
+    {   -- Status label inside the box
+        selectors = {"label", "health-status-label"},
+        width = "100%",
+        height = "100%",
+        halign = "center",
+        valign = "center",
+        textAlignment = "center",
+        fontFace = "Berling",
+        fontSize = TacPanelSizes.Fonts.stamBoxTitle,
+    },
+    {
+        selectors = {"label", "health-status-label", "winded"},
+        color = WINDED_FILL,
+    },
+    {
+        selectors = {"label", "health-status-label", "dying"},
+        color = DYING_FILL,
+    },
+    {   -- Temp stam box: horizontal layout, TEMP_STAM colors
+        selectors = {"panel", "health-status", "temp"},
+        borderColor = TEMP_STAM,
+        bgcolor = TEMP_STAM .. "0F",
+        flow = "horizontal",
+    },
+    {   -- Temp HP value (Newzald 12pt white)
+        selectors = {"label", "temp-stam-value"},
+        width = "auto",
+        height = "auto",
+        halign = "left",
+        valign = "center",
+        lmargin = 6,
+        fontFace = "Newzald",
+        fontSize = TacPanelSizes.Fonts.tempStamValue,
+        color = CREAM,
+    },
+    {   -- "TEMP" descriptor (Berling 10pt, border color)
+        selectors = {"label", "temp-stam-label"},
+        width = "auto",
+        height = "auto",
+        halign = "left",
+        valign = "center",
+        lmargin = 4,
+        fontFace = "Berling",
+        fontSize = TacPanelSizes.Fonts.tempStamLabel,
+        color = TEMP_STAM,
+    },
+    {   -- Clear button: small square, black bg, purple border
+        selectors = {"panel", "temp-stam-clear"},
+        width = TacPanelSizes.HealthBar.clearBtnSize,
+        height = TacPanelSizes.HealthBar.clearBtnSize,
+        halign = "right",
+        valign = "center",
+        hmargin = 2,
+        bgimage = "panels/square.png",
+        bgcolor = "black",
+        borderWidth = 1,
+        borderColor = TEMP_STAM,
+    },
+    {
+        selectors = {"panel", "temp-stam-clear", "parent:hover"},
+        collapsed = false,
+    },
+    {   -- X label inside clear button
+        selectors = {"label", "temp-stam-clear-label"},
+        width = "100%",
+        height = "100%",
+        halign = "center",
+        valign = "center",
+        textAlignment = "center",
+        fontFace = "Berling",
+        fontSize = TacPanelSizes.Fonts.tempStamClear,
+        color = TEMP_STAM,
     },
 }
 
@@ -1959,6 +2146,215 @@ function TacPanel.RecoveriesBox()
     }
 end
 
+--- Display the health bar
+--- @return Panel
+function TacPanel.HealthBar()
+    -- Dying segment (heroes only)
+    local dyingFill = gui.Panel{ classes = {"panel", "health-fill", "dying"} }
+    local dyingSegment = gui.Panel{
+        classes = {"panel", "health-segment", "dying"},
+        dyingFill,
+        gui.Panel{
+            classes = {"panel", "health-separator"},
+            floating = true,
+        },
+    }
+
+    -- Winded segment
+    local windedFill = gui.Panel{ classes = {"panel", "health-fill", "winded"} }
+    local windedSegment = gui.Panel{
+        classes = {"panel", "health-segment", "winded"},
+        windedFill,
+        gui.Panel{
+            classes = {"panel", "health-separator"},
+            floating = true,
+        },
+    }
+
+    -- Healthy segment
+    local healthyFill = gui.Panel{ classes = {"panel", "health-fill", "healthy"} }
+    local healthySegment = gui.Panel{
+        classes = {"panel", "health-segment", "healthy"},
+        healthyFill,
+    }
+
+    -- Diamond positioned via floating wrapper inside barRow
+    local diamond = gui.Panel{
+        classes = {"panel", "health-diamond"},
+        rotate = 45,
+    }
+    local diamondPositioner = gui.Panel{
+        classes = {"panel", "health-diamond-positioner"},
+        floating = true,
+        diamond,
+    }
+
+    -- Status boxes: appear below bar segment when health is in that range
+    local windedStatus = gui.Panel{
+        classes = {"panel", "health-status", "winded", "collapsed"},
+        gui.Label{
+            classes = {"label", "health-status-label", "winded"},
+            text = "WINDED",
+        },
+    }
+    local dyingStatus = gui.Panel{
+        classes = {"panel", "health-status", "dying", "collapsed"},
+        gui.Label{
+            classes = {"label", "health-status-label", "dying"},
+            text = "DYING",
+        },
+    }
+
+    -- Temp stam box: shows temp HP value + label + hover-revealed clear button
+    local tempStamValue = gui.Label{
+        classes = {"label", "temp-stam-value"},
+        text = "0",
+    }
+    local tempStamClearBtn = gui.Panel{
+        classes = {"panel", "temp-stam-clear", "collapsed"},
+        press = function(element)
+            -- clearBtn -> tempStamBox -> windedColumn -> barRow -> returnPanel
+            local token = element.parent.parent.parent.parent.data.token
+            if token ~= nil and token.properties ~= nil then
+                token:ModifyProperties{
+                    description = "Clear Temporary Stamina",
+                    execute = function()
+                        token.properties:SetTemporaryHitpoints("0")
+                    end,
+                }
+            end
+        end,
+        linger = function(element)
+            gui.Tooltip("Clear temp")(element)
+        end,
+        gui.Label{
+            classes = {"label", "temp-stam-clear-label"},
+            text = "X",
+        },
+    }
+    local tempStamBox = gui.Panel{
+        classes = {"panel", "health-status", "temp", "collapsed"},
+        tempStamValue,
+        gui.Label{
+            classes = {"label", "temp-stam-label"},
+            text = "TEMP",
+        },
+        tempStamClearBtn,
+    }
+
+    -- Columns: pair each segment with its status box
+    local dyingColumn = gui.Panel{
+        classes = {"panel", "health-column", "dying"},
+        dyingSegment,
+        dyingStatus,
+    }
+    local windedColumn = gui.Panel{
+        classes = {"panel", "health-column", "winded"},
+        windedSegment,
+        windedStatus,
+    }
+    local healthyColumn = gui.Panel{
+        classes = {"panel", "health-column", "healthy"},
+        healthySegment,
+        tempStamBox,
+    }
+
+    local barRow = gui.Panel{
+        classes = {"panel", "health-bar"},
+        dyingColumn,
+        windedColumn,
+        healthyColumn,
+        diamondPositioner,
+    }
+
+    local function pct(value)
+        return string.format("%f%%", value)
+    end
+
+    return gui.Panel{
+        styles = TacPanelStyles.Stamina,
+        classes = {"container"},
+        data = { token = nil },
+
+        refreshCharacter = function(element, token)
+            element.data.token = token
+            if token == nil or not token.valid or token.properties == nil then
+                return
+            end
+
+            local props = token.properties
+            local currentHP = props:CurrentHitpoints()
+            local maxHP = props:MaxHitpoints()
+            local tempHP = props:TemporaryHitpoints() or 0
+            local bloodied = props:BloodiedThreshold()
+            local isHero = props:IsHero()
+            local windedVal = math.floor(maxHP / 2)
+
+            -- Column widths: equal splits
+            if isHero then
+                dyingColumn.selfStyle.width = "33%"
+                windedColumn.selfStyle.width = "34%"
+                healthyColumn.selfStyle.width = "33%"
+            else
+                windedColumn.selfStyle.width = "50%"
+                healthyColumn.selfStyle.width = "50%"
+            end
+            dyingColumn:SetClass("collapsed", not isHero)
+
+            -- Fill percentages per segment
+            -- Dying: range is -bloodied to 0
+            if isHero then
+                local dyingRange = bloodied
+                local dyingHP = math.max(0, math.min(dyingRange, currentHP + bloodied))
+                dyingFill.selfStyle.width = dyingRange > 0
+                    and pct(dyingHP / dyingRange * 100) or "0%"
+            end
+
+            -- Winded: range is 0 to windedVal
+            local windedHP = math.max(0, math.min(windedVal, currentHP))
+            windedFill.selfStyle.width = windedVal > 0
+                and pct(windedHP / windedVal * 100) or "0%"
+
+            -- Healthy: range is windedVal to maxHP
+            local healthyRange = maxHP - windedVal
+            local healthyHP = math.max(0, math.min(healthyRange, currentHP - windedVal))
+            healthyFill.selfStyle.width = healthyRange > 0
+                and pct(healthyHP / healthyRange * 100) or "0%"
+
+            -- Diamond position: percentage across the full bar
+            local totalRange = maxHP + (isHero and bloodied or 0)
+            if totalRange <= 0 then totalRange = 1 end
+            local diamondPct = isHero
+                and ((currentHP + bloodied) / totalRange * 100)
+                or (currentHP / totalRange * 100)
+            diamondPct = math.max(0, math.min(100, diamondPct))
+            diamondPositioner.selfStyle.width = pct(diamondPct)
+
+            -- Diamond color: white normally, TEMP_STAM when temp HP > 0
+            diamond:SetClass("has-temp", tempHP > 0)
+
+            -- Status boxes: show when health is in that segment's range (mutually exclusive)
+            local inDyingRange = isHero and currentHP < 0
+            local inWindedRange = currentHP >= 0 and currentHP <= windedVal
+
+            dyingStatus:SetClass("collapsed", not inDyingRange)
+            windedStatus:SetClass("collapsed", not inWindedRange)
+
+            -- Temp stam box: show when temp HP > 0
+            tempStamBox:SetClass("collapsed", tempHP <= 0)
+            tempStamValue.text = tostring(math.floor(tempHP))
+        end,
+        refreshToken = function(element, token)
+            element:FireEvent("refreshCharacter", token)
+        end,
+        setToken = function(element, token)
+            element:FireEvent("refreshCharacter", token)
+        end,
+
+        barRow,
+    }
+end
+
 --- Display the stamina controls
 --- @return Panel
 function TacPanel.Stamina()
@@ -1978,11 +2374,7 @@ function TacPanel.Stamina()
             TacPanel.RecoveriesBox(),
             TacPanel.TempStamBox(),
         },
-        gui.Panel{
-            classes = {"container"},
-            flow = "horizontal",
-            -- TODO: Health bar, weaknesses, immunities
-        }
+        TacPanel.HealthBar(),
     }
 end
 
