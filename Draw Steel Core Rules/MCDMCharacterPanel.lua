@@ -44,7 +44,13 @@ TacPanelSizes.Fonts = {
     charLevel = 18,
     charClass = 26,
     charSubclass = 20,
-    stamBoxTitle = 10,
+
+    stamBoxTitle = 10,      -- Stamina panel
+    stamBoxInput = 22,
+    currentStamina = 24,
+    maxStamina = 16,
+    recoveryValue = 24,
+    recoveryCount = 16,
 }
 TacPanelSizes.TokenIcon = {
     height = 20,
@@ -191,9 +197,18 @@ TacPanelStyles.TokenBox = {
         selectors = {"panel", "tokenbox", "hero-tokens"},
         borderColor = GOLD_BORDER,
     },
-    { 
+    {
         selectors = {"panel", "tokenbox", "surges"},
         borderColor = SURGE_BORDER,
+    },
+    {
+        selectors = {"panel", "tokenbox", "victories"},
+        borderColor = SURGE_BORDER,
+    },
+    {
+        selectors = {"panel", "tokenbox", "heroic-resources"},
+        borderColor = GOLD_BORDER,
+        bgcolor = GOLD_DARK_BG,
     },
     {
         selectors = {"label", "tokenbox"},
@@ -219,6 +234,14 @@ TacPanelStyles.TokenBox = {
         color = MUTED,
     },
     {
+        selectors = {"label", "tokenbox", "title", "victories"},
+        color = MUTED,
+    },
+    {
+        selectors = {"label", "tokenbox", "title", "heroic-resources"},
+        color = GOLD,
+    },
+    {
         selectors = {"panel", "icon"},
         width = TacPanelSizes.TokenIcon.width,
         height = TacPanelSizes.TokenIcon.height,
@@ -228,7 +251,15 @@ TacPanelStyles.TokenBox = {
     },
     {
         selectors = {"panel", "icon", "hero-tokens"},
-        valign = "center",
+        bgimage = PLACEHOLDER_TOKEN,
+        bgcolor = GOLD,
+    },
+    {
+        selectors = {"panel", "icon", "victories"},
+        bgimage = PLACEHOLDER_TOKEN,
+    },
+    {
+        selectors = {"panel", "icon", "heroic-resources"},
         bgimage = PLACEHOLDER_TOKEN,
         bgcolor = GOLD,
     },
@@ -236,13 +267,17 @@ TacPanelStyles.TokenBox = {
         selectors = {"label", "tokenbox", "value"},
         width = "auto",
         height = "auto",
-        valign = "center",
+        valign = "top",
         hmargin = 6,
         fontFace = "Newzald",
         fontSize = 30,
     },
     {
         selectors = {"label", "tokenbox", "value", "hero-tokens"},
+        color = GOLD,
+    },
+    {
+        selectors = {"label", "tokenbox", "value", "heroic-resources"},
         color = GOLD,
     },
     {
@@ -257,7 +292,7 @@ TacPanelStyles.Stamina = {
     {
         selectors = {"panel", "stamina-controls"},
         height = "auto",
-        width = TacPanelSizes.Panels.fullWidth,
+        width = "auto", --TacPanelSizes.Panels.fullWidth,
         valign = "top",
         halign = "left",
         flow = "horizontal",
@@ -267,6 +302,8 @@ TacPanelStyles.Stamina = {
         selectors = {"panel", "stamina-box"},
         height = TacPanelSizes.Panels.stamBoxHeight,
         width = TacPanelSizes.Panels.stamBoxNarrow,
+        halign = "left",
+        flow = "vertical",
         lmargin = 4,
         rmargin = 2,
         pad = 4,
@@ -323,7 +360,119 @@ TacPanelStyles.Stamina = {
     {
         selectors = {"label", "stambox-title", "temp"},
         color = TEMP_STAM,
-    }
+    },
+    {
+        selectors = {"input", "stambox-input"},
+        width = "98%",
+        height = "auto",
+        halign = "center",
+        valign = "center",
+        pad = 0,
+        margin = 0,
+        border = 0,
+        bgcolor = "clear",
+        fontFace = "Newzald",
+        textAlignment = "center",
+        fontSize = TacPanelSizes.Fonts.stamBoxInput,
+    },
+    {
+        selectors = {"stambox-input", "harm"},
+        color = RED,
+    },
+    {
+        selectors = {"stambox-input", "heal"},
+        color = TEAL_HEAL,
+    },
+    {
+        selectors = {"stambox-input", "temp"},
+        color = TEMP_STAM,
+        fontFace = "DrawSteelGlyphs",
+    },
+    {
+        selectors = {"stambox-input", "temp", "focus"},
+        fontFace = "Newzald",
+    },
+    {
+        selectors = {"label", "stambox-stam", "current"},
+        height = "auto",
+        width = "auto",
+        valign = "center",
+        halign = "left",
+        fontFace = "Newzald",
+        fontSize = TacPanelSizes.Fonts.currentStam,
+        color = CREAM,
+    },
+    {
+        selectors = {"label", "stambox-stam", "max"},
+        height = "auto",
+        width = "auto",
+        valign = "center",
+        lmargin = 4,
+        fontFace = "Newzald",
+        fontSize = TacPanelSizes.Fonts.maxStamina,
+        color = DIMMER,
+    },
+    {
+        selectors = {"label", "recovery-value"},
+        width = "auto",
+        height = "auto",
+        valign = "center",
+        halign = "center",
+        textAlignment = "center",
+        fontFace = "Newzald",
+        fontSize = TacPanelSizes.Fonts.recoveryValue,
+        color = HEALTHY_FILL,
+    },
+    {
+        selectors = {"label", "recovery-value", "hover"},
+        brightness = 1.5,
+    },
+    {
+        selectors = {"label", "recovery-count"},
+        width = "auto",
+        height = "auto",
+        valign = "top",
+        halign = "left",
+        textAlignment = "left",
+        fontFace = "Newzald",
+        fontSize = TacPanelSizes.Fonts.recoveryCount,
+        color = HEALTHY_FILL,
+    },
+    {
+        selectors = {"label", "recovery-max"},
+        width = "auto",
+        height = "auto",
+        halign = "left",
+        valign = "top",
+        lmargin = 4,
+        textAlignment = "left",
+        fontFace = "Newzald",
+        fontSize = TacPanelSizes.Fonts.recoveryCount,
+        color = DIMMER,
+    },
+    {
+        selectors = {"recovery-pip-row"},
+        flow = "horizontal",
+        width = "auto",
+        height = "auto",
+        valign = "center",
+        halign = "top",
+        vmargin = 1,
+    },
+    {
+        selectors = {"recovery-pip"},
+        width = 5,
+        height = 5,
+        hmargin = 1,
+        valign = "center",
+        bgimage = "panels/square.png",
+        borderWidth = 1,
+        borderColor = HEALTHY_FILL,
+    },
+    {
+        selectors = {"recovery-pip", "filled"},
+        bgcolor = HEALTHY_FILL,
+    },
 }
 
 -- Big text
@@ -923,9 +1072,8 @@ end
 --- display the hero token box
 --- @return Panel
 function TacPanel.HeroTokenBox()
-    local styles = TacPanel.MergeStyles({TacPanelStyles.TacPanel, TacPanelStyles.TokenBox})
     return gui.Panel{
-        styles = styles,
+        styles = TacPanelStyles.TokenBox,
         classes = {"tokenbox", "hero-tokens", "collapsed"},
         data = {
             token = nil,
@@ -1039,9 +1187,8 @@ end
 --- display the surges box
 --- @return Panel
 function TacPanel.SurgesBox()
-    local styles = TacPanel.MergeStyles({TacPanelStyles.TacPanel, TacPanelStyles.TokenBox})
     return gui.Panel{
-        styles = styles,
+        styles = TacPanelStyles.TokenBox,
         classes = {"tokenbox", "surges", "collapsed"},
         data = { token = nil },
 
@@ -1122,6 +1269,167 @@ function TacPanel.SurgesBox()
                     else
                         element.text = tostring(token.properties:GetAvailableSurges())
                     end
+                end,
+            },
+        },
+    }
+end
+
+--- Display the victories box
+--- @return Panel
+function TacPanel.VictoriesBox()
+    return gui.Panel{
+        styles = TacPanelStyles.TokenBox,
+        classes = {"tokenbox", "victories"},
+
+        -- Row 1: title
+        gui.Label{
+            classes = {"tokenbox", "title", "victories"},
+            text = "VICTORIES",
+        },
+
+        -- Row 2: icon & value
+        gui.Panel{
+            classes = {"container"},
+            halign = "center",
+            flow = "horizontal",
+            gui.Panel{
+                classes = {"icon", "victories"},
+            },
+            gui.Label{
+                classes = {"tokenbox", "value"},
+                text = "0",
+                editable = true,
+                numeric = true,
+                characterLimit = 2,
+                data = { token = nil },
+                refreshCharacter = function(element, token)
+                    element.data.token = token
+                    element.text = string.format("%d", token.properties:GetVictories())
+                end,
+                refreshToken = function(element, token)
+                    element:FireEvent("refreshCharacter", token)
+                end,
+                change = function(element)
+                    local token = element.data.token
+                    if token == nil then return end
+                    local n = math.max(0, round(tonumber(element.text) or 0))
+                    if n ~= nil and n ~= token.properties:GetVictories() then
+                        token:ModifyProperties{
+                            description = "Set Victories",
+                            execute = function()
+                                token.properties:SetVictories(n)
+                                element.text = string.format("%d", token.properties:GetVictories())
+                            end,
+                        }
+                    end
+                end,
+                refreshValue = function(element, token)
+                    element:FireEvent("refreshCharacter", token)
+                end,
+            },
+        },
+    }
+end
+
+--- Display the Heroic Resources box
+--- @return Panel
+function TacPanel.HeroicResourcesBox()
+    return gui.Panel{
+        styles = TacPanelStyles.TokenBox,
+        classes = {"tokenbox", "heroic-resources"},
+        data = { token = nil },
+
+        refreshCharacter = function(element, token)
+            element.data.token = token
+        end,
+
+        linger = function(element)
+            local token = element.data.token
+            if token == nil then return end
+            local q = dmhub.initiativeQueue
+            if q == nil or q.hidden then
+                gui.Tooltip(string.format("No %s while not in combat.", token.properties:GetHeroicResourceName()))(element)
+                return
+            end
+            local desc = token.properties:GetHeroicResourceName()
+            local negativeValue = token.properties:CalculateNamedCustomAttribute("Negative Heroic Resource")
+            local text = nil
+            if negativeValue > 0 then
+                text = string.format("%s may go as low as -%d", desc, negativeValue)
+            end
+            element.tooltip = gui.StatsHistoryTooltip{
+                text = text,
+                description = desc,
+                entries = token.properties:GetStatHistory(CharacterResource.heroicResourceId):GetHistory(),
+            }
+        end,
+
+        -- Row 1: title
+        gui.Label{
+            classes = {"tokenbox", "title", "heroic-resources"},
+            text = "",
+            refreshToken = function(element, token)
+                element.text = token.properties:GetHeroicResourceName():upper()
+            end,
+        },
+
+        -- Row 2: icon & value
+        gui.Panel{
+            classes = {"container"},
+            halign = "center",
+            flow = "horizontal",
+            gui.Panel{
+                classes = {"icon", "heroic-resources"},
+            },
+            gui.Label{
+                classes = {"tokenbox", "value", "heroic-resources"},
+                text = "0",
+                editable = true,
+                numeric = true,
+                characterLimit = 2,
+                data = { token = nil },
+                refreshCharacter = function(element, token)
+                    element.data.token = token
+                    local q = dmhub.initiativeQueue
+                    if q == nil or q.hidden then
+                        element.text = "--"
+                    else
+                        element.text = tostring(token.properties:GetHeroicOrMaliceResources())
+                    end
+                end,
+                refreshToken = function(element, token)
+                    element:FireEvent("refreshCharacter", token)
+                end,
+                change = function(element)
+                    local token = element.data.token
+                    if token == nil then return end
+                    local amount = tonumber(element.text)
+                    if amount == nil then
+                        element:FireEvent("refreshCharacter", token)
+                        return
+                    end
+                    local creature = token.properties
+                    if not creature:IsHero() and not creature:IsCompanion() then
+                        CharacterResource.SetMalice(math.max(0, amount), "Manually set")
+                        return
+                    end
+                    local resource = dmhub.GetTable(CharacterResource.tableName)[CharacterResource.heroicResourceId]
+                    amount = resource:ClampQuantity(token.properties, amount)
+                    local diff = amount - token.properties:GetHeroicOrMaliceResources()
+                    if diff ~= 0 then
+                        token:ModifyProperties{
+                            description = "Change Heroic Resource",
+                            execute = function()
+                                if diff > 0 then
+                                    token.properties:RefreshResource(CharacterResource.heroicResourceId, "unbounded", diff)
+                                else
+                                    token.properties:ConsumeResource(CharacterResource.heroicResourceId, "unbounded", -diff)
+                                end
+                            end,
+                        }
+                    end
+                    element.text = tostring(token.properties:GetHeroicOrMaliceResources())
                 end,
             },
         },
@@ -1244,6 +1552,413 @@ function TacPanel.Summary()
     }
 end
 
+--- Display the damage / harm box
+--- @return Panel
+function TacPanel.HarmBox()
+    return gui.Panel{
+        classes = {"stamina-box", "harm"},
+        gui.Label{
+            classes = {"stambox-title", "harm"},
+            text = "DMG",
+        },
+        gui.Input{
+            classes = {"stambox-input", "harm"},
+            text = "",
+            characterLimit = 8,
+            placeholderText = "-",
+            data = {
+                token = nil,
+            },
+            change = function(element)
+                local n = tonum(element.text, 0)
+                if n > 0 and element.data.token ~= nil and element.data.token.properties ~= nil then
+                    element.data.token:ModifyProperties{
+                        description = "Apply Damage",
+                        execute = function()
+                            element.data.token.properties:TakeDamage(element.text)
+                            element.text = ""
+                        end,
+                    }
+                end
+            end,
+            refreshCharacter = function(element, token)
+                element.data.token = token
+            end,
+            setToken = function(element, token)
+                element:FireEvent("refreshCharacter", token)
+            end,
+        },
+    }
+end
+
+--- Display the heal box
+--- @return Panel
+function TacPanel.HealBox()
+    return gui.Panel{
+        classes = {"stamina-box", "heal"},
+        gui.Label{
+            classes = {"stambox-title", "heal"},
+            text = "HEAL",
+        },
+        gui.Input{
+            classes = {"stambox-input", "heal"},
+            text = "",
+            characterLimit = 8,
+            placeholderText = "+",
+            data = {
+                token = nil,
+            },
+            change = function(element)
+                local n = tonum(element.text, 0)
+                if n > 0 and element.data.token ~= nil and element.data.token.properties ~= nil then
+                    element.data.token:ModifyProperties{
+                        description = "Apply Healing",
+                        execute = function()
+                            element.data.token.properties:Heal(n)
+                            element.text = ""
+                        end,
+                    }
+                end
+            end,
+            refreshCharacter = function(element, token)
+                element.data.token = token
+            end,
+            setToken = function(element, token)
+                element:FireEvent("refreshCharacter", token)
+            end,
+        },
+    }
+end
+
+--- Display the temp stamina box
+--- @return Panel
+function TacPanel.TempStamBox()
+    local placeholder = "p"
+    return gui.Panel{
+        classes = {"stamina-box", "temp"},
+        gui.Label{
+            classes = {"stambox-title", "temp"},
+            text = "TEMP",
+        },
+        gui.Input{
+            classes = {"stambox-input", "temp"},
+            text = "",
+            characterLimit = 8,
+            placeholderText = placeholder,
+            bgimage = true,
+            data = {
+                token = nil,
+            },
+            change = function(element)
+                local before = tonum(element.data.token.properties:TemporaryHitpointsStr(), 0)
+                local after = tonum(element.text, 0)
+                if after > before and element.data.token ~= nil and element.data.token.properties ~= nil then
+                    element.data.token:ModifyProperties{
+                        description = "Apply Temp Stamina",
+                        execute = function()
+                            element.data.token.properties:SetTemporaryHitpoints(element.text)
+                            element.data.token.properties:DispatchEvent("gaintempstamina", {})
+                            element.text = ""
+                        end,
+                    }
+                end
+            end,
+            deselect = function(element)
+                element.placeholderText = placeholder
+            end,
+            click = function(element)
+                print("THC:: FOCUS::")
+                element.placeholderText = ""
+            end,
+            refreshCharacter = function(element, token)
+                element.data.token = token
+            end,
+            setToken = function(element, token)
+                element:FireEvent("refreshCharacter", token)
+            end,
+        },
+    }
+end
+
+--- Display the current stamina box
+--- @return Panel
+function TacPanel.StaminaBox()
+    return gui.Panel{
+        classes = {"stamina-box", "stamina"},
+        halign = "center",
+        valign = "center",
+        data = { token = nil },
+
+        refreshCharacter = function(element, token)
+            element.data.token = token
+            element:FireEventTree("refreshValue", token)
+        end,
+        refreshToken = function(element, token)
+            element:FireEvent("refreshCharacter", token)
+        end,
+        setToken = function(element, token)
+            element:FireEvent("refreshCharacter", token)
+        end,
+
+        gui.Panel{
+            classes = {"container"},
+            flow = "horizontal",
+            valign = "center",
+            halign = "center",
+            gui.Label{
+                classes = {"stambox-stam", "current"},
+                text = "0",
+                refreshValue = function(element, token)
+                    local text = tostring(token.properties:CurrentHitpoints())
+                    element.selfStyle.fontSize = _fitFontSize(TacPanelSizes.Fonts.currentStamina, 3, #text)
+                    element.text = text
+                end,
+            },
+            gui.Label{
+                classes = {"stambox-stam", "max"},
+                text = "/ 0",
+                refreshValue = function(element, token)
+                    element.text = string.format("/ %d", token.properties:MaxHitpoints())
+                end,
+            },
+        },
+    }
+end
+
+--- Display-only recovery pips, split into rows of 10
+--- @param recoveryid string
+--- @param recoveryInfo table
+--- @return Panel
+function TacPanel.RecoveryPips(recoveryid, recoveryInfo)
+    return gui.Panel{
+        classes = {"container"},
+        halign = "center",
+        valign = "top",
+        flow = "vertical",
+
+        gui.Panel{
+            classes = {"recovery-pip-row"},
+        },
+        gui.Panel{
+            classes = {"recovery-pip-row"},
+        },
+
+        refreshCharacter = function(element, token)
+            local maxRec = token.properties:GetResources()[recoveryid] or 0
+            local usage = token.properties:GetResourceUsage(recoveryid, recoveryInfo.usageLimit) or 0
+            local current = max(0, maxRec - usage)
+
+            local row1 = element.children[1]
+            local row2 = element.children[2]
+            local row1Count = math.min(maxRec, 10)
+            local row2Count = math.max(0, maxRec - 10)
+
+            for i = #row1.children + 1, row1Count do
+                row1:AddChild(gui.Panel{
+                    classes = {"recovery-pip"},
+                })
+            end
+            for i = #row2.children + 1, row2Count do
+                row2:AddChild(gui.Panel{
+                    classes = {"recovery-pip"},
+                })
+            end
+
+            for i, child in ipairs(row1.children) do
+                child:SetClass("collapsed", i > row1Count)
+                child:SetClass("filled", i <= current)
+            end
+            for i, child in ipairs(row2.children) do
+                child:SetClass("collapsed", i > row2Count)
+                child:SetClass("filled", (i + 10) <= current)
+            end
+
+            row2:SetClass("collapsed", row2Count <= 0)
+        end,
+    }
+end
+
+--- Draw the recoveries box
+--- @return Panel
+function TacPanel.RecoveriesBox()
+    local recoveryid = nil
+    local recoveryInfo = nil
+    local resourcesTable = dmhub.GetTableVisible(CharacterResource.tableName)
+    for k,v in pairs(resourcesTable) do
+        if v.name == "Recovery" then
+            recoveryid = k
+            recoveryInfo = v
+            break
+        end
+    end
+
+    return gui.Panel{
+        classes = {"stamina-box", "recoveries"},
+        data = { token = nil },
+        refreshCharacter = function(element, token)
+            element.data.token = token
+            local showRecovery = recoveryid ~= nil and (token.properties:IsHero() or token.properties:IsRetainer() or token.properties:IsCompanion())
+            element:SetClass("collapsed", not showRecovery)
+        end,
+        refreshToken = function(element, token)
+            element:FireEvent("refreshCharacter", token)
+        end,
+        setToken = function(element, token)
+            element:FireEvent("refreshCharacter", token)
+        end,
+        gui.Label{
+            classes = {"stambox-title", "heal"},
+            text = "RECOVERIES",
+        },
+        gui.Panel{
+            classes = {"container"},
+            height = "100% available",
+            width = "100%+8",
+            valign = "top",
+            halign = "left",
+            hmargin = -4,
+            bgimage = true,
+            border = {x1 = 0, y1 = 0, x2 = 0, y2 = 1},
+            borderColor = TEAL_HEAL,
+            flow = "horizontal",
+            gui.Panel{
+                classes = {"container"},
+                height = "100%+2",
+                width = "40%",
+                valign = "top",
+                halign = "left",
+                bgimage = true,
+                border = {x1 = 0, y1 = 0, x2 = 1, y2 = 0},
+                borderColor = TEAL_HEAL,
+                gui.Label{
+                    classes = {"recovery-value"},
+                    text = "+0",
+                    data = { token = nil },
+                    refreshCharacter = function(element, token)
+                        element.data.token = token
+                        element.text = string.format("%+d", token.properties:RecoveryAmount())
+                    end,
+                    setToken = function(element, token)
+                        element.data.token = token
+                    end,
+                    linger = function(element)
+                        local token = element.data.token
+                        if token == nil or not token.valid or token.properties == nil then return end
+                        local usage = token.properties:GetResourceUsage(recoveryid, recoveryInfo.usageLimit) or 0
+                        local maxRec = token.properties:GetResources()[recoveryid] or 0
+                        local quantity = maxRec - usage
+                        local usageNote = "Use a recovery"
+                        if token.properties:CurrentHitpoints() >= token.properties:MaxHitpoints() then
+                            usageNote = "Already at maximum stamina"
+                        elseif quantity <= 0 then
+                            if token.properties:IsHero() and token.properties:GetHeroTokens() >= 2 then
+                                usageNote = "Click to spend 2 hero tokens as a Recovery"
+                            else
+                                usageNote = "No Recoveries left"
+                            end
+                        end
+                        gui.Tooltip(usageNote)(element)
+                    end,
+                    press = function(element)
+                        local token = element.data.token
+                        if token == nil then return end
+
+                        local useHeroTokens = false
+                        local quantity = max(0, (token.properties:GetResources()[recoveryid] or 0) - (token.properties:GetResourceUsage(recoveryid, recoveryInfo.usageLimit) or 0))
+                        if quantity <= 0 then
+                            if (not token.properties:IsHero()) or token.properties:GetHeroTokens() < 2 then
+                                return
+                            end
+                            useHeroTokens = true
+                        end
+
+                        if token.properties:CurrentHitpoints() >= token.properties:MaxHitpoints() then
+                            return
+                        end
+
+                        token:ModifyProperties{
+                            description = "Use Recovery",
+                            execute = function()
+                                token.properties:Heal(token.properties:RecoveryAmount(), "Use Recovery")
+                                if useHeroTokens then
+                                    token.properties:SetHeroTokens(token.properties:GetHeroTokens() - 2, "Used to Recover")
+                                else
+                                    token.properties:ConsumeResource(recoveryid, recoveryInfo.usageLimit, 1, "Used Recovery")
+                                end
+                            end,
+                        }
+                    end,
+                },
+            },
+            gui.Panel{
+                classes = {"container"},
+                height = "100%",
+                width = "60%",
+                valign = "top",
+                halign ="left",
+                flow = "vertical",
+                gui.Panel{
+                    classes = {"container"},
+                    width = "auto",
+                    valign = "top",
+                    halign = "center",
+                    flow = "horizontal",
+                    gui.Label{
+                        classes = {"recovery-count"},
+                        text = "0",
+                        editable = true,
+                        numeric = true,
+                        characterLimit = 2,
+                        data = { token = nil },
+                        refreshCharacter = function(element, token)
+                            element.data.token = token
+                            local quantity = max(0, (token.properties:GetResources()[recoveryid] or 0) - (token.properties:GetResourceUsage(recoveryid, recoveryInfo.usageLimit) or 0))
+                            element.text = string.format("%d", quantity)
+                        end,
+                        setToken = function(element, token)
+                            element.data.token = token
+                        end,
+                        change = function(element)
+                            local token = element.data.token
+                            if token == nil then return end
+                            local n = tonumber(element.text)
+                            if n == nil then
+                                element:FireEvent("refreshCharacter", token)
+                                return
+                            end
+                            n = math.max(0, round(n))
+                            local nresources = token.properties:GetResources()[recoveryid] or 0
+                            local usage = token.properties:GetResourceUsage(recoveryid, recoveryInfo.usageLimit) or 0
+                            local current = nresources - usage
+                            local delta = n - current
+                            if delta == 0 then return end
+                            token:ModifyProperties{
+                                description = "Set Recoveries",
+                                execute = function()
+                                    if delta > 0 then
+                                        token.properties:RefreshResource(recoveryid, recoveryInfo.usageLimit, delta, "Set Recoveries")
+                                    else
+                                        token.properties:ConsumeResource(recoveryid, recoveryInfo.usageLimit, -delta, "Set Recoveries")
+                                    end
+                                end,
+                            }
+                        end,
+                    },
+                    gui.Label{
+                        classes = {"recovery-max"},
+                        text = "/ 0",
+                        refreshCharacter = function(element, token)
+                            local maxRec = token.properties:GetResources()[recoveryid] or 0
+                            element.text = string.format("/ %d", maxRec)
+                        end,
+                    }
+                },
+                TacPanel.RecoveryPips(recoveryid, recoveryInfo),
+            }
+        },
+    }
+end
+
 --- Display the stamina controls
 --- @return Panel
 function TacPanel.Stamina()
@@ -1257,41 +1972,60 @@ function TacPanel.Stamina()
         gui.Panel{
             styles = TacPanelStyles.Stamina,
             classes = {"stamina-controls"},
-            gui.Panel{
-                classes = {"stamina-box", "harm"},
-                gui.Label{
-                    classes = {"stambox-title", "harm"},
-                    text = "DMG",
-                },
-            },
-            gui.Panel{
-                classes = {"stamina-box", "stamina"},
-            },
-            gui.Panel{
-                classes = {"stamina-box", "heal"},
-                gui.Label{
-                    classes = {"stambox-title", "heal"},
-                    text = "HEAL",
-                },
-            },
-            gui.Panel{
-                classes = {"stamina-box", "recoveries"},
-                gui.Label{
-                    classes = {"stambox-title", "heal"},
-                    text = "RECOVERIES",
-                },
-            },
-            gui.Panel{
-                classes = {"stamina-box", "temp"},
-                gui.Label{
-                    classes = {"stambox-title", "temp"},
-                    text = "TEMP",
-                },
-            }
+            TacPanel.HarmBox(),
+            TacPanel.StaminaBox(),
+            TacPanel.HealBox(),
+            TacPanel.RecoveriesBox(),
+            TacPanel.TempStamBox(),
         },
         gui.Panel{
             classes = {"container"},
             flow = "horizontal",
+            -- TODO: Health bar, weaknesses, immunities
+        }
+    }
+end
+
+--- Display the heroic resources info
+--- @return Panel
+function TacPanel.HeroicResources()
+    return gui.Panel{
+        styles = TacPanelStyles.TacPanel,
+        classes = {"tacpanel", "alt-bg", "collapsed"},
+        tmargin = -26,
+        refreshCharacter = function(element, token)
+            if token == nil or not token.valid or token.properties == nil then
+                element:SetClass("collapsed", true)
+                return
+            end
+            element:SetClass("collapsed", token.properties.typeName ~= "character")
+        end,
+        refreshToken = function(element, token)
+            element:FireEvent("refreshCharacter", token)
+        end,
+        setToken = function(element, token)
+            element:FireEvent("refreshCharacter", token)
+        end,
+        gui.Label{
+            classes = {"panel-title"},
+            text = "HEROIC RESOURCES",
+        },
+        gui.Panel{
+            classes = {"container"},
+            width = "100%",
+            valign = "top",
+            halign = "left",
+            pad = 4,
+            flow = "horizontal",
+            gui.Panel{
+                classes = {"container"},
+                width = "auto",
+                halign = "left",
+                valign = "top",
+                flow = "vertical",
+                TacPanel.VictoriesBox(),
+                TacPanel.HeroicResourcesBox(),
+            }
         }
     }
 end
@@ -4162,6 +4896,7 @@ CharacterPanel.CreateCharacterDetailsPanel = function(m_token)
 
         -- _tacPanelTokensPanel(),
         -- _tacPanelMovementPanel(),
+        TacPanel.HeroicResources(),
 
         --heroic resource panel.
         gui.Panel{
