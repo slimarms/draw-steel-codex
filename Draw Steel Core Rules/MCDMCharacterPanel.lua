@@ -26,6 +26,7 @@ local SURGE_BORDER = "#2E3F38"
 local DARKRED = "#140A0A"
 local TEMP_STAM = "#8B5CF6"
 local MOVE_HINDERED = "#E07070"
+local CHARACTERISTIC_BG = "#0B0F0D"
 
 local TacPanel = {}
 local TacPanelSizes = {}
@@ -59,6 +60,9 @@ TacPanelSizes.Fonts = {
 
     movePanelTitle = 14,
     movePanelValue = 24,
+
+    charTitle = 12,
+    charValue = 30,
 }
 TacPanelSizes.VisionBtn = {
     size = 24,
@@ -692,6 +696,71 @@ TacPanelStyles.Stamina = {
         fontSize = TacPanelSizes.Fonts.tempStamClear,
         color = TEMP_STAM,
     },
+}
+TacPanelStyles.CharacteristicsPanel = {
+    {
+        selectors = {"panel", "characteristics-panel"},
+        height = "auto",
+        width = "100%",
+        valign = "top",
+        halign = "left",
+        flow = "horizontal",
+        vpad = 6,
+    },
+    {
+        selectors = {"panel", "characteristic-box"},
+        width = "16%",
+        height = "100% width",
+        halign = "left",
+        valign = "top",
+        pad = 2,
+        hmargin = 4,
+        flow = "vertical",
+        bgimage = true,
+        bgcolor = CHARACTERISTIC_BG,
+        borderColor = RULE,
+        border = 1,
+        cornerRadius = 4,
+    },
+    {
+        selectors = {"panel", "characteristic-box", "hover"},
+        brightness = 1.5,
+    },
+    {
+        selectors = {"label", "char-title"},
+        width = "auto",
+        height = "auto",
+        halign = "left",
+        valign = "top",
+        tmargin = 2,
+        color = MUTED,
+        fontFace = "Berling",
+        fontSize = TacPanelSizes.Fonts.charTitle,
+    },
+    {
+        selectors = {"label", "char-title", "first"},
+        fontFace = "DrawSteelPotencies",
+        fontSize = TacPanelSizes.Fonts.charTitle + 2,
+    },
+    {
+        selectors = {"label", "char-value"},
+        width = "auto",
+        height = "auto",
+        halign = "center",
+        valign = "top",
+        tmargin = 4,
+        color = MUTED,
+        fontFace = "Newzald",
+        fontSize = TacPanelSizes.Fonts.charValue,
+    },
+    {
+        selectors = {"label", "char-value", "positive"},
+        color = TEAL,
+    },
+    {
+        selectors = {"label", "char-value", "negative"},
+        color = RED,
+    }
 }
 TacPanelStyles.MovementPanel = {
     {
@@ -2896,6 +2965,82 @@ function TacPanel.MovementPanel()
     }
 end
 
+--- Display a single characteristic box
+--- @param attrInfo table Information about the attribute
+--- @return Panel
+function TacPanel.CharacteristicBox(attrInfo)
+    return gui.Panel{
+        classes = {"characteristic-box"},
+        data = { token = nil },
+        press = function(element)
+            local token = element.data.token
+            if token ~= nil and token.properties ~= nil then
+                token.properties:ShowCharacteristicRollDialog(attrInfo.id)
+            end
+        end,
+        refreshCharacter = function(element, token)
+            element.data.token = token
+        end,
+        refreshToken = function(element, token)
+            element:FireEvent("refreshCharacter", token)
+        end,
+        setToken = function(element, token)
+            element:FireEvent("refreshCharacter", token)
+        end,
+        gui.Panel{
+            classes = {"container"},
+            halign = "center",
+            valign = "top",
+            flow = "horizontal",
+            gui.Label{
+                classes = {"char-title", "first"},
+                text = attrInfo.description:sub(1,1)
+            },
+            gui.Label{
+                classes = {"char-title"},
+                text = attrInfo.description:sub(2)
+            }
+        },
+        gui.Label{
+            classes = {"char-value"},
+            text = "0",
+            data = {
+                attrId = attrInfo.id,
+            },
+            refreshCharacter = function(element, token)
+                if token == nil or not token.valid or token.properties == nil then return end
+                local modifier = token.properties:GetAttribute(attrInfo.id):Modifier()
+                element.text = (modifier == 0) and "0" or string.format("%+d", modifier)
+                element:SetClass("positive", modifier > 0)
+                element:SetClass("negative", modifier < 0)
+            end,
+            refreshToken = function(element, token)
+                element:FireEvent("refreshCharacter", token)
+            end,
+            setToken = function(element, token)
+                element:FireEvent("refreshCharacter", token)
+            end,
+        }
+    }
+end
+
+--- Display the characteristics panel
+--- @return Panel
+function TacPanel.CharacteristicsPanel()
+    local children = {}
+    local attrList = table.values(creature.attributesInfo)
+    table.sort(attrList, function(a,b) return a.order < b.order end)
+    for _,attr in pairs(attrList) do
+        children[#children+1] = TacPanel.CharacteristicBox(attr)
+    end
+
+    return gui.Panel{
+        styles = TacPanelStyles.CharacteristicsPanel,
+        classes = {"characteristics-panel"},
+        children = children,
+    }
+end
+
 --- Display the statistics panel
 --- @return Panel
 function TacPanel.Statistics()
@@ -2914,7 +3059,7 @@ function TacPanel.Statistics()
             halign = "left",
             pad = 4,
             flow = "vertical",
-            -- TODO: Characteristics panel
+            TacPanel.CharacteristicsPanel(),
             gui.MCDMDivider{ width = "94%", bgcolor = SURGE_BORDER },
             TacPanel.MovementPanel(),
         }
