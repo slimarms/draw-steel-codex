@@ -2396,7 +2396,7 @@ CharacterModifier.TypeInfo.resource = {
 
 			local resourceTable = dmhub.GetTable("characterResources") or {}
 			for k,v in pairs(resourceTable) do
-				if (not v:try_get("hidden")) and (v.levelsFrom == "none" or v.spellSlot ~= "none") then
+				if (not v:try_get("hidden")) then
 					resourceChoices[#resourceChoices+1] = {
 						id = k,
 						text = v.name,
