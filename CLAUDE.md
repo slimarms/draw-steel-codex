@@ -65,6 +65,29 @@ end
 ### Data Tables
 Game data is stored in named tables accessed via `dmhub.GetTable("tableName")`. Iterate with `unhidden_pairs(t)` (skips soft-deleted entries). Write with `dmhub.SetAndUploadObject(tableName, id, obj)`.
 
+### Modifying Token Properties
+When changing any value on a token's properties outside of the character sheet, you **must** wrap mutations in `token:ModifyProperties{}`. This observes the changes, uploads only the diffs to the cloud, and supports undo.
+
+```lua
+token:ModifyProperties{
+    description = "Spend a recovery",
+    execute = function()
+        -- modify token.properties inside here
+        token.properties:SpendRecovery()
+    end,
+}
+```
+
+Options:
+- `execute` (required) -- function that mutates `token.properties`
+- `description` (string) -- human-readable label for the undo stack
+- `undoable` (boolean) -- defaults to true; set false for non-undoable changes
+- `combine` (boolean) -- if true, combines with other uploads this frame as a transaction
+
+**Exception**: Code running inside the character sheet/builder modifies properties directly without `ModifyProperties`, since the sheet manages its own upload lifecycle.
+
+**Deprecated**: `BeginChanges`/`CompleteChanges` -- use `ModifyProperties` instead.
+
 ### Shared Documents
 Shared cloud documents provide key-value storage that syncs across all clients in a game session. They are used for real-time shared state such as chat events, audio grid slots, global resources, initiative data, and downtime project shares. Unlike Data Tables (which store game content definitions), documents hold live session state.
 
