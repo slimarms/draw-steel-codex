@@ -4065,6 +4065,91 @@ function TacPanel.SkillLanguages()
     }
 end
 
+function TacPanel.Features()
+    return TacPanel.CollapsiblePanel{
+        styles = {TacPanelStyles.Notes},
+        classes = {"collapsed"},
+        title = "FEATURES",
+        data = { token = nil },
+
+        refreshCharacter = function(element, token)
+            if token == nil or not token.valid or token.properties == nil then
+                element:SetClass("collapsed", true)
+                return
+            end
+
+            element.data.token = token
+            local creature = token.properties
+            local features = creature:try_get("characterFeatures")
+            if features == nil or #features == 0 then
+                if not (creature.withCaptain and creature.minion) then
+                    element:SetClass("collapsed", true)
+                    return
+                end
+            end
+
+            local labels = {}
+
+            -- With Captain entry (minions only)
+            if creature.withCaptain and creature.minion then
+                local implemented = DrawSteelMinion.GetWithCaptainEffect(creature.withCaptain) ~= nil
+                local implementedColor = cond(implemented, "#ff", "#55")
+
+                labels[#labels+1] = gui.Label{
+                    classes = {"note-entry"},
+                    textWrap = true,
+                    markdown = true,
+                    text = string.format(
+                        "**<color=%s>With Captain:</color>** <alpha=%s>%s",
+                        MUTED, implementedColor, creature.withCaptain
+                    ),
+                }
+            end
+
+            -- Feature entries
+            if features ~= nil then
+                for _, feature in ipairs(features) do
+                    if feature.description ~= "" then
+                        local implemented = feature:try_get("implementation", 1) ~= 1
+                        local implementedColor = cond(implemented, "#ff", "#55")
+
+                        labels[#labels+1] = gui.Label{
+                            classes = {"note-entry"},
+                            textWrap = true,
+                            markdown = true,
+                            text = string.format(
+                                "**<color=%s>%s:</color>** <alpha=%s>%s",
+                                MUTED, feature.name, implementedColor, feature.description
+                            ),
+                        }
+                    end
+                end
+            end
+
+            if #labels == 0 then
+                element:SetClass("collapsed", true)
+                return
+            end
+
+            element:SetClass("collapsed", false)
+            element.children[2].children = labels
+        end,
+        refreshToken = function(element, token)
+            element:FireEvent("refreshCharacter", token)
+        end,
+        setToken = function(element, token)
+            element:FireEvent("refreshCharacter", token)
+        end,
+
+        gui.Panel{
+            classes = {"container"},
+            width = "100%",
+            height = "auto",
+            flow = "vertical",
+        },
+    }
+end
+
 --- Display the Notes panel (collapsible)
 --- @return Panel
 function TacPanel.Notes()
@@ -7413,6 +7498,7 @@ CharacterPanel.CreateCharacterDetailsPanel = function(m_token)
         newTacPanel and TacPanel.HeroicResources() or nil,
         newTacPanel and TacPanel.Conditions() or nil,
         newTacPanel and TacPanel.SkillLanguages() or nil,
+        newTacPanel and TacPanel.Features() or nil,
         newTacPanel and TacPanel.Notes() or nil,
 
         --heroic resource panel.
@@ -8190,7 +8276,7 @@ CharacterPanel.CreateCharacterDetailsPanel = function(m_token)
 
 		oldTacPanel and CharacterPanel.SkillsPanel(m_token) or nil,
 		oldTacPanel and CharacterPanel.LanguagesPanel(m_token) or nil,
-        CharacterPanel.AbilitiesPanel(m_token),
+        oldTacPanel and CharacterPanel.AbilitiesPanel(m_token) or nil,
         oldTacPanel and CharacterPanel.NotesPanel(m_token) or nil,
         gui.Panel{
             styles = TacPanelStyles.TacPanel,
