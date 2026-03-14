@@ -1509,8 +1509,10 @@ local function TriggerPreviewPanel()
             classes = {"abilityIconPanel"},
             trigger = function(element, trigger)
                 m_trigger = trigger
-                element.selfStyle.gradient = cond(trigger.type ~= "free",
-                    mod.shared.triggerGradient, mod.shared.freeTriggerGradient)
+                local isPassive = trigger.type == "passive"
+                local isFree = trigger.type == "free"
+                element.selfStyle.gradient = cond(isPassive, mod.shared.passiveTriggerGradient,
+                    cond(isFree, mod.shared.freeTriggerGradient, mod.shared.triggerGradient))
             end,
 
             text = "!",
@@ -1537,7 +1539,9 @@ local function TriggerPreviewPanel()
                 vmargin = 0,
                 tmargin = 0,
                 trigger = function(element, trigger)
-                    if trigger.type == "free" then
+                    if trigger.type == "passive" then
+                        element.text = "Passive"
+                    elseif trigger.type == "free" then
                         element.text = "Free Triggered Action"
                     else
                         element.text = "Triggered Action"

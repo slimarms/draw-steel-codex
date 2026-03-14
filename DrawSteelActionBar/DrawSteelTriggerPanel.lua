@@ -45,6 +45,22 @@ mod.shared.freeTriggerGradient = gui.Gradient{
     }
 }
 
+mod.shared.passiveTriggerGradient = gui.Gradient{
+    type = "radial",
+    point_a = {x = 0.5, y = 0.5},
+    point_b = {x = 1, y = 0.5},
+    stops = {
+        {
+            position = 0,
+            color = "srgb:#085708",
+        },
+        {
+            position = 1,
+            color = "srgb:#0C2D0C",
+        }
+    }
+}
+
 mod.shared.CreateTriggerPanel = function()
 
 	local m_activeTriggerPanels = {}
@@ -630,6 +646,7 @@ mod.shared.CreateTriggerPanel = function()
 
 
 							local m_ping = trigger.ping
+                            local isPassive = trigger.powerRollModifier and trigger.powerRollModifier.type == "passive"
 
                             local triggerPanel
 							triggerPanel = gui.Panel{
@@ -925,7 +942,7 @@ mod.shared.CreateTriggerPanel = function()
         --icon panel.
         gui.Label{
             textAlignment = "center",
-            color = cond(trigger.free, "srgb:3097FF", "srgb:#FF9730"),
+            color = cond(isPassive, "srgb:#00a300", cond(trigger.free, "srgb:3097FF", "srgb:#FF9730")),
             bold = true,
             text = "!",
             fontSize = 24,
@@ -938,7 +955,7 @@ mod.shared.CreateTriggerPanel = function()
             bgcolor = "white",
             borderWidth = 1,
             borderColor = "black",
-            gradient = cond(trigger.free, mod.shared.freeTriggerGradient, mod.shared.triggerGradient),
+            gradient = cond(isPassive, mod.shared.passiveTriggerGradient, cond(trigger.free, mod.shared.freeTriggerGradient, mod.shared.triggerGradient)),
 
         },
 
@@ -996,7 +1013,7 @@ mod.shared.CreateTriggerPanel = function()
 
                                     gui.Label{
                                         textAlignment = "center",
-                                        color = cond(trigger.free, "srgb:3097FF", "srgb:#FF9730"),
+                                        color = cond(isPassive, "srgb:#00a300", cond(trigger.free, "srgb:3097FF", "srgb:#FF9730")),
                                         bold = true,
                                         text = "!",
                                         fontSize = 24,
@@ -1009,7 +1026,7 @@ mod.shared.CreateTriggerPanel = function()
                                         bgcolor = "white",
                                         borderWidth = 1,
                                         borderColor = "black",
-                                        gradient = cond(trigger.free, mod.shared.freeTriggerGradient, mod.shared.triggerGradient),
+                                        gradient = cond(isPassive, mod.shared.passiveTriggerGradient, cond(trigger.free, mod.shared.freeTriggerGradient, mod.shared.triggerGradient)),
                                     },
 
                                     gui.Panel{
