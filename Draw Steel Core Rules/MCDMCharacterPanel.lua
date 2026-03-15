@@ -845,7 +845,7 @@ TacPanelStyles.MovementPanel = {
         height = "auto",
         valign = "top",
         halign = "center",
-        color = "muted",
+        color = MUTED,
         fontFace = "Berling",
         fontSize = TacPanelSizes.Fonts.movePanelTitle,
         textAlignment = "center",
@@ -5861,7 +5861,7 @@ If you find an issue, plese let us know via a bug report in the DMHub Discord.mo
             fontSize = 14,
             textWrap = true,
             markdown = true,
-            color = CREAM,
+            color = MUTED,
             text = testInfo,
         },
     }
