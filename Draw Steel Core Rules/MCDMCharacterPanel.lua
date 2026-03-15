@@ -3775,6 +3775,9 @@ function TacPanel.Routines()
 
             for _,routine in ipairs(routines) do
                 local selected = (routinesSelected[routine.guid] ~= nil)
+                local panel = element.data.routinePanels[routine.guid]
+
+                if panel == nil then
                 local routineLabel = gui.Label{
                     classes = {"rt-chip"},
                     text = routine.name,
@@ -3803,7 +3806,7 @@ function TacPanel.Routines()
                         el:SetClass("selected", sel)
                     end,
                 }
-                local panel = element.data.routinePanels[routine.guid] or gui.Panel{
+                panel = gui.Panel{
                     data = { selected = false, label = routineLabel },
                     classes = {"rt-chip"},
                     flow = "horizontal",
@@ -3909,6 +3912,7 @@ function TacPanel.Routines()
                         }
                     end,
                 }
+                end
 
                 if selected ~= panel.data.selected then
                     panel.data.selected = selected
