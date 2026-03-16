@@ -102,10 +102,21 @@ function ActivatedAbilityRoutineControlBehavior:Cast(ability, casterToken, targe
                 end
             end,
 
+            hover = function(element)
+                element.tooltip = gui.Panel{
+                    width = "auto",
+                    height = "auto",
+                    bgimage = "panels/square.png",
+                    bgcolor = "#222222e9",
+                    pad = 8,
+                    cornerRadius = 4,
+                    capturedAbility:Render{token = casterToken, width = 400},
+                }
+            end,
+
             gui.Label{
                 classes = {"routine-chip-label"},
                 text = capturedAbility.name,
-                hover = gui.Tooltip(capturedAbility.effect),
             },
         }
     end
