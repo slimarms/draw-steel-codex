@@ -29,12 +29,16 @@ local function createDrawSteelBanner(options)
     end
 
     local m_initiativeThreshold = 6
+    local surprisedConditionForThreshold = CharacterCondition.conditionsByName["surprised"]
     for charid,_ in pairs(g_playerTokensOpenInitiative or {}) do
         local tok = dmhub.GetCharacterById(charid)
         if tok ~= nil and tok.valid then
-            local t = tok.properties:CalculateNamedCustomAttribute("Initiative Threshold")
-            if type(t) == "number" and t > 0 and t < m_initiativeThreshold then
-                m_initiativeThreshold = t
+            local isSurprised = surprisedConditionForThreshold ~= nil and tok.properties:HasCondition(surprisedConditionForThreshold.id)
+            if not isSurprised then
+                local t = tok.properties:CalculateNamedCustomAttribute("Initiative Threshold")
+                if type(t) == "number" and t > 0 and t < m_initiativeThreshold then
+                    m_initiativeThreshold = t
+                end
             end
         end
     end
