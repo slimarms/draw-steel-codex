@@ -1522,6 +1522,124 @@ function ActivatedAbility:Render(options, params)
                 },
             },
 
+            --ability improvement checkboxes panel
+            gui.Panel {
+                width = "100%",
+                height = "auto",
+                flow = "vertical",
+                bmargin = 6,
+                showAbilitySection = function(element, options)
+                    if options.ability.name ~= self.name or options.section ~= "target" then
+                        element.children = {}
+                        return
+                    end
+                    local improvements = options.improvements
+                    if improvements == nil or #improvements == 0 then
+                        element.children = {}
+                        return
+                    end
+                    local children = {}
+                    for _, entry in ipairs(improvements) do
+                        local capturedEntry = entry
+                        local m_value = capturedEntry.checked
+                        local pillPanel
+                        pillPanel = gui.Panel{
+                            styles = {
+                                gui.Style{
+                                    classes = {"improvementPill"},
+                                    borderColor = Styles.Gold04,
+                                    borderWidth = 2,
+                                    cornerRadius = 5,
+                                    width = "auto",
+                                    height = "auto",
+                                    pad = 4,
+                                    flow = "horizontal",
+                                    bgimage = true,
+                                    bgcolor = Styles.RichBlack03,
+                                    tmargin = 4,
+                                },
+                                gui.Style{
+                                    classes = {"improvementPill", "~selected"},
+                                    borderColor = "#777777",
+                                },
+                                gui.Style{
+                                    classes = {"improvementLabel"},
+                                    opacity = 0.95,
+                                    color = "white",
+                                    fontSize = 16,
+                                    width = "auto",
+                                    height = "auto",
+                                    valign = "center",
+                                },
+                                gui.Style{
+                                    classes = {"improvementLabel", "~selected"},
+                                    color = "#777777",
+                                },
+                                gui.Style{
+                                    classes = {"improvementLabel", "unaffordable", "selected"},
+                                    color = "#ff6666",
+                                },
+                                gui.Style{
+                                    selectors = {"improvementLabel", "parent:hover"},
+                                    brightness = 1.5,
+                                },
+                                gui.Style{
+                                    classes = {"improvementPill", "hover"},
+                                    brightness = 1.5,
+                                },
+                            },
+                            classes = {"improvementPill"},
+                            press = function(el)
+                                m_value = not m_value
+                                capturedEntry.checked = m_value
+                                el:SetClassTree("selected", m_value)
+                                local controller = el:Get("abilityController")
+                                if controller ~= nil then
+                                    controller:FireEvent("applyImprovements")
+                                end
+                            end,
+                            linger = (function()
+                                local rulesText = capturedEntry.mod:try_get("rules", "")
+                                if rulesText ~= "" then
+                                    return gui.Tooltip{
+                                        text = rulesText,
+                                        maxWidth = 600,
+                                    }
+                                end
+                            end)(),
+                            gui.Label{
+                                classes = {"improvementLabel"},
+                                text = capturedEntry.mod:try_get("name", "Ability Improvement"),
+                            },
+                            (function()
+                                local costType = capturedEntry.mod:try_get("resourceCostType", "none")
+                                if costType == "none" then return nil end
+                                local casterProps = options.caster.properties
+                                local costAmt = ExecuteGoblinScript(capturedEntry.mod:try_get("resourceCostAmount", "1"), casterProps:LookupSymbol{}, 1)
+                                costAmt = math.floor(costAmt + 0.5)
+                                local available, resourceName
+                                if costType == "epic" then
+                                    available = casterProps:GetEpicResources()
+                                    resourceName = casterProps:GetEpicResourceName()
+                                else
+                                    available = casterProps:GetHeroicOrMaliceResources()
+                                    resourceName = casterProps:GetHeroicResourceName()
+                                end
+                                available = math.floor(available or 0)
+                                return gui.Label{
+                                    classes = {"improvementLabel", cond(available < costAmt, "unaffordable", nil)},
+                                    lmargin = 4,
+                                    text = string.format("(%d / %d %s)", costAmt, available, resourceName),
+                                }
+                            end)(),
+                        }
+                        pillPanel:SetClassTree("selected", m_value)
+                        children[#children+1] = pillPanel
+                    end
+                    element.children = children
+                end,
+            },
+
             --attack creatures vs objects panel
             gui.Panel {
                 width = "auto",
@@ -2615,30 +2733,46 @@ function ActivatedAbility:GetRange(casterCreature, castingSymbols, selfRange)
         result = result + self.rangeBonusFromReach
     end
 
+    if castingSymbols ~= nil and castingSymbols.abilityRangeBonus ~= nil then
+        result = result + castingSymbols.abilityRangeBonus
+    end
+
     return result
 end
 
 function ActivatedAbility:GetLineDistance(castingCreature, castingSymbols)
     local distance = self.lineDistance
+    local result
     if tonumber(distance) ~= nil then
-        return tonumber(distance)
+        result = tonumber(distance)
+    else
+        castingSymbols = castingSymbols or {}
+        local symbols = {
+            ability = self,
+            mode = castingSymbols.mode or 1,
+            charges = castingSymbols.charges or 0,
+            upcast = castingSymbols.upcast or 0,
+            invoker = castingSymbols.invoker,
+        }
+
+        if castingCreature == nil then
+            local _, _, range = string.find(distance, "^(%d+)")
+            result = tonumber(range) or 1
+        else
+            result = ExecuteGoblinScript(self.lineDistance, castingCreature:LookupSymbol(symbols))
+        end
     end
 
-    castingSymbols = castingSymbols or {}
-    local symbols = {
-        ability = self,
-        mode = castingSymbols.mode or 1,
-        charges = castingSymbols.charges or 0,
-        upcast = castingSymbols.upcast or 0,
-        invoker = castingSymbols.invoker,
-    }
+    return result
+end
 
-    if castingCreature == nil then
-        local _, _, range = string.find(selfRange, "^(%d+)")
-        return tonumber(range) or 1
+local g_baseGetRadius = ActivatedAbility.GetRadius
+function ActivatedAbility:GetRadius(casterCreature, castingSymbols)
+    local result = g_baseGetRadius(self, casterCreature, castingSymbols)
+    if castingSymbols ~= nil and castingSymbols.abilityRadiusBonus ~= nil then
+        result = result + castingSymbols.abilityRadiusBonus
     end
-
-    return ExecuteGoblinScript(self.lineDistance, castingCreature:LookupSymbol(symbols))
+    return result
 end
 
 ActivatedAbility.registeredProperties = {}

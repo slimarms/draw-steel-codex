@@ -2100,7 +2100,9 @@ CharacterModifier.TypeInfo.transform = {
 	RefreshGameState = function(creature, self)
 		if creature:has_key("transformInfo") then
 			local monsterInfo = assets.monsters[creature.transformInfo.transformid]
-			creature._tmp_appearance = monsterInfo.appearance
+			if self:try_get("gainCreatureVisuals") ~= false then
+				creature._tmp_appearance = monsterInfo.appearance
+			end
 			creature._tmp_creaturesize = monsterInfo.info.creatureSize
 		end
 	end,
@@ -2293,6 +2295,10 @@ CharacterModifier.TypeInfo.transform = {
 
 			local capabilities = {
 				{
+					id = "gainCreatureVisuals",
+					text = "Gain Creature Visuals",
+				},
+				{
 					id = "overrideMovement",
 					text = "Override Movement",
 				},
@@ -2345,6 +2351,7 @@ CharacterModifier.StandardModifiers.TransformIntoBeast = CharacterModifier.new{
 	name = "Transformation",
 	source = "Transformation",
 	description = "You are transformed into a different creature",
+	gainCreatureVisuals = true,
 	attributes = {
 		str = true,
 		dex = true,
@@ -3193,7 +3200,7 @@ function CharacterModifier:ConsumeResourceInternal(creature, modContext)
             note = modContext.modifier.name
         end
         creature:ConsumeSurges(cost, note)
-    elseif costType == "epicresource" and not self:try_get("overrideCost", false) then
+    elseif costType == "epic" and not self:try_get("overrideCost", false) then
         local charges = self:try_get("_tmp_symbols", {}).charges or 1
         local cost = ExecuteGoblinScript(self:try_get("resourceCostAmount", "1"), creature:LookupSymbol(self:try_get("_tmp_symbols", {})), 0)*charges
         creature:ConsumeResource(CharacterResource.epicResourceId, "unbounded", cost, string.format("%s", self.name))
@@ -3239,7 +3246,7 @@ function CharacterModifier:HasResourcesAvailable(creature)
         local resourcesAvailable = creature:GetAvailableSurges()
         local cost = ExecuteGoblinScript(self:try_get("resourceCostAmount", "1"), creature:LookupSymbol(self:try_get("_tmp_symbols", {})), 0)
         return cost <= resourcesAvailable
-    elseif costType == "epicresource" then
+    elseif costType == "epic" then
         local resourcesAvailable = creature:GetEpicResources()
         local cost = ExecuteGoblinScript(self:try_get("resourceCostAmount", "1"), creature:LookupSymbol(self:try_get("_tmp_symbols", {})), 0)
         return cost <= resourcesAvailable
@@ -3284,7 +3291,7 @@ function CharacterModifier:DescribeResourceAvailability(creature, charges, expec
         if costType == "surges" then
             resourcesAvailable = creature:GetAvailableSurges()
             resourceName = tr("Surges")
-        elseif costType == "epicresource" then
+        elseif costType == "epic" then
             resourcesAvailable = creature:GetEpicResources()
             resourceName = creature:GetEpicResourceName()
         else

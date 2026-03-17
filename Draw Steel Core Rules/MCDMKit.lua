@@ -1105,7 +1105,7 @@ Kit.helpSymbols = {
 		name = "Damage Bonus",
 		type = "function",
 		desc = "Damage bonus from the current kit. Returns the bonus to the specified tier result and damage type, melee, ranged, or supernatural. if no type is specified will return the highest damage of any type.",
-		example = {'kit.damage bonus(1, "melee")', 'kit.damage bonus(2)'},
+		examples = {'kit.damage bonus(1, "melee")', 'kit.damage bonus(2)'},
 	},
 }
 
