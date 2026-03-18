@@ -2359,7 +2359,7 @@ function TacPanel.TempStamBox()
             deselect = function(element)
                 element.placeholderText = placeholder
             end,
-            click = function(element)
+            select = function(element)
                 element.placeholderText = ""
             end,
             refreshCharacter = function(element, token)
@@ -5109,10 +5109,27 @@ function TacPanel.ConditionChip(condid, cond, token)
             gui.Panel{
                 classes = {"panel", "cond-setCaster", showSetCaster and "" or "collapsed"},
                 press = function(element)
+                    if element.data.invoking or gamehud.actionBarPanel.data.IsCastingSpell() then return end
+                    element.data.invoking = true
+                    element.thinkTime = 0.1
                     local ability = DeepCopy(MCDMUtils.GetStandardAbility("SetConditionCaster"))
                     ability.behaviors[1].condid = condid
-                    ActivatedAbilityInvokeAbilityBehavior.ExecuteInvoke(
-                        token, ability, token, "prompt", {}, {})
+                    ability.OnFinishCast = function()
+                        element.data.invoking = false
+                        element.thinkTime = nil
+                    end
+                    ActivatedAbilityInvokeAbilityBehavior.ExecuteInvoke(token, ability, token, "prompt", {}, {})
+                end,
+                think = function(element)
+                    if element.data.invoking and element.data.invokeReady then
+                        if not gamehud.actionBarPanel.data.IsCastingSpell() and not gamehud.rollDialog.data.IsShown() then
+                            element.data.invoking = false
+                            element.data.invokeReady = false
+                            element.thinkTime = nil
+                        end
+                    elseif element.data.invoking then
+                        element.data.invokeReady = true
+                    end
                 end,
                 linger = function(element)
                     gui.Tooltip("Set Caster")(element)
@@ -5121,7 +5138,7 @@ function TacPanel.ConditionChip(condid, cond, token)
                     bgimage = "icons/icon_app/icon_app_4.png",
                     width = 10, height = 10,
                     valign = "center", halign = "center",
-                    bgcolor = GOLD,
+                    bgcolor = TEMP_STAM,
                 },
             },
         },
@@ -7318,9 +7335,27 @@ local function InflictedConditionsPanel(m_token)
                         text = "Set Caster",
                         halign = "left",
                         press = function(element)
+                            if element.data.invoking or gamehud.actionBarPanel.data.IsCastingSpell() then return end
+                            element.data.invoking = true
+                            element.thinkTime = 0.1
                             local ability = DeepCopy(MCDMUtils.GetStandardAbility("SetConditionCaster"))
                             ability.behaviors[1].condid = element.parent.data.condid
+                            ability.OnFinishCast = function()
+                                element.data.invoking = false
+                                element.thinkTime = nil
+                            end
                             ActivatedAbilityInvokeAbilityBehavior.ExecuteInvoke(m_token, ability, m_token, "prompt", {}, {})
+                        end,
+                        think = function(element)
+                            if element.data.invoking and element.data.invokeReady then
+                                if not gamehud.actionBarPanel.data.IsCastingSpell() and not gamehud.rollDialog.data.IsShown() then
+                                    element.data.invoking = false
+                                    element.data.invokeReady = false
+                                    element.thinkTime = nil
+                                end
+                            elseif element.data.invoking then
+                                element.data.invokeReady = true
+                            end
                         end,
                         refresh = function(element)
                             if m_token == nil or not m_token.valid then
