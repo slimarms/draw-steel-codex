@@ -134,7 +134,7 @@ SpellRenderStyles = {
     },
     gui.Style {
         classes = { "abilitySection", "highlight" },
-        bgcolor = "red",
+        bgcolor = "#6666ff",
     },
 
     -- Implementation chip styles

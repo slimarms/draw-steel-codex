@@ -10,6 +10,8 @@ end
 local g_activeRoll = nil
 local g_activeRollArgs = nil
 
+local g_timelineHighlightColor = "#6666ff"
+
 local g_settingTriggerDelay = setting{
     id = "rolltriggerdelay",
     description = "Trigger Delay",
@@ -1678,6 +1680,21 @@ function GameHud.CreateEmbeddedRollDialog()
         height = "auto",
         maxHeight = 96,
         valign = "top",
+        classes = {"triggersContainer"},
+        bgimage = true,
+
+        styles = {
+            {
+                selectors = {"triggersContainer"},
+                bgcolor = "clear",
+            },
+            {
+                selectors = {"triggersContainer", "finishedRolling"},
+                bgcolor = g_timelineHighlightColor,
+            },
+        },
+
+
         triggersContainer,
         triggersTab,
 
@@ -1761,11 +1778,22 @@ function GameHud.CreateEmbeddedRollDialog()
     }
 
     m_rollResults = gui.Panel{
-        classes = { "hideWhenMinimized" },
+        classes = { "hideWhenMinimized", "resultsPanel" },
         width = "100%",
         height = "auto",
         halign = "left",
         valign = "top",
+        bgimage = true,
+        styles = {
+            {
+                selectors = {"resultsPanel"},
+                bgcolor = "clear",
+            },
+            {
+                selectors = {"resultsPanel", "rolling"},
+                bgcolor = g_timelineHighlightColor,
+            },
+        },
 
         m_rollResultsTab,
         m_customContainer,
@@ -2780,9 +2808,25 @@ function GameHud.CreateEmbeddedRollDialog()
         children = {
             alternateRollsBar,
             gui.Panel {
+                classes = {"rollPanel"},
                 width = "100%",
                 height = "auto",
                 flow = "vertical",
+                bgimage = true,
+                styles = {
+                    {
+                        selectors = {"rollPanel"},
+                        bgcolor = g_timelineHighlightColor,
+                    },
+                    {
+                        selectors = {"rollPanel", "rolling"},
+                        bgcolor = "clear",
+                    },
+                    {
+                        selectors = {"rollPanel", "finishedRolling"},
+                        bgcolor = "clear",
+                    },
+                },
 
                 --tab panel
                 gui.Panel{
