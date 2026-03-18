@@ -1430,13 +1430,8 @@ TacPanelStyles.AddConditionMenu = {
     },
     {
         selectors = {"label", "menu-option", "hover"},
-        bgcolor = GOLD_BORDER,
         brightness = 1.2,
         transitionTime = 0.15,
-    },
-    {
-        selectors = {"label", "menu-option", "searched"},
-        bgcolor = GOLD_BORDER,
     },
     {
         selectors = {"label", "menu-option", "press"},
@@ -2361,7 +2356,6 @@ function TacPanel.TempStamBox()
                         end,
                     }
                 end
-                element:FireEvent("deselect")
             end,
             defocus = function(element)
                 element.placeholderText = placeholder
@@ -5502,7 +5496,8 @@ function TacPanel.AddConditionMenu(args)
                 text = effect.name,
                 flow = "horizontal",
                 searchText = function(element, searchText)
-                    element:SetClass("collapsed", not string.starts_with(string.lower(element.text), searchText))
+                    local match = string.starts_with(string.lower(element.text), searchText)
+                    element:SetClass("collapsed", not match)
                 end,
                 press = function(element, durationOverride, riderid)
                     if (not durationOverride) and effect.indefiniteDuration then
@@ -5531,59 +5526,79 @@ function TacPanel.AddConditionMenu(args)
 
     table.sort(options, function(a, b) return a.text < b.text end)
 
+    local ongoingEffectsTable = dmhub.GetTable("characterOngoingEffects") or {}
+    local statusEffectData = {}
+    for k, effect in unhidden_pairs(ongoingEffectsTable) do
+        if effect.statusEffect then
+            statusEffectData[#statusEffectData + 1] = {key = k, effect = effect}
+        end
+    end
+    table.sort(statusEffectData, function(a, b) return a.effect.name < b.effect.name end)
+
+    local function makeStatusLabel(k, effect)
+        return gui.Label{
+            classes = {"menu-option"},
+            text = effect.name,
+            searchText = function(el, searchText)
+                el:SetClass("collapsed", not string.starts_with(string.lower(el.text), searchText))
+            end,
+            linger = function(el)
+                gui.Tooltip(string.format("%s: %s", effect.name, effect.description))(el)
+            end,
+            press = function(el)
+                for _, tok in ipairs(m_tokens) do
+                    tok:ModifyProperties{
+                        description = "Apply Status Effect",
+                        combine = true,
+                        execute = function()
+                            if tok == nil or not tok.valid then return end
+                            tok.properties:ApplyOngoingEffect(k)
+                        end,
+                    }
+                end
+                m_button.popup = nil
+            end,
+        }
+    end
+
+    local initialCount = math.min(10, #statusEffectData)
+    local initialLabels = {}
+    for i = 1, initialCount do
+        local d = statusEffectData[i]
+        initialLabels[i] = makeStatusLabel(d.key, d.effect)
+    end
+
     local statusContent = gui.Panel{
         width = "100%",
         height = "auto",
         flow = "vertical",
     }
 
-    local statusLoadButton = gui.Label{
-        classes = {"menu-suboption"},
-        text = "Load",
-        halign = "right",
-        hmargin = 8,
-        floating = true,
-        swallowPress = true,
-        press = function(element)
-            element:SetClassImmediate("disabled")
-            element.interactable = false
-            local ongoingEffectsTable = dmhub.GetTable("characterOngoingEffects") or {}
-            local statusEffectOptions = {}
-            for k, effect in unhidden_pairs(ongoingEffectsTable) do
-                if effect.statusEffect then
-                    statusEffectOptions[#statusEffectOptions + 1] = gui.Label{
-                        classes = {"menu-option"},
-                        text = effect.name,
-                        searchText = function(el, searchText)
-                            el:SetClass("collapsed", not string.starts_with(string.lower(el.text), searchText))
-                        end,
-                        linger = function(el)
-                            gui.Tooltip(string.format("%s: %s", effect.name, effect.description))(el)
-                        end,
-                        press = function(el)
-                            for _, tok in ipairs(m_tokens) do
-                                tok:ModifyProperties{
-                                    description = "Apply Status Effect",
-                                    combine = true,
-                                    execute = function()
-                                        if tok == nil or not tok.valid then return end
-                                        tok.properties:ApplyOngoingEffect(k)
-                                    end,
-                                }
-                            end
-                            m_button.popup = nil
-                        end,
-                    }
+    if #statusEffectData > initialCount then
+        local moreButton = gui.Label{
+            classes = {"menu-suboption"},
+            text = "More...",
+            halign = "left",
+            tmargin = 4,
+            lmargin = 8,
+            swallowPress = true,
+            press = function(element)
+                local allLabels = {}
+                for i = 1, #statusEffectData do
+                    local d = statusEffectData[i]
+                    allLabels[i] = makeStatusLabel(d.key, d.effect)
                 end
-            end
-            table.sort(statusEffectOptions, function(a, b) return a.text < b.text end)
-            statusContent.children = statusEffectOptions
-            element.selfStyle.hidden = true
-        end,
-    }
+                statusContent.children = allLabels
+                element:SetClass("collapsed", true)
+            end,
+        }
+        initialLabels[#initialLabels + 1] = moreButton
+    end
+
+    statusContent.children = initialLabels
 
     m_button.popup = gui.Panel{
-        styles = {TacPanelStyles.AddConditionMenu},
+        styles = {Styles.Default, TacPanelStyles.AddConditionMenu},
         floating = true,
         vscroll = true,
         hideObjectsOutOfScroll = true,
@@ -5620,10 +5635,7 @@ function TacPanel.AddConditionMenu(args)
                 for _, option in ipairs(options) do
                     if found == false and option:HasClass("collapsed") == false then
                         found = true
-                        option:SetClass("searched", true)
                         element.data.searchedOption = option
-                    else
-                        option:SetClass("searched", false)
                     end
                 end
             end,
@@ -5648,8 +5660,6 @@ function TacPanel.AddConditionMenu(args)
         gui.Label{
             classes = {"menu-heading"},
             text = "STATUS EFFECTS",
-            flow = "horizontal",
-            statusLoadButton,
         },
         statusContent,
     }
