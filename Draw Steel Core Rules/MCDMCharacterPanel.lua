@@ -6072,12 +6072,13 @@ This panel should do everything the previous panel did.
 If you find an issue, plese let us know via a bug report in the DMHub Discord.mod
 
 **Recent Fixes**
+* Temp Stam placeholder no longer turns into a P when you click into the field.
+* Corrected intermittent placeholder icon for heroic resource icon.
 * Clicking the "Set Caster" button again while still setting caster should not produce a LUA errror.
 * Resolved perf issue in loading condition list by making Status Effects load on demand (those will still take .5-1 second when you click Load).
 
 **Known Issues**
-* Lots of icons are placeholders, especially griffons, but also the light button and the icon in the temp stamina box.
-* The Temp Stam placeholder turns into a "p" when you click into the field.
+* Some icons are placeholders, especially griffons, but also the light button and the icon in the temp stamina box.
 ]]
     return TacPanel.CollapsiblePanel{
         title = "TESTING INFO",
