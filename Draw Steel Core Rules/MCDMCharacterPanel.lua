@@ -5855,7 +5855,7 @@ function TacPanel.PersistentAbilities()
                                         local targetToken = dmhub.GetTokenById(targetid)
                                         if targetToken ~= nil then
                                             el.data.targetingMarkers[#el.data.targetingMarkers+1] =
-                                                dmhub.MarkLineOfSight(token, targetToken)
+                                                dmhub.MarkLineOfSight(token, targetToken, token.properties:GetPierceWalls())
                                         end
                                     end
                                 end
@@ -6629,7 +6629,7 @@ local function PersistencePanel(m_token)
                                             local targetToken = dmhub.GetTokenById(targetid)
                                             if targetToken ~= nil then
                                                 element.data.targetingMarkers = element.data.targetingMarkers or {}
-                                                element.data.targetingMarkers[#element.data.targetingMarkers+1] = dmhub.MarkLineOfSight(m_token, targetToken)
+                                                element.data.targetingMarkers[#element.data.targetingMarkers+1] = dmhub.MarkLineOfSight(m_token, targetToken, m_token.properties:GetPierceWalls())
                                             end
                                         end
                                     end
