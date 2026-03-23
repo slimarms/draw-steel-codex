@@ -190,6 +190,48 @@ local function checkUnsavedChanges(writePanel, resultPanel, doc, onProceed)
     }
 end
 
+--- Builds a breadcrumb string from a document's folder ancestry including the document name
+--- Walks up assets.documentFoldersTable and built-in root folders
+--- @param doc table The document to build a breadcrumb for
+--- @return string breadcrumb The breadcrumb text (always includes at least the doc name)
+local function buildBreadcrumbText(doc)
+    local builtinFolderNames = {
+        public = "Shared Documents",
+        private = "Private Documents",
+        templates = "Templates",
+    }
+    if game and game.currentMapId then
+        builtinFolderNames[game.currentMapId] = "Map Documents"
+    end
+    if dmhub and dmhub.loginUserid then
+        builtinFolderNames[dmhub.loginUserid] = "My Private Documents"
+    end
+
+    local foldersTable = assets.documentFoldersTable or {}
+    local parts = {}
+    local folderId = doc.parentFolder
+    local count = 0
+    while folderId and folderId ~= "" and count < 20 do
+        local folder = foldersTable[folderId]
+        if folder and not folder.hidden then
+            parts[#parts + 1] = folder.description or folderId
+            folderId = folder.parentFolder
+        elseif builtinFolderNames[folderId] then
+            parts[#parts + 1] = builtinFolderNames[folderId]
+            break
+        else
+            break
+        end
+        count = count + 1
+    end
+    local reversed = {}
+    for i = #parts, 1, -1 do
+        reversed[#reversed + 1] = parts[i]
+    end
+    reversed[#reversed + 1] = "**" .. (doc.description or "Untitled") .. "**"
+    return table.concat(reversed, " > ")
+end
+
 function CustomDocument:CreateInterface(args)
     args = args or {}
     local readPanel = self:DisplayPanel()
@@ -203,14 +245,12 @@ function CustomDocument:CreateInterface(args)
     local m_titlePanel = args.titlePanel or gui.Label {
         lmargin = 6,
         halign = "left",
-        valign = "top",
         minWidth = "40%",
         maxWidth = "100%-240",
         textAlignment = "left",
         width = "auto",
         height = "auto",
         fontSize = 18,
-        tmargin = 4,
         textOverflow = "ellipsis",
         textWrap = false,
         text = self.description,
@@ -336,8 +376,6 @@ function CustomDocument:CreateInterface(args)
     end
 
     local m_controlMenuButtons = {}
-
-    local m_controlMenu
 
     -- Back button
     m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.SimpleIconButton {
@@ -489,16 +527,52 @@ function CustomDocument:CreateInterface(args)
         }
     end
 
-    m_controlMenu = gui.Panel {
-        hmargin = 2,
-        vmargin = 2,
-        halign = "right",
-        valign = "top",
+    local m_breadcrumb = gui.Label {
+        text = buildBreadcrumbText(self),
+        halign = "left",
+        valign = "center",
         width = "auto",
+        maxWidth = "60%",
         height = "auto",
-        flow = "horizontal",
-        children = m_controlMenuButtons,
+        fontSize = 13,
+        markdown = true,
+        color = "#999999",
+        lmargin = 8,
+        textOverflow = "ellipsis",
+        textWrap = false,
+        refreshNavButtons = function(element)
+            local dialogPanel = args.dialogPanel
+            if dialogPanel and dialogPanel.data and dialogPanel.data.currentDocId then
+                local docTable = dmhub.GetTable(CustomDocument.tableName) or {}
+                local currentDoc = docTable[dialogPanel.data.currentDocId]
+                if currentDoc then
+                    element.text = buildBreadcrumbText(currentDoc)
+                end
+            end
+        end,
+    }
 
+    local m_topBar = gui.Panel {
+        bgimage = true,
+        bgcolor = Styles.RichBlack02,
+        width = "100%",
+        height = 24,
+        halign = "center",
+        valign = "top",
+        flow = "horizontal",
+        cornerRadius = { x1 = 4, y1 = 4, x2 = 0, y2 = 0 },
+
+        m_breadcrumb,
+
+        gui.Panel {
+            halign = "right",
+            valign = "center",
+            width = "auto",
+            height = "auto",
+            flow = "horizontal",
+            hmargin = 2,
+            children = m_controlMenuButtons,
+        },
     }
 
     local monitorGame = nil
@@ -522,6 +596,7 @@ function CustomDocument:CreateInterface(args)
         height = "100%",
         halign = "left",
         valign = "top",
+        flow = "vertical",
         refreshGame = function(element)
             if self.readonly then
                 return
@@ -573,26 +648,15 @@ function CustomDocument:CreateInterface(args)
             end
         end,
 
-        gui.Panel {
-            bgimage = true,
-            bgcolor = Styles.RichBlack02,
-            width = "100%",
-            height = 32,
-            floating = true,
-            halign = "center",
-            valign = "top",
-            cornerRadius = { x1 = 4, y1 = 4, x2 = 0, y2 = 0 },
-
-        },
+        m_topBar,
 
         m_titlePanel,
 
         gui.Panel {
             width = "100%-24",
-            height = "100%-48",
+            height = "100%-56",
             vscroll = self.vscroll,
             halign = "center",
-            valign = "bottom",
             bmargin = 8,
             writePanel,
             readPanel,
@@ -609,7 +673,6 @@ function CustomDocument:CreateInterface(args)
                 element.children = children
             end,
         },
-        m_controlMenu,
     }
 
     return resultPanel
