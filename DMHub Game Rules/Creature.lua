@@ -2187,7 +2187,7 @@ function creature:GetModifiersForSavingThrowRoll(saveid, options)
 		local coverAmount = "none"
 
 		if casterToken ~= nil and ourToken ~= nil then
-			local coverInfo = dmhub.GetCoverInfo(casterToken, ourToken)
+			local coverInfo = dmhub.GetCoverInfo(casterToken, ourToken, casterToken.properties:GetPierceWalls())
 			if coverInfo ~= nil then
 				if coverInfo.cover == 1 then
 					coverTooltip = string.format("%s\n<color=#aaffaaff>There is a %s in the way, providing Half Cover.", coverTooltip, coverInfo.description)
@@ -3703,8 +3703,8 @@ function creature:GetActivatedAbilities(options)
 
 	if self:has_key("ongoingEffects") then
 		for i,cond in ipairs(self.ongoingEffects) do
-			if cond:try_get('endAbility') ~= nil and not cond:Expired() then
-				result[#result+1] = cond.endAbility
+			if cond:try_get('_tmp_endAbility') ~= nil and not cond:Expired() then
+				result[#result+1] = cond._tmp_endAbility
 			end
 		end
 	end
@@ -4341,6 +4341,7 @@ end
 function creature:GetCustomVisionSenses()
 	local result = {}
 	local darkvision = self:GetDarkvision()
+	local pierceWalls = self:GetPierceWalls() > 0
 
 	if darkvision ~= nil then
 		result[#result+1] = {
@@ -4348,7 +4349,7 @@ function creature:GetCustomVisionSenses()
 			radius = darkvision,
 			light = false,
 			dark = true,
-			penetrateWalls = false,
+			penetrateWalls = pierceWalls,
 			fieldOfView = true,
 		}
 	end
@@ -4363,7 +4364,7 @@ function creature:GetCustomVisionSenses()
 					radius = radius,
 					light = true,
 					dark = (v.type == "dark"),
-					penetrateWalls = v.penetrateWalls,
+					penetrateWalls = v.penetrateWalls or pierceWalls,
 					fieldOfView = v.fieldOfView,
 				}
 			end
@@ -5507,7 +5508,7 @@ function creature:GetModifiersForAttackAgainstUs(attacker, attack)
 		local coverTooltip = "The amount of cover the target has affects chance to hit."
 
 		if ourToken ~= nil and attackerToken ~= nil then
-			local coverInfo = dmhub.GetCoverInfo(attackerToken, ourToken)
+			local coverInfo = dmhub.GetCoverInfo(attackerToken, ourToken, attackerToken.properties:GetPierceWalls())
 			if coverInfo ~= nil then
 				if coverInfo.cover == 1 then
 					coverTooltip = string.format("%s\n<color=#ffaaaaff>There is a %s in the way, providing the target Half Cover.", coverTooltip, coverInfo.description)
@@ -6266,7 +6267,7 @@ function creature:ApplyOngoingEffect(ongoingEffectid, duration, casterInfo, opti
 					local condCasterInfo = cond:try_get("casterInfo")
 					if condCasterInfo ~= nil and condCasterInfo.tokenid == casterInfo.tokenid then
 						cond.stolenAbility = stolenAbility
-						cond.endAbility = ongoingEffect:GetEndAbility()
+						cond._tmp_endAbility = ongoingEffect:GetEndAbility()
 						cond.casterInfo = casterInfo
 						cond.seq = highestSeq + 1
 						if options.stacks == nil then
@@ -6294,7 +6295,7 @@ function creature:ApplyOngoingEffect(ongoingEffectid, duration, casterInfo, opti
                 end
 
 				cond.stolenAbility = stolenAbility
-				cond.endAbility = ongoingEffect:GetEndAbility()
+				cond._tmp_endAbility = ongoingEffect:GetEndAbility()
 				cond.casterInfo = casterInfo
 				cond.seq = highestSeq + 1
 				if options.stacks == nil then
@@ -6321,7 +6322,7 @@ function creature:ApplyOngoingEffect(ongoingEffectid, duration, casterInfo, opti
                 end
 
 				cond.stolenAbility = stolenAbility
-				cond.endAbility = ongoingEffect:GetEndAbility()
+				cond._tmp_endAbility = ongoingEffect:GetEndAbility()
 				cond.casterInfo = casterInfo
                 cond.bondid = bondid
 				cond.seq = highestSeq + 1
@@ -6337,7 +6338,6 @@ function creature:ApplyOngoingEffect(ongoingEffectid, duration, casterInfo, opti
 			ongoingEffectid = ongoingEffectid,
 			duration = duration,
 			stolenAbility = stolenAbility,
-			endAbility = ongoingEffect:GetEndAbility(),
 			casterInfo = casterInfo,
 			stacks = cond(options.stacks == nil, 1, options.stacks),
 			seq = highestSeq + 1,
@@ -6347,6 +6347,7 @@ function creature:ApplyOngoingEffect(ongoingEffectid, duration, casterInfo, opti
 		}
 
 		result = ongoingEffects[#ongoingEffects]
+		result._tmp_endAbility = ongoingEffect:GetEndAbility()
 	end
 
     result.casterSet = casterSet

@@ -1351,10 +1351,16 @@ creature.RegisterSymbol {
     lookup = function(c)
         if c:has_key("inflictedConditions") then
             local conditions = c.inflictedConditions
-            for _, cond in ipairs(conditions) do
+            for _, cond in pairs(conditions) do
                 if cond.duration == "save" then
                     return true
                 end
+            end
+        end
+
+        for _, effectInstance in ipairs(c:ActiveOngoingEffects()) do
+            if effectInstance.removeOnSave then
+                return true
             end
         end
 
@@ -1463,7 +1469,7 @@ local function GetEnemyCreaturesAtLoc(token, allowedTokenIds, loc, result)
     local tokensAtLoc = dmhub.GetTokensAtLoc(loc)
     if tokensAtLoc ~= nil then
         for _, otherTok in ipairs(tokensAtLoc) do
-            if token.charid ~= otherTok.charid and (allowedTokenIds == nil or allowedTokenIds[otherTok.charid]) and token:IsFriend(otherTok) == false and otherTok:GetLineOfSight(token) > 0 and (not otherTok.properties:IsDead()) then
+            if token.charid ~= otherTok.charid and (allowedTokenIds == nil or allowedTokenIds[otherTok.charid]) and token:IsFriend(otherTok) == false and otherTok:GetLineOfSight(token, otherTok.properties:GetPierceWalls()) > 0 and (not otherTok.properties:IsDead()) then
                 local alreadyFound = false
                 for _, existing in ipairs(result) do
                     if existing.charid == otherTok.charid then
@@ -1609,7 +1615,7 @@ function creature:GetFlankingTokens(tokensOverride)
 
     --remove any enemies that we don't have line of sight to or that can't grant flanking.
     for i = #adjacentEnemies, 1, -1 do
-        local los = adjacentEnemies[i]:GetLineOfSight(token)
+        local los = adjacentEnemies[i]:GetLineOfSight(token, adjacentEnemies[i].properties:GetPierceWalls())
         if los <= 0 or not adjacentEnemies[i].properties:CanGrantFlanking() then
             table.remove(adjacentEnemies, i)
         end
@@ -1724,6 +1730,10 @@ end
 
 function creature:GrantFlankingToAllies()
     return self:CalculateNamedCustomAttribute("Grant Flanking to Allies") > 0
+end
+
+function creature:GetPierceWalls()
+    return self:CalculateNamedCustomAttribute("Pierce Walls")
 end
 
 function creature:Echelon()
@@ -2251,8 +2261,8 @@ function creature:GetActivatedAbilities(options)
 
     if self:has_key("ongoingEffects") then
         for i, cond in ipairs(self.ongoingEffects) do
-            if cond:try_get('endAbility') ~= nil and not cond:Expired() then
-                result[#result + 1] = cond.endAbility
+            if cond:try_get('_tmp_endAbility') ~= nil and not cond:Expired() then
+                result[#result + 1] = cond._tmp_endAbility
             elseif cond:try_get("stolenAbility") ~= nil and not cond:Expired() then
                 result[#result + 1] = cond.stolenAbility
             end
@@ -2488,6 +2498,43 @@ creature.RegisterSymbol {
         name = "Concealed",
         type = "boolean",
         desc = "True if the creature is in an area that is concealed.",
+    }
+}
+
+creature.RegisterSymbol {
+    symbol = "indifficultterrain",
+    lookup = function(c)
+        -- Flying or burrowing creatures are not affected by difficult terrain.
+        local moveType = c:CurrentMoveType()
+        if moveType == "fly" or moveType == "burrow" then
+            return false
+        end
+
+        -- Creatures that ignore difficult terrain are not affected.
+        if c:IgnoreDifficultTerrain() then
+            return false
+        end
+
+        local token = dmhub.LookupToken(c)
+        if token == nil or not token.valid then
+            return false
+        end
+
+        -- Check all occupied tiles for difficult terrain (tile rules + auras).
+        local locs = token.locsOccupying
+        for _, loc in ipairs(locs) do
+            if dmhub.IsLocDifficultTerrain(loc) then
+                return true
+            end
+        end
+
+        return false
+    end,
+    help = {
+        name = "In Difficult Terrain",
+        type = "boolean",
+        desc = "True if this creature is currently in difficult terrain that affects it. False if the creature is flying, burrowing, or ignores difficult terrain.",
+        seealso = {},
     }
 }
 
@@ -3181,6 +3228,11 @@ function creature:RollCustomPowerTableTest(title, characteristics, skills, tiers
                 attrid = id
             end
         end
+    end
+
+    if attrid == nil then
+        printf("RollCustomPowerTableTest: no matching characteristic for '%s'", title)
+        return
     end
 
     local attrInfo = creature.attributesInfo[attrid]
