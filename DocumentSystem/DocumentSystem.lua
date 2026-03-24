@@ -233,7 +233,7 @@ local function buildBreadcrumbText(doc)
     return table.concat(reversed, " > ")
 end
 
-local function getAccessibleRoots()
+function CustomDocument.GetAccessibleRoots()
     local roots = {}
     roots["public"] = true
     if dmhub.isDM then
@@ -250,7 +250,7 @@ local function getAccessibleRoots()
     return roots
 end
 
-local function isDocInAccessibleRoot(doc, accessibleRoots)
+function CustomDocument.IsDocInAccessibleRoot(doc, accessibleRoots)
     local allFolders = assets.documentFoldersTable or {}
     local pf = doc.parentFolder or "private"
     local count = 0
@@ -519,6 +519,7 @@ function CustomDocument:CreateInterface(args)
     local m_playerPreviewButton
 
     local m_titlePanel = args.titlePanel or gui.Panel {
+        classes = {cond(self:HaveEditPermissions(), "", "collapsed")},
         halign = "right",
         valign = "center",
         width = "auto",
@@ -883,10 +884,10 @@ function CustomDocument:CreateInterface(args)
             end
 
             local customDocs = dmhub.GetTable(CustomDocument.tableName) or {}
-            local accessibleRoots = getAccessibleRoots()
+            local accessibleRoots = CustomDocument.GetAccessibleRoots()
             local results = {}
             for docId, doc in pairs(customDocs) do
-                if not doc.hidden and (dmhub.isDM or not doc.hiddenFromPlayers) and isDocInAccessibleRoot(doc, accessibleRoots) then
+                if not doc.hidden and (dmhub.isDM or not doc.hiddenFromPlayers) and CustomDocument.IsDocInAccessibleRoot(doc, accessibleRoots) then
                     local titleMatch = string.find(string.lower(doc.description or ""), text, 1, true)
                     local contentMatch = doc.MatchesSearch and doc:MatchesSearch(text)
                     if titleMatch or contentMatch then
