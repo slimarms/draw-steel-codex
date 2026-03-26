@@ -1828,7 +1828,7 @@ function TacPanel.SurgesBox()
             },
             gui.Input{
                 classes = {"tokenbox", "value"},
-                text = "",
+                text = "--",
                 characterLimit = 2,
                 selectAllOnFocus = true,
                 placeholderText = "--",
@@ -1855,7 +1855,7 @@ function TacPanel.SurgesBox()
                     local q = dmhub.initiativeQueue
                     if q == nil or q.hidden then
                         element.editable = false
-                        element.textNoNotify = ""
+                        element.textNoNotify = "--"
                     else
                         element.editable = true
                         element.textNoNotify = tostring(token.properties:GetAvailableSurges())
@@ -1990,7 +1990,7 @@ function TacPanel.HeroicResourcesBox()
             },
             gui.Input{
                 classes = {"tokenbox", "value", "heroic-resources"},
-                text = "",
+                text = "--",
                 characterLimit = 2,
                 selectAllOnFocus = true,
                 placeholderText = "--",
@@ -2000,7 +2000,7 @@ function TacPanel.HeroicResourcesBox()
                     local q = dmhub.initiativeQueue
                     if q == nil or q.hidden then
                         element.editable = false
-                        element.textNoNotify = ""
+                        element.textNoNotify = "--"
                     else
                         element.editable = true
                         element.textNoNotify = tostring(token.properties:GetHeroicOrMaliceResources())
@@ -5140,6 +5140,12 @@ function TacPanel.EffectChip(args)
     children[#children+1] = gui.Label{
         classes = {"label", "cond-name"},
         text = args.label,
+        editable = args.onEdit ~= nil,
+        characterLimit = args.onEdit and 60 or nil,
+        textWrap = args.onEdit and false or nil,
+        change = args.onEdit and function(element)
+            args.onEdit(element, args.token)
+        end or nil,
     }
 
     if args.extraChildren then
@@ -5362,6 +5368,22 @@ function TacPanel.CustomConditionChip(key, entry, token)
         onRemove = function(tok)
             local cc = tok.properties:get_or_add("customConditions", {})
             cc[key] = nil
+        end,
+        onEdit = function(element, tok)
+            local newText = trim(element.text)
+            tok:ModifyProperties{
+                description = "Change Custom Condition",
+                execute = function()
+                    local cc = tok.properties:get_or_add("customConditions", {})
+                    cc[key] = nil
+                    if newText ~= "" then
+                        local newKey = dmhub.GenerateGuid()
+                        local newEntry = DeepCopy(entry)
+                        newEntry.text = newText
+                        cc[newKey] = newEntry
+                    end
+                end,
+            }
         end,
     }
 end
