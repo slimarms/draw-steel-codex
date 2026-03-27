@@ -1974,6 +1974,24 @@ ActionMenu = function()
     return resultPanel
 end
 
+local function AddModifierLabelsToMarker(markers, sourceToken, targetToken, ability)
+    if markers == nil or ability == nil or sourceToken == nil or targetToken == nil then
+        return
+    end
+
+    local modifiers = sourceToken.properties:DescribeModifiersOnTarget(ability, targetToken)
+    for _,m in ipairs(modifiers) do
+        local modInfo = ActivatedAbilityPowerRollBehavior.s_modificationTypesById[m.modifier.modtype]
+        local labelType = "neutral"
+        if modInfo ~= nil and modInfo.value > 0 then
+            labelType = "buff"
+        elseif modInfo ~= nil and modInfo.value < 0 then
+            labelType = "debuff"
+        end
+        markers:AddLabel(m.modifier.name, labelType)
+    end
+end
+
 local m_targetLineOfSightRays = {}
 
 local function FreeTargetLineOfSightRays()
@@ -1993,11 +2011,17 @@ local function SetTargetLineOfSightRayForKey(key, ray)
 end
 
 ---@param rays table<{a: Token, b: Token}>[]
-local function ReplaceTargetLineOfSightRays(rays)
+---@param ability ActivatedAbility|nil
+local function ReplaceTargetLineOfSightRays(rays, ability)
     local t = {}
     for i, ray in ipairs(rays) do
         local key = string.format("%s-%s", ray.a.id, ray.b.id)
-        t[key] = m_targetLineOfSightRays[key] or dmhub.MarkLineOfSight(ray.a, ray.b, ray.a.properties:GetPierceWalls())
+        if m_targetLineOfSightRays[key] ~= nil then
+            t[key] = m_targetLineOfSightRays[key]
+        else
+            t[key] = dmhub.MarkLineOfSight(ray.a, ray.b, ray.a.properties:GetPierceWalls())
+            AddModifierLabelsToMarker(t[key], ray.a, ray.b, ability)
+        end
         m_targetLineOfSightRays[key] = nil
     end
 
@@ -3752,6 +3776,7 @@ CreateAbilityController = function()
                 for _, ray in ipairs(rays) do
                     if ray.b.id == targetToken.id and m_targetLineOfSightRays[string.format("%s-%s", ray.a.id, ray.b.id)] == nil then
                         m_markLineOfSight = dmhub.MarkLineOfSight(ray.a, ray.b, ray.a.properties:GetPierceWalls())
+                        AddModifierLabelsToMarker(m_markLineOfSight, ray.a, ray.b, g_currentAbility)
                         m_markLineOfSightToken = targetToken
                         m_markLineOfSightSourceToken = g_token
                         break
@@ -3761,6 +3786,7 @@ CreateAbilityController = function()
                 --we just target from the source to the target.
                 m_markLineOfSight = dmhub.MarkLineOfSight(g_token, targetToken, g_token.properties:GetPierceWalls())
                 if m_markLineOfSight ~= nil then
+                    AddModifierLabelsToMarker(m_markLineOfSight, g_token, targetToken, g_currentAbility)
                     m_markLineOfSightToken = targetToken
                     m_markLineOfSightSourceToken = g_token
                 end
@@ -4717,7 +4743,7 @@ CalculateSpellTargeting = function(forceCast, initialSetup)
         --if this spell dictates specific targeting rays to use.
         local rays = g_currentAbility:GetTargetingRays(g_token, range, g_currentSymbols, targets)
         if rays ~= nil then
-            ReplaceTargetLineOfSightRays(rays)
+            ReplaceTargetLineOfSightRays(rays, g_currentAbility)
 
             --record the targeting as symbols.
             local targetPairs = {}
