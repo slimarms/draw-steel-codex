@@ -3577,8 +3577,8 @@ function creature.TakeDamage(self, amount, note, info)
         local attackerClassInfo = nil
         local attackerLabel = "unknown"
         if info.attacker ~= nil and info.attacker ~= self then
-            attackerClassInfo = info.attacker.properties:IsHero() and info.attacker.properties:GetClass() or nil
-            attackerLabel = attackerClassInfo and attackerClassInfo.name or info.attacker.properties:try_get("monster_type", "monster")
+            attackerClassInfo = info.attacker:IsHero() and info.attacker:GetClass() or nil
+            attackerLabel = attackerClassInfo and attackerClassInfo.name or info.attacker:try_get("monster_type", "monster")
         end
         local targetClassInfo = self:IsHero() and self:GetClass() or nil
         local abilityName = nil
@@ -3632,6 +3632,33 @@ function creature.TakeDamage(self, amount, note, info)
         if not isDeadAtStart then
             if self:IsHero() then
                 audio.DispatchSoundEvent("Notify.Status_Dead_Hero", {})
+
+                local heroClass = self:GetClass()
+                local attackerLabel = nil
+                if eventArg.attacker ~= nil then
+                    local aClassInfo = eventArg.attacker:IsHero() and eventArg.attacker:GetClass() or nil
+                    attackerLabel = aClassInfo and aClassInfo.name or eventArg.attacker:try_get("monster_type", "monster")
+                end
+                local abilityName = nil
+                if eventArg.ability ~= nil then
+                    abilityName = eventArg.ability.name
+                end
+                local roundNumber = nil
+                if dmhub.initiativeQueue ~= nil then
+                    roundNumber = dmhub.initiativeQueue.round
+                end
+
+                track("hero_dead", {
+                    class = heroClass and heroClass.name or "unknown",
+                    level = self:try_get("level", 1),
+                    ancestry = self:try_get("ancestry", "unknown"),
+                    damage = eventArg.damage,
+                    damageType = eventArg.damagetype or "untyped",
+                    attacker = attackerLabel,
+                    ability = abilityName,
+                    roundNumber = roundNumber,
+                    dailyLimit = 20,
+                })
             else
                 audio.DispatchSoundEvent("Notify.Status_Dead_Enemy", {})
             end
@@ -3655,6 +3682,7 @@ function creature.TakeDamage(self, amount, note, info)
                 if dmhub.initiativeQueue ~= nil then
                     roundNumber = dmhub.initiativeQueue.round
                 end
+
                 track("hero_down", {
                     class = heroClass and heroClass.name or "unknown",
                     level = self:try_get("level", 1),

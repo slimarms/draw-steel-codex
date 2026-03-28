@@ -659,6 +659,119 @@ function GameHud.CreateEmbeddedRollDialog()
     end
 
 
+    -- Update the targeting arrow labels for the current target based on enabled modifiers.
+    local function UpdateArrowLabelsForCurrentTarget()
+        if m_options == nil or m_options.markLineOfSight == nil then
+            return
+        end
+
+        -- Find the ray for the current target.
+        local casterToken = m_options.creature and dmhub.LookupToken(m_options.creature) or nil
+        if casterToken == nil or targetCreature == nil then
+            return
+        end
+
+        local targetToken = dmhub.LookupToken(targetCreature)
+        if targetToken == nil then
+            return
+        end
+
+        local key = string.format("%s-%s", casterToken.charid, targetToken.charid)
+        local markers = m_options.markLineOfSight[key]
+        if markers == nil then
+            return
+        end
+
+        -- Clear existing labels and rebuild from enabled modifiers.
+        markers:ClearLabels()
+
+        local enabledModifiers = GetEnabledModifiers()
+        for _, mod in ipairs(enabledModifiers) do
+            local modInfo = ActivatedAbilityPowerRollBehavior.s_modificationTypesById[mod.modifier.modtype]
+            if modInfo ~= nil and not modInfo.hideText then
+                local labelType = "neutral"
+                if modInfo.value > 0 then
+                    labelType = "buff"
+                elseif modInfo.value < 0 then
+                    labelType = "debuff"
+                end
+                markers:AddLabel(mod.modifier.name, labelType)
+            end
+        end
+    end
+
+    -- After the roll is made, replace all arrow labels with tier results.
+    local function UpdateArrowLabelsWithTierResults()
+        if m_options == nil or m_options.markLineOfSight == nil then
+            return
+        end
+        if m_multitargets == nil or m_rollInfo == nil then
+            return
+        end
+
+        local casterToken = m_options.creature and dmhub.LookupToken(m_options.creature) or nil
+        if casterToken == nil then
+            return
+        end
+
+        for _, target in ipairs(m_multitargets) do
+            if target.token ~= nil and target.token.valid then
+                local key = string.format("%s-%s", casterToken.charid, target.token.charid)
+                local markers = m_options.markLineOfSight[key]
+                if markers ~= nil then
+                    markers:ClearLabels()
+
+                    -- Calculate tier for this target using their boons/banes.
+                    local natRoll = m_rollInfo.naturalRoll or 0
+                    local correctedTotal = 0
+                    if natRoll > 0 and m_rollNonDiceModifier ~= nil then
+                        correctedTotal = natRoll + m_rollNonDiceModifier
+                    else
+                        correctedTotal = m_rollInfo.total or 0
+                    end
+
+                    local tierRollInfo = {
+                        total = correctedTotal,
+                        boons = (m_rollInfo.boons or 0) + (target.boons or 0),
+                        banes = (m_rollInfo.banes or 0) + (target.banes or 0),
+                        tiers = m_rollInfo.tiers,
+                        autosuccess = m_rollInfo.autosuccess,
+                        autofailure = m_rollInfo.autofailure,
+                        nottierone = m_rollInfo.nottierone,
+                        nottierthree = m_rollInfo.nottierthree,
+                    }
+                    local tier = (rollProperties and rollProperties:try_get("overrideTier"))
+                                 or RollUtils.DiceResultToTier(tierRollInfo)
+
+                    -- Get the power table text for this tier and extract a concise label.
+                    local tierText = rollProperties and rollProperties.tiers and rollProperties.tiers[tier]
+                    local label = "Tier " .. tostring(tier)
+                    if tierText ~= nil then
+                        -- Take first clause (before semicolon), strip markup tags.
+                        local firstClause = string.match(tierText, "^([^;]+)") or tierText
+                        -- Strip {#...}, {!...}, and other curly-brace markup.
+                        firstClause = string.gsub(firstClause, "{[^}]*}", "")
+                        -- Strip any remaining rich text tags like <b>, </b>, etc.
+                        firstClause = string.gsub(firstClause, "<[^>]*>", "")
+                        firstClause = trim(firstClause)
+                        if firstClause ~= "" then
+                            label = firstClause
+                        end
+                    end
+
+                    markers:AddLabel(label, "result")
+
+                    -- Show surge indicator if surges are allocated to this target.
+                    local surges = target.surges or 0
+                    if surges > 0 then
+                        local surgeText = surges == 1 and "+1 Surge" or string.format("+%d Surges", surges)
+                        markers:AddLabel(surgeText, "buff")
+                    end
+                end
+            end
+        end
+    end
+
     --this is the current 'base roll' that is being calculated based on.
     local baseRoll = '1d6'
     CalculateRollText = function(calculationOptions)
@@ -801,6 +914,16 @@ function GameHud.CreateEmbeddedRollDialog()
         -- to coalesce rapid successive calls (e.g. during RecalculateMultiTargets).
         if resultPanel.valid and not resultPanel:HasClass("hidden") then
             resultPanel:ScheduleEvent("broadcastDialogState", 0.05)
+        end
+
+        -- Update targeting arrow labels: before the roll show modifiers,
+        -- after the roll show the tier result text.
+        if resultPanel.valid then
+            if resultPanel:HasClass("finishedRolling") then
+                UpdateArrowLabelsWithTierResults()
+            else
+                UpdateArrowLabelsForCurrentTarget()
+            end
         end
 
         return roll
@@ -3387,6 +3510,10 @@ function GameHud.CreateEmbeddedRollDialog()
 
             coroutineOwner = nil,
 
+            UpdateArrowLabels = function()
+                UpdateArrowLabelsWithTierResults()
+            end,
+
             ShowDialog = function(options)
                 if not resultPanel.valid then
                     return
@@ -4102,6 +4229,7 @@ function GameHud.CreateEmbeddedRollDialog()
                         if showingDialog then
                             resultPanel:SetClassTree("rolling", false)
                             resultPanel:SetClassTree("finishedRolling", true)
+                            UpdateArrowLabelsWithTierResults()
                             BroadcastDialogState()
                             resultPanel:SetClassTree("rollPending", true)
                             if m_triggerProgressDice ~= nil then

@@ -1979,12 +1979,33 @@ ActionMenu = function()
     return resultPanel
 end
 
+-- Determine arrow color based on the ability and the relationship between caster and target.
+-- Red = strikes/enemy-only abilities, Green = ally-only, Black = mixed/other.
+local function GetArrowColor(ability, sourceToken, targetToken)
+    if ability == nil or sourceToken == nil or targetToken == nil then
+        return "red"
+    end
+
+    if ability:HasKeyword("Strike") then
+        return "red"
+    end
+
+    -- Check if this ability targets allies, enemies, or both based on the target filter.
+    local isFriend = sourceToken.properties:IsFriend(targetToken.properties)
+    if isFriend then
+        return "green"
+    else
+        return "red"
+    end
+end
+
 local function AddModifierLabelsToMarker(markers, sourceToken, targetToken, ability)
     if markers == nil or ability == nil or sourceToken == nil or targetToken == nil then
         return
     end
 
     local modifiers = sourceToken.properties:DescribeModifiersOnTarget(ability, targetToken)
+    printf("LABEL_DEBUG: AddModifierLabelsToMarker called, markers=%s, #modifiers=%d", tostring(markers), #modifiers)
     for _,m in ipairs(modifiers) do
         local modInfo = ActivatedAbilityPowerRollBehavior.s_modificationTypesById[m.modifier.modtype]
         local labelType = "neutral"
@@ -1993,6 +2014,7 @@ local function AddModifierLabelsToMarker(markers, sourceToken, targetToken, abil
         elseif modInfo ~= nil and modInfo.value < 0 then
             labelType = "debuff"
         end
+        printf("LABEL_DEBUG: AddLabel('%s', '%s') modtype='%s'", m.modifier.name, labelType, tostring(m.modifier.modtype))
         markers:AddLabel(m.modifier.name, labelType)
     end
 end
@@ -2024,7 +2046,7 @@ local function ReplaceTargetLineOfSightRays(rays, ability)
         if m_targetLineOfSightRays[key] ~= nil then
             t[key] = m_targetLineOfSightRays[key]
         else
-            t[key] = dmhub.MarkLineOfSight(ray.a, ray.b, ray.a.properties:GetPierceWalls())
+            t[key] = dmhub.MarkLineOfSight(ray.a, ray.b, ray.a.properties:GetPierceWalls(), GetArrowColor(ability, ray.a, ray.b))
             AddModifierLabelsToMarker(t[key], ray.a, ray.b, ability)
         end
         m_targetLineOfSightRays[key] = nil
@@ -3780,7 +3802,7 @@ CreateAbilityController = function()
                 --new one to highlight and maintain any existing ones.
                 for _, ray in ipairs(rays) do
                     if ray.b.id == targetToken.id and m_targetLineOfSightRays[string.format("%s-%s", ray.a.id, ray.b.id)] == nil then
-                        m_markLineOfSight = dmhub.MarkLineOfSight(ray.a, ray.b, ray.a.properties:GetPierceWalls())
+                        m_markLineOfSight = dmhub.MarkLineOfSight(ray.a, ray.b, ray.a.properties:GetPierceWalls(), GetArrowColor(g_currentAbility, ray.a, ray.b))
                         AddModifierLabelsToMarker(m_markLineOfSight, ray.a, ray.b, g_currentAbility)
                         m_markLineOfSightToken = targetToken
                         m_markLineOfSightSourceToken = g_token
@@ -3789,7 +3811,7 @@ CreateAbilityController = function()
                 end
             else
                 --we just target from the source to the target.
-                m_markLineOfSight = dmhub.MarkLineOfSight(g_token, targetToken, g_token.properties:GetPierceWalls())
+                m_markLineOfSight = dmhub.MarkLineOfSight(g_token, targetToken, g_token.properties:GetPierceWalls(), GetArrowColor(g_currentAbility, g_token, targetToken))
                 if m_markLineOfSight ~= nil then
                     AddModifierLabelsToMarker(m_markLineOfSight, g_token, targetToken, g_currentAbility)
                     m_markLineOfSightToken = targetToken
