@@ -5774,6 +5774,24 @@ function TacPanel.AurasEmitting()
                         }
                     end,
                 }
+                chipChildren[#chipChildren+1] = gui.Panel{
+                    classes = {"panel", "cond-remove"},
+                    press = function(element)
+                        token:ModifyProperties{
+                            description = "Remove Aura",
+                            execute = function()
+                                token.properties:RemoveAura(auraid)
+                            end,
+                        }
+                    end,
+                    linger = function(element)
+                        gui.Tooltip("End Aura")(element)
+                    end,
+                    gui.Label{
+                        classes = {"label", "cond-remove"},
+                        text = "X",
+                    },
+                }
                 local chipArgs = {
                     classes = {"panel", "cond-chip"},
                     data = { targetingMarkers = {} },
