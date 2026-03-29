@@ -606,6 +606,7 @@ local function ActionBarDrawer(args)
 
 
         refresh = function(element)
+            if g_token == nil then return end
             local newToken = g_token.charid ~= element.data.lastcharid
 
             element.data.lastcharid = g_token.charid
@@ -849,6 +850,7 @@ local function ActionBarDrawer(args)
                 m_usedAbilityIcon,
                 swallowPress = true,
                 press = function(element)
+                    if g_creature == nil or g_token == nil then return end
                     if m_resourceid ~= nil then
                         local usage = g_creature:GetResourceUsage(m_resourceid, m_resourceInfo.usageLimit)
                         local available = (g_resources[m_resourceid] or 0) - usage
@@ -1291,7 +1293,7 @@ local function AbilityHeading(args)
         press = function(element)
             audio.FireSoundEvent("Mouse.Click")
             --this will be adopted by the ability controller
-            assert(g_abilityController ~= nil)
+            if g_abilityController == nil then return end
             local menu = element:FindParentWithClass("actionMenu")
             if menu ~= nil then
                 print("MENU:: ONCAST")
@@ -1754,6 +1756,7 @@ ActionMenu = function()
         bold = true,
 
         press = function(element)
+            if g_token == nil then return end
             g_token:ModifyProperties {
                 description = "Manually Set Trigger Resource",
                 execute = function()
@@ -1864,7 +1867,7 @@ ActionMenu = function()
 
             g_triggerPanel:SetClass("hidden", true)
 
-            g_abilityController:FireEvent("cancelCasting")
+            if g_abilityController ~= nil then g_abilityController:FireEvent("cancelCasting") end
 
             --parent to the drawer firing us.
             element:Unparent()
@@ -2464,7 +2467,7 @@ local function CreateAltitudeController()
                     end
 
                     if element.data.currentLocInfo.loc ~= nil then
-                        assert(m_allowedAltitudeCalculator ~= nil, "Allowed altitude calculator is not set.")
+                        if m_allowedAltitudeCalculator == nil then return end
                         local minAltitude, maxAltitude = m_allowedAltitudeCalculator(element.data.currentLocInfo.loc)
                         alt = math.clamp(alt, minAltitude, maxAltitude)
                     end
@@ -2512,7 +2515,7 @@ local function CreateAltitudeController()
                 if info.loc == nil then
                     return
                 end
-                assert(m_allowedAltitudeCalculator ~= nil, "Allowed altitude calculator is not set.")
+                if m_allowedAltitudeCalculator == nil then return end
                 local minAltitude, maxAltitude = m_allowedAltitudeCalculator(info.loc)
                 local target = m_altitudeController.data.target
                 local alt = info.loc.altitude
@@ -2866,8 +2869,8 @@ CreateAbilityController = function()
         text = "Confirm",
         classes = { 'collapsed' },
         press = function(element)
-            assert(g_currentAbility ~= nil)
-            assert(g_abilityController ~= nil)
+            if g_currentAbility == nil then return end
+            if g_abilityController == nil then return end
 
             if g_currentAbility.targetType == 'all' or g_currentAbility.targetType == 'map' or g_currentAbility.targetType == 'areatemplate' then
                 --for 'all' types we have a fake map press. The map parameters don't matter.
@@ -2952,6 +2955,7 @@ CreateAbilityController = function()
                         end,
 
                         press = function(element)
+                            if g_currentAbility == nil then return end
                             g_currentSymbols.mode = i
 
                             g_currentAbility = g_currentAbility:SwitchModes(i)
@@ -3088,7 +3092,7 @@ CreateAbilityController = function()
         halign = "center",
         classes = { 'collapsed' },
         press = function(element)
-            assert(g_abilityController ~= nil)
+            if g_abilityController == nil then return end
             g_abilityController:FireEvent("cancelCasting")
         end,
     }
@@ -3186,7 +3190,7 @@ CreateAbilityController = function()
         },
 
         focusspell = function(element)
-            assert(g_token ~= nil)
+            if g_token == nil then return end
             if g_currentAbility == nil or g_currentAbility.channeledResource == "none" then
                 element:SetClass("collapsed", true)
                 return
@@ -3261,8 +3265,8 @@ CreateAbilityController = function()
         end,
 
         select = function(element, charges)
-            assert(g_channeledResourcePanel ~= nil)
-            assert(g_currentAbility ~= nil)
+            if g_channeledResourcePanel == nil then return end
+            if g_currentAbility == nil then return end
 
             --recalculate with the new cost proposal.
             g_currentCostProposal = g_currentAbility:GetCost(g_token, { charges = charges, mode = g_currentSymbols.mode })
@@ -3364,7 +3368,8 @@ CreateAbilityController = function()
 
             args = args or {}
 
-            assert(g_actionBar ~= nil)
+            if g_actionBar == nil then return end
+            if g_token == nil then return end
             g_actionBar:FireEventTree("closemenu")
 
             ability = ability:SwitchModes(1)
@@ -3670,12 +3675,12 @@ CreateAbilityController = function()
             element.mapfocus = false
             element.captureEscape = false
 
-            g_channeledResourcePanel:SetClass("collapsed", true)
+            if g_channeledResourcePanel ~= nil then g_channeledResourcePanel:SetClass("collapsed", true) end
             m_altitudeController:SetClass("collapsed", true)
             m_allowedAltitudeCalculator = nil
 
-            g_actionBar:SetClassTree("invokingAbility", false)
-            g_abilityController.mapfocus = false
+            if g_actionBar ~= nil then g_actionBar:SetClassTree("invokingAbility", false) end
+            if g_abilityController ~= nil then g_abilityController.mapfocus = false end
 
             ClearLineOfSightMark()
             ClearRadiusMarkers()
@@ -3695,7 +3700,7 @@ CreateAbilityController = function()
         end,
 
         chooseTarget = function(element, options)
-            assert(g_actionBar ~= nil)
+            if g_actionBar == nil then return end
             ClearRadiusMarkers()
 
             if options.sourceToken ~= nil and options.radius ~= nil then
@@ -3733,9 +3738,11 @@ CreateAbilityController = function()
                     element:DestroySelf()
                 end,
                 destroy = function()
-                    g_castMessage.data.promptText = ''
-                    g_castMessage:FireEvent("refresh")
-                    g_abilityController:SetClass("collapsed", true)
+                    if g_castMessage ~= nil then
+                        g_castMessage.data.promptText = ''
+                        g_castMessage:FireEvent("refresh")
+                    end
+                    if g_abilityController ~= nil then g_abilityController:SetClass("collapsed", true) end
                     ClearRadiusMarkers()
                     cancel()
                     for _, tok in ipairs(targets) do
@@ -3779,6 +3786,8 @@ CreateAbilityController = function()
         invokeAbility = function(element, casterToken, ability, symbols, invokerInfo, options)
             options = options or {}
             gui.SetFocus(nil)
+
+            if g_actionBar == nil then return end
 
             g_invokerInfo = invokerInfo
             symbols.invoked = true
@@ -3859,13 +3868,13 @@ CreateAbilityController = function()
             element.data.lastHoverLoc = loc
             element.data.lastHoverPoint = point
 
-            assert(g_abilityController ~= nil)
+            if g_abilityController == nil then return end
             if g_token == nil or (not g_token.valid) then
                 g_abilityController:FireEvent("cancelCasting")
                 return
             end
 
-            assert(g_currentAbility ~= nil, "Current ability is not set.")
+            if g_currentAbility == nil then return end
 
             if g_pointTargeting == nil then
                 return
@@ -4374,8 +4383,8 @@ CreateAbilityController = function()
                 return
             end
 
-            assert(g_token ~= nil)
-            assert(g_currentAbility ~= nil, "Current ability is not set.")
+            if g_token == nil then return end
+            if g_currentAbility == nil then return end
 
             local shape = g_currentAbility.targetType
 
@@ -4578,7 +4587,7 @@ CreateAbilityController = function()
                 m_markLineOfSight = nil
                 m_markLineOfSightToken = nil
                 m_markLineOfSightSourceToken = nil
-                g_abilityController:FireEvent("finishCasting")
+                if g_abilityController ~= nil then g_abilityController:FireEvent("finishCasting") end
             end
         end,
 
@@ -4607,7 +4616,7 @@ local function CalculateSpellTargetFocusing(symbols)
     local range = symbols.range
 
     local potentialTargetTokens = {}
-    assert(g_currentAbility ~= nil)
+    if g_currentAbility == nil then return potentialTargetTokens end
     local spell = g_currentAbility
     if (spell.targetType == 'self' or spell.targetType == 'target' or spell.targetType == 'all' or spell.targetType == 'areatemplate') and g_synthesizedSpellsPanel:HasClass("collapsed") then
 
@@ -4773,8 +4782,11 @@ local function CalculateSpellTargetFocusing(symbols)
 end
 
 CalculateSpellTargeting = function(forceCast, initialSetup)
-    assert(g_currentAbility ~= nil, "CalculateSpellTargeting called with nil g_currentAbility")
-    assert(g_skipButton ~= nil)
+    if g_currentAbility == nil then
+        dmhub.Debug("ActionBar: CalculateSpellTargeting called with nil g_currentAbility")
+        return
+    end
+    if g_skipButton == nil then return end
 
     if g_token == nil then
         dmhub.CloudError("nil token: " .. traceback())
@@ -4898,10 +4910,10 @@ CalculateSpellTargeting = function(forceCast, initialSetup)
 
             g_currentAbility = nil
 
-            assert(g_abilityController ~= nil)
+            if g_abilityController == nil then return end
             g_abilityController:FireEvent("finishCasting")
         else
-            assert(g_ammoChoicePanel ~= nil and g_synthesizedSpellsPanel ~= nil and g_castChargesInput ~= nil)
+            if g_ammoChoicePanel == nil or g_synthesizedSpellsPanel == nil or g_castChargesInput == nil then return end
             g_ammoChoicePanel:FireEvent("refreshSpell")
             g_synthesizedSpellsPanel:FireEvent("refreshSpell")
             g_castChargesInput:FireEvent("refreshSpell")
@@ -5003,7 +5015,7 @@ CalculateSpellTargeting = function(forceCast, initialSetup)
                 end
             elseif g_currentAbility.targetType == 'all' or g_currentAbility.targetType == 'areatemplate' then
                 --synthesize a map hover event to highlight the area.
-                assert(g_abilityController ~= nil)
+                if g_abilityController == nil then return end
                 g_abilityController:FireEvent("maphover", nil, 'all')
             end
         end

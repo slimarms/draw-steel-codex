@@ -164,7 +164,17 @@ local mySetting = setting{
 
 ## Lua File Constraints
 
-**ASCII only.** The DMHub Lua runtime does not handle non-ASCII characters in source files. All Lua files — including comments and EmmyLua annotations — must contain only ASCII characters (bytes 0–127). Never use em dashes (`—`), curly quotes (`""`), ellipses (`…`), or any other Unicode punctuation. Use plain ASCII equivalents instead: `-` or `:` instead of `—`, `"` instead of curly quotes, `...` instead of `…`.
+**ASCII only.** The DMHub Lua runtime does not handle non-ASCII characters in source files. All Lua files — including comments and EmmyLua annotations — must contain only ASCII characters (bytes 0-127). Never use em dashes, curly quotes, ellipses, or any other Unicode punctuation. Use plain ASCII equivalents instead: `-` or `:` instead of em dashes, `"` instead of curly quotes, `...` instead of ellipses.
+
+**Forward-declare self-referencing locals.** In Lua, `local x = expr` does not bring `x` into scope until `expr` finishes evaluating. If a closure inside the initializer needs to reference the variable (common with gui panel event handlers like `click`, `change`, `think`), you must split declaration and assignment:
+```lua
+-- WRONG: panelVar is not in scope inside the click handler
+local panelVar = gui.Panel{ click = function() panelVar:SetClass("hidden", true) end }
+
+-- RIGHT: forward-declare, then assign
+local panelVar
+panelVar = gui.Panel{ click = function() panelVar:SetClass("hidden", true) end }
+```
 
 ## Monster Reference Documentation
 

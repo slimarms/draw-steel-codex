@@ -167,7 +167,7 @@ end
 -- Local alias so existing call sites in this file keep working.
 local DiceResultToTier = RollUtils.DiceResultToTier
 
-local g_TierNames = GameSystem.TierNames
+local g_TierNames = {"!", "@", "#"}
 
 ActivatedAbilityPowerRollBehavior.tierNames = g_TierNames
 
@@ -465,7 +465,6 @@ ActivatedAbilityPowerRollBehavior.GetPowerTablePopulateCustom = function(rollPro
 
         local children = {}
         for i=1,#g_TierNames do
-            local tier = g_TierNames[i]
             local tierText = rollProperties.tiers[i]
 
             if caster ~= nil then
@@ -1886,7 +1885,7 @@ function ActivatedAbilityPowerRollBehavior:EditorItems(parentPanel)
     for i=1,#g_TierNames do
         local tier = g_TierNames[i]
         rows[#rows+1] = gui.TableRow{
-            gui.Label{ text = tier },
+            gui.Label{ text = tier, fontFace = "DrawSteelGlyphs" },
             gui.Input{
                 text = self.tiers[i],
                 characterLimit = 256,
@@ -2447,10 +2446,10 @@ function RollPropertiesPowerTable:CustomPanel(message)
                     if index == i or (not complete) then
                         m_rows[#m_rows+1] = gui.TableRow{
                             height = "auto",
-                            gui.Label{ text = g_TierNames[i], width = 90, height = "auto", },
+                            gui.Label{ text = g_TierNames[i], fontSize = 30, fontFace = "DrawSteelGlyphs", valign = "center", width = 60, height = 20, },
                             gui.Label{
                                 text = FormatTierText(tier),
-                                width = 240,
+                                width = "100%-60",
                                 height = "auto",
                                 refreshTiers = function(element)
                                     element.text = FormatTierText(self.tiers[i])

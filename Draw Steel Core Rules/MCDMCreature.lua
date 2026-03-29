@@ -633,7 +633,7 @@ function creature:MinionDeath()
         return
     end
 
-    if self._tmp_minionSquad.liveMinions > 1 then
+    if (self._tmp_minionSquad.liveMinions or 0) > 1 then
         --we still have more minions so don't remove the captain yet.
         return
     end
@@ -782,7 +782,7 @@ function creature:RefreshSquadInfo(token)
         end
     end
 
-    if self._tmp_minionSquad.tokens[1].charid == token.charid then
+    if self._tmp_minionSquad.tokens[1] ~= nil and self._tmp_minionSquad.tokens[1].charid == token.charid then
         local onCurrentFloor = false
         local curFloor = dmhub.floorid
         for _, tok in ipairs(self._tmp_minionSquad.tokens) do
@@ -3414,14 +3414,14 @@ function creature.SetCurrentHitpoints(self, amount, note)
     if (not mod.unloaded) and self.minion and self:has_key("_tmp_minionSquad") then
         local token = dmhub.LookupToken(self)
         if token ~= nil then
-            local damage_taken_seq = self._tmp_minionSquad.damage_taken_seq + 1
+            local damage_taken_seq = (self._tmp_minionSquad.damage_taken_seq or 0) + 1
             local damage_taken = self:MaxHitpoints() - amount
             if damage_taken < 0 then
                 damage_taken = 0
             end
 
             local tokenCount = 0
-            for _, tok in ipairs(self._tmp_minionSquad.tokens) do
+            for _, tok in ipairs(self._tmp_minionSquad.tokens or {}) do
                 if tok ~= nil and tok.valid then
                     tokenCount = tokenCount + 1
                 end
@@ -3430,7 +3430,7 @@ function creature.SetCurrentHitpoints(self, amount, note)
             self._tmp_minionSquad.damage_taken = damage_taken
             self._tmp_minionSquad.damage_time_pending = true
 
-            for _, tok in ipairs(self._tmp_minionSquad.tokens) do
+            for _, tok in ipairs(self._tmp_minionSquad.tokens or {}) do
                 if tok ~= nil and tok.valid then
                     tok:ModifyProperties {
                         description = note,

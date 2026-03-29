@@ -101,8 +101,8 @@ function CreateActionLogCard(options)
     local token = options.token
     local outOfTurn = IsOutOfTurn(token)
 
-    local playerColor = "#888888"
-    if token ~= nil and token.valid then
+    local playerColor = "#AA0000"
+    if token ~= nil and token.valid and token.playerControlled then
         playerColor = token.playerColor
     end
 
@@ -155,13 +155,17 @@ function CreateActionLogCard(options)
             bgcolor = playerColor,
         },
 
-        -- Portrait
-        portraitPanel,
-
-        -- Content area
         gui.Panel{
-            classes = {"action-log-content"},
-            children = contentChildren,
+            classes = {"action-log-card-header"},
+
+            -- Portrait
+            portraitPanel,
+
+            -- Content area
+            gui.Panel{
+                classes = {"action-log-content"},
+                children = contentChildren,
+            },
         },
     }
 end
@@ -606,6 +610,8 @@ local CreateRollMessagePanel = function(message, adoptiveParentPanel)
 
     local rollContentPanel = gui.Panel{
         classes = {'chat-message-panel', 'roll-message-panel'},
+        width = "100%-12",
+        halign = "right",
         gui.Panel{
             width = "100%",
             height = "auto",
@@ -620,12 +626,29 @@ local CreateRollMessagePanel = function(message, adoptiveParentPanel)
         end,
 
         longFormResultsLabel,
-        customPanel,
     }
 
 
+    local customPanelWrapper = nil
+    if customPanel ~= nil then
+        customPanelWrapper = gui.Panel{
+            classes = {"action-log-card-custom"},
+            customPanel,
+        }
+    end
+
     local chatMessagePanel
     if adopted then
+        -- Wrap rollContentPanel in a container that matches the standalone
+        -- card's action-log-content width so dice align consistently.
+        local adoptedRollContent = gui.Panel{
+            width = "100%-70",
+            height = "auto",
+            halign = "right",
+            flow = "vertical",
+            rollContentPanel,
+        }
+
         chatMessagePanel = gui.Panel{
             classes = {"chat-message-panel"},
             flow = "vertical",
@@ -636,7 +659,8 @@ local CreateRollMessagePanel = function(message, adoptiveParentPanel)
                 chatMessagePanel:SetClassTree("adopted", true)
             end,
 
-            rollContentPanel,
+            adoptedRollContent,
+            customPanelWrapper,
         }
         chatMessagePanel:SetClassTree("adopted", true)
     else
@@ -663,10 +687,16 @@ local CreateRollMessagePanel = function(message, adoptiveParentPanel)
             refreshMessage = function(element, message)
                 currentMessage = message
                 panel:FireEvent("refreshMessage", message)
+                rollContentPanel:SetClassTree("adopted", true)
                 avatarPanel:FireEventTree("refreshMessage", message)
 
                 if m_cardToken ~= nil then
-                    colorBar.selfStyle.bgcolor = m_cardToken.playerColor
+                    if m_cardToken ~= nil and m_cardToken.valid and m_cardToken.playerControlled then
+                        colorBar.selfStyle.bgcolor = m_cardToken.playerColor
+                    else
+                        local monsterColor = "#AA0000"
+                        colorBar.selfStyle.bgcolor = monsterColor
+                    end
                     element:SetClass("out-of-turn", IsOutOfTurn(m_cardToken))
                     if m_cardToken.canLocalPlayerSeeName then
                         rollNameLabel.text = m_cardToken.name
@@ -683,13 +713,17 @@ local CreateRollMessagePanel = function(message, adoptiveParentPanel)
 
                 colorBar,
 
-                avatarPanel,
-
                 gui.Panel{
-                    classes = {"action-log-content"},
-                    rollNameLabel,
-                    rollContentPanel,
+                    classes = {"action-log-card-header"},
+                    avatarPanel,
+
+                    gui.Panel{
+                        classes = {"action-log-content"},
+                        rollNameLabel,
+                        rollContentPanel,
+                    },
                 },
+                customPanelWrapper,
             },
         }
     end
@@ -789,7 +823,7 @@ CreateChatPanel = function()
             -- Action log card styles
             {
                 selectors = {"action-log-card"},
-                flow = "horizontal",
+                flow = "vertical",
                 width = "100%",
                 height = "auto",
                 bgimage = "panels/square.png",
@@ -811,6 +845,12 @@ CreateChatPanel = function()
                 valign = "top",
             },
             {
+                selectors = {"action-log-card-header"},
+                flow = "horizontal",
+                width = "100%",
+                height = "auto",
+            },
+            {
                 selectors = {"action-log-portrait"},
                 width = 40,
                 height = 40,
@@ -828,6 +868,15 @@ CreateChatPanel = function()
                 height = "auto",
                 halign = "right",
                 vpad = 4,
+            },
+            {
+                selectors = {"action-log-card-custom"},
+                flow = "vertical",
+                width = "100%",
+                height = "auto",
+                hpad = 10,
+                bmargin = 4,
+                borderBox = true,
             },
             {
                 selectors = {"action-log-name"},
@@ -877,7 +926,6 @@ CreateChatPanel = function()
                 selectors = {'chat-message-panel', 'adopted'},
                 tmargin = 0,
             },
-
 			{
 				selectors = {'chat-message-panel', 'roll-message-panel'},
 				flow = 'vertical',
@@ -938,7 +986,6 @@ CreateChatPanel = function()
                 selectors = {"rolls-panel", "adopted"},
                 uiscale = 0.7,
                 width = "60%",
-                halign = "right",
             },
 			{
 				selectors = {'roll-category-label'},

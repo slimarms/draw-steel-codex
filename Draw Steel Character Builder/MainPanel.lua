@@ -406,7 +406,7 @@ function CharacterBuilder.CreatePanel()
                     message = "Click Confirm to remove your Class and all related selections.",
                     onConfirm = function()
                         hero.classes = {}
-                        for _,attr in pairs(hero:try_get("attributes" or {})) do
+                        for _,attr in pairs(hero:try_get("attributes") or {}) do
                             attr.baseValue = 0
                         end
                         hero.attributeBuild = {}

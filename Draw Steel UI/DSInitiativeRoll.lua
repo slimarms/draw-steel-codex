@@ -876,10 +876,12 @@ function RollInitiativeChatMessage.Render(selfInput, message)
     local q = dmhub.initiativeQueue
 
     for _,tok in ipairs(allTokens) do
-        local initiativeid = InitiativeQueue.GetInitiativeId(tok)
-        if initiativeid ~= nil and q:IsEntryPlayer(initiativeid) then
+        print("INIT:: TOKEN:", tok.charid)
+        if table.contains(selfInput.playerTokenIds, tok.charid) then
+            print("INIT:: IS CHAR")
             playerTokenPanels[#playerTokenPanels+1] = CreatePortraitPanel(tok)
-        else
+        elseif table.contains(selfInput.monsterTokenIds, tok.charid) then
+            print("INIT:: IS MONSTER")
             local monsterType = tok.properties:try_get("monster_type", "")
             local groupKey = tostring(tok.portrait) .. "|" .. monsterType
             if monsterGroups[groupKey] == nil then
@@ -888,6 +890,8 @@ function RollInitiativeChatMessage.Render(selfInput, message)
             else
                 monsterGroups[groupKey].count = monsterGroups[groupKey].count + 1
             end
+        else
+            print("INIT:: IS NEUTRAL")
         end
     end
 
@@ -1071,7 +1075,7 @@ end
 --- @param initiativeQueue InitiativeQueue
 --- @param tokens CharacterToken[]
 --- @return RollInitiativeChatMessage
-function RollInitiativeChatMessage.Create(initiativeQueue, tokens)
+function RollInitiativeChatMessage.Create(initiativeQueue, tokens, playerids, monsterids)
     local tokensByInitiative = {}
     for _,tok in ipairs(tokens) do
         local initiativeid = InitiativeQueue.GetInitiativeId(tok)
@@ -1082,20 +1086,9 @@ function RollInitiativeChatMessage.Create(initiativeQueue, tokens)
         end
     end
 
-    local playerTokens = {}
-    local monsterTokens = {}
-
-    for key,tok in pairs(tokensByInitiative) do
-        if initiativeQueue:IsEntryPlayer(key) then
-            playerTokens[#playerTokens+1] = tok.charid
-        else
-            monsterTokens[#monsterTokens+1] = tok.charid
-        end
-    end
-
     return RollInitiativeChatMessage.new{
-        playerTokenIds = playerTokens,
-        monsterTokenIds = monsterTokens,
+        playerTokenIds = playerids,
+        monsterTokenIds = monsterids,
         winner = initiativeQueue.playersGoFirst and "players" or "monsters",
     }
 end
@@ -1703,6 +1696,9 @@ local function ShowCombatSetupDialog(selectedTokens)
         if tok ~= nil and tok.valid then
             local partyid = tok.partyId
             local playerSide = partyid ~= nil and ((partyid == playerPartyId) or (playerParty ~= nil and playerParty:GetAllyParties()[partyid] ~= nil))
+            if not playerSide and tok.playerControlled then
+                playerSide = true
+            end
 
             local initiativeId = InitiativeQueue.GetInitiativeId(tok)
             groupings[initiativeId] = groupings[initiativeId] or { playerSide = playerSide, tokens = {}}
@@ -2003,10 +1999,8 @@ Commands.RegisterMacro{
 
     local isNewCombat = next(info.initiativeQueue.entries) == nil
 
-    if isNewCombat then
-        local message = RollInitiativeChatMessage.Create(info.initiativeQueue, tokens)
-        chat.SendCustom(message)
-    end
+    local playerids = {}
+    local monsterids = {}
 
     local playerPartyId = GetDefaultPartyID()
     local playerParty = GetParty(GetDefaultPartyID())
@@ -2015,6 +2009,9 @@ Commands.RegisterMacro{
         if tok ~= nil and tok.valid then
             local partyid = tok.partyId
             local playerSide = partyid ~= nil and ((partyid == playerPartyId) or (playerParty ~= nil and playerParty:GetAllyParties()[partyid] ~= nil))
+            if not playerSide and tok.playerControlled then
+                playerSide = true
+            end
 
             if g_playerTokensOpenInitiative ~= nil and g_playerTokensOpenInitiative[tok.charid] then
                 playerSide = true
@@ -2030,13 +2027,23 @@ Commands.RegisterMacro{
             local entry = info.initiativeQueue:SetInitiative(initiativeId, 0, 0)
             entry.player = playerSide
 
+            if playerSide then
+                playerids[#playerids+1] = tok.charid
+            else
+                monsterids[#monsterids+1] = tok.charid
+            end
 
             tok.properties:DispatchEvent("rollinitiative", {})
             tok.properties:DispatchEvent("beginround")
         end
     end
 
-    print("DISPATCH:: OBJECT BEGIN ROUND", #dmhub.allObjectTokens)
+    if isNewCombat then
+        local message = RollInitiativeChatMessage.Create(info.initiativeQueue, tokens, playerids, monsterids)
+        chat.SendCustom(message)
+    end
+
+
     for _,tok in ipairs(dmhub.allObjectTokens) do
         tok.properties:DispatchEvent("beginround")
     end
