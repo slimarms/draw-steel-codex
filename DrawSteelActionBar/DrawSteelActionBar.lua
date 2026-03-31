@@ -1679,6 +1679,7 @@ local function ActionSubMenu(args)
 
         vpad = -4,
 
+        children = m_children,
         classes = { "abilitySubMenu" },
         blurBackground = true,
         abilities = function(element, abilities)
