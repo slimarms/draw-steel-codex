@@ -3844,6 +3844,12 @@ CreateAbilityController = function()
             g_actionBar:SetClassTree("invokingAbility", true)
 
             ability = DeepCopy(ability)
+            CharacterPanel.DisplayAbility(casterToken, ability)
+            CharacterPanel.HighlightAbilitySection{
+                ability = ability,
+                caster = casterToken,
+                section = "target",
+            }
             element:FireEvent("beginCasting", ability, { symbols = symbols })
 
             --[[
