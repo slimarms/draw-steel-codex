@@ -643,29 +643,30 @@ function CustomDocument:CreateInterface(args)
 
     local m_titlePanel = args.titlePanel or gui.Panel {
         classes = {cond(self:HaveEditPermissions(), "", "collapsed")},
-        halign = "right",
+        halign = "left",
         valign = "center",
         width = "auto",
         height = "auto",
         flow = "horizontal",
         rmargin = 4,
-        gui.Label {
-            text = "Document Name:",
-            fontSize = 16,
-            fontFace = "Berling",
-            color = "#999999",
-            width = "auto",
-            height = "auto",
-            valign = "center",
-            rmargin = 12,
-            lmargin = 12,
-        },
+        -- gui.Label {
+        --     text = "Document Name:",
+        --     fontSize = 16,
+        --     fontFace = "Berling",
+        --     color = "#999999",
+        --     width = "auto",
+        --     height = "auto",
+        --     valign = "center",
+        --     rmargin = 12,
+        --     lmargin = 12,
+        -- },
         gui.Input {
             text = self.description,
             fontSize = 14,
             width = 200,
             height = 18,
             valign = "center",
+            lmargin = 12,
             characterLimit = 48,
             editable = self:HaveEditPermissions(),
             editlag = 1.0,
@@ -703,6 +704,7 @@ function CustomDocument:CreateInterface(args)
             escapeActivates = false,
             width = buttonSize,
             height = buttonSize,
+            halign = "left",
             bgimage = "icons/icon_app/icon_app_34.png",
             thinkTime = 0.2,
             think = function(element)
@@ -741,6 +743,7 @@ function CustomDocument:CreateInterface(args)
             escapeActivates = false,
             width = buttonSize,
             height = buttonSize,
+            halign = "left",
             bgimage = "icons/icon_game/icon_game_193.png",
             press = function(element)
                 if m_editingButton ~= nil and m_editingButton:HasClass("active") then
@@ -763,6 +766,7 @@ function CustomDocument:CreateInterface(args)
             escapeActivates = false,
             width = buttonSize,
             height = buttonSize,
+            halign = "left",
             hmargin = 0,
             bgimage = "icons/icon_tool/icon_tool_79.png",
             press = function(element)
@@ -803,6 +807,7 @@ function CustomDocument:CreateInterface(args)
         escapeActivates = false,
         width = buttonSize,
         height = buttonSize,
+        halign = "left",
         bgimage = "icons/icon_arrow/icon_arrow_28.png",
         rotate = 180,
         bgcolor = "#666666",
@@ -830,6 +835,7 @@ function CustomDocument:CreateInterface(args)
         escapeActivates = false,
         width = buttonSize,
         height = buttonSize,
+        halign = "left",
         bgimage = "icons/icon_arrow/icon_arrow_28.png",
         bgcolor = "#666666",
         linger = function(element)
@@ -855,6 +861,7 @@ function CustomDocument:CreateInterface(args)
         escapeActivates = false,
         width = buttonSize,
         height = buttonSize,
+        halign = "left",
         bgimage = "icons/icon_tool/icon_tool_41.png",
         linger = function(element)
             gui.Tooltip(string.format("Decrease Font Size (Currently %d%%)", round(dmhub.GetSettingValue("journal:fontsize"))))(element)
@@ -871,6 +878,7 @@ function CustomDocument:CreateInterface(args)
         escapeActivates = false,
         width = buttonSize,
         height = buttonSize,
+        halign = "left",
         bgimage = "icons/icon_tool/icon_tool_40.png",
         linger = function(element)
             gui.Tooltip(string.format("Increase Font Size (Currently %d%%)", round(dmhub.GetSettingValue("journal:fontsize"))))(element)
@@ -895,6 +903,7 @@ function CustomDocument:CreateInterface(args)
                 escapeActivates = false,
                 width = buttonSize,
                 height = buttonSize,
+                halign = "left",
                 bgimage = "ui-icons/icon-scale.png",
                 press = function(element)
                     if resultPanel.data.watcher ~= nil then
@@ -1108,12 +1117,13 @@ function CustomDocument:CreateInterface(args)
 
         -- Row 2: tool buttons + document name
         gui.Panel {
-            width = "auto",
-            height = 28,
+            width = "98%",
+            height = "auto",
             flow = "horizontal",
             halign = "left",
-            valign = "center",
+            valign = "top",
             hmargin = 2,
+            wrap = true,
             children = m_controlMenuButtons,
         },
     }
