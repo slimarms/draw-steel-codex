@@ -252,7 +252,9 @@ TokenHud.RegisterPanel{
                                 click = function(element)
                                     token.properties:TriggerEvent("creaturedeath", {}) --this triggers the 'monster death' global event which will remove the minion.
                                     token.properties:MinionDeath()
-                                    --game.DeleteCharacters{token.charid}
+                                    if token.playerControlled then
+                                        game.DeleteCharacters{token.charid}
+                                    end
                                 end,
 
                                 thinkTime = g_deadMinionPulseSpeed,
