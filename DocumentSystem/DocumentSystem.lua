@@ -1570,6 +1570,7 @@ function CustomDocument.GetOrCreateTabbedViewer()
 
     local tabButtonsPanel = gui.Panel {
         classes = {"panel", "journalTabBar"},
+        clip = true,
     }
 
     local tabArrowsPanel = gui.Panel {
@@ -1827,8 +1828,12 @@ function CustomDocument.GetOrCreateTabbedViewer()
             tabButtonsPanel:AddChild(tabButton)
             contentArea:AddChild(contentPanel)
 
-            refreshTabVisibility(element)
-            element:FireEvent("switchToTab", tabData.tabId)
+            if args and args.skipRefresh then
+                -- Batch mode: skip per-tab refresh, caller will trigger final refresh
+            else
+                refreshTabVisibility(element)
+                element:FireEvent("switchToTab", tabData.tabId)
+            end
         end,
 
         switchToTab = function(element, tabId)

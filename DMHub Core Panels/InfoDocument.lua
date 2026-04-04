@@ -824,7 +824,7 @@ function GameHud:DisplayDocument(info)
         for _, bubble in ipairs(bubblesSorted) do
             local doc = docs[bubble.document.docid]
             if doc ~= nil then
-                doc:ShowDocument({bubbleIcon = bubble.icon})
+                doc:ShowDocument({bubbleIcon = bubble.icon, skipRefresh = true})
             end
         end
 
