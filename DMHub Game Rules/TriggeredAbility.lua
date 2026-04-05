@@ -1105,6 +1105,8 @@ function TriggeredAbility:Trigger(characterModifier, creature, symbols, auraCont
 				end,
 			}
 
+            local tokid = casterToken.id
+
             local triggers = casterToken.properties:GetAvailableTriggers() or {}
             trigger = triggers[guid]
 
@@ -1164,6 +1166,10 @@ function TriggeredAbility:Trigger(characterModifier, creature, symbols, auraCont
                         end
                     end
                 end
+            end
+
+            if casterToken == nil or (not casterToken.valid) then
+                casterToken = dmhub.GetTokenById(tokid)
             end
 
 			if trigger ~= nil and casterToken ~= nil and casterToken.valid then

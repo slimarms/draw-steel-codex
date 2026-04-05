@@ -187,6 +187,24 @@ function ActivatedAbilityPowerRollBehavior:SummarizeBehavior(ability, creatureLo
     return "Ability Power Roll"
 end
 
+-- Scan each tier's text for "<word> damage" patterns (e.g. "2 fire damage",
+-- "6 fire damage; push 2") and add the preceding word as a damage-type
+-- candidate. Entries that do not match a real damage type are harmless --
+-- callers resolve against a known set (e.g. g_damageTypeIconDisplay).
+function ActivatedAbilityPowerRollBehavior:AccumulateDamageTypes(ability, result)
+    local tiers = self:try_get("tiers")
+    if tiers == nil then
+        return
+    end
+    for _,tierText in ipairs(tiers) do
+        if type(tierText) == "string" then
+            for word in string.gmatch(tierText, "(%w+)%s+damage") do
+                result[#result+1] = string.lower(word)
+            end
+        end
+    end
+end
+
 --if we have targets, the actual tier should be equal to one of the tiers found among the targets.
 --- @param tier number
 --- @param multitargets nil|({token: CharacterToken, tier: number}[])
@@ -283,7 +301,13 @@ ActivatedAbilityPowerRollBehavior.GetPowerTablePopulateCustom = function(rollPro
             width = "100%",
             height = "auto",
             flow = "vertical",
+            bgcolor = Styles.RichBlack02,
+            bgimage = true,
             styles = {
+                {
+                    selectors = {"row"},
+                    bgcolor = Styles.RichBlack02,
+                },
                 {
                     selectors = {"row", "highlight"},
                     bgcolor = Styles.textColor,
@@ -472,6 +496,7 @@ ActivatedAbilityPowerRollBehavior.GetPowerTablePopulateCustom = function(rollPro
             end
 
             local row = gui.TableRow{
+                bgimage = true,
                 width = "100%",
                 height = "auto",
                 press = function(element)
@@ -1082,7 +1107,7 @@ function ActivatedAbilityPowerRollBehavior:Cast(ability, casterToken, targets, o
     local m_canceled = false
 
     local tiers = DeepCopy(self.tiers)
-    if ability.description ~= "" and ability.effectImplemented == false and ActivatedAbilityDrawSteelCommandBehavior.ValidateRule(ability.description) == true then
+    if ability.description ~= "" and ability:try_get("implementation", 3) ~= 3 and ActivatedAbilityDrawSteelCommandBehavior.ValidateRule(ability.description) == true then
         --append the rule to the tiers if it is a valid rule that could
         --appear on a power roll.
         for i=1,#tiers do
@@ -2140,6 +2165,10 @@ local g_tableStyles = {
         selectors = {"label"},
         color = "#cccccc",
         valign = "center",
+    },
+    gui.Style{
+        selectors = {"row"},
+        bgcolor = Styles.RichBlackGradient,
     },
     gui.Style{
         selectors = {"row", "highlighted"},

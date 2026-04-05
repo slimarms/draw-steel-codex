@@ -427,7 +427,7 @@ end
 
 --- MarkMovementRadius: Renders a movement radius marker showing how far the token can move. Returns a reference controlling it. Remember to call Destroy on it when you want the radius to disappear!
 --- @param movementAllowance movement allowance in decitiles.
---- @param args nil|{waypoints: nil|Loc[], mask: nil|Loc[], filter: nil|function, moveFlags: nil|('IgnoreMovementType'|'CannotMoveThroughFriends'|'CanFly'|'IgnoreOtherCreatures'|'Shifting')[] }
+--- @param args nil|{waypoints: nil|Loc[], mask: nil|Loc[], filter: nil|function, moveFlags: nil|('IgnoreMovementType'|'CannotMoveThroughFriends'|'CanFly'|'IgnoreOtherCreatures'|'Shifting'|'IgnoreWalls')[] }
 --- @return LuaMultiObjectReference
 function CharacterToken:MarkMovementRadius(movementAllowance, args)
 	-- dummy implementation for documentation purposes only

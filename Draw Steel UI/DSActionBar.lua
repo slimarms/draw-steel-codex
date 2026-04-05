@@ -1119,12 +1119,12 @@ function GameHud.CreateActionBar(self, dialog, tokenInfo)
 
 					refreshSpell = function(element)
 						element:SetClass("expended", not costInfo.canAfford)
-						element.bgimage = spell.iconid
-						element.selfStyle = spell.display
+						element.bgimage = spell:GetIcon()
+						element.selfStyle = spell:GetIconDisplay()
                         if not costInfo.canAfford then
                             element.selfStyle.brightness = 0.1
                         else
-                            element.selfStyle.brightness = spell.display.brightness or 1
+                            element.selfStyle.brightness = spell:GetIconDisplay().brightness or 1
                         end
 					end,
 				}
@@ -6145,8 +6145,8 @@ function GameHud:CreateReactionBar(dialog, tokenInfo)
 							if ability == nil then
 								return
 							end
-							element.bgimage = ability.iconid
-							element.selfStyle = ability.display
+							element.bgimage = ability:GetIcon()
+							element.selfStyle = ability:GetIconDisplay()
 						end,
 					},
 

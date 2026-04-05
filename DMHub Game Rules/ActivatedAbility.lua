@@ -112,6 +112,7 @@ ActivatedAbilityModifiersBehavior = RegisterGameType("ActivatedAbilityModifiersB
 ActivatedAbilityApplyMomentaryEffectBehavior = RegisterGameType("ActivatedAbilityApplyMomentaryEffectBehavior", "ActivatedAbilityBehavior")
 
 ActivatedAbility.description = ""
+ActivatedAbility.hasCustomIcon = false
 
 ActivatedAbility.flavor = ""
 
@@ -322,6 +323,104 @@ function ActivatedAbility:RequiresConcentration()
 end
 
 function ActivatedAbility:GetTypeIconForActionBar()
+    return nil
+end
+
+function ActivatedAbility:GetIcon()
+    if self.hasCustomIcon then
+        return self.iconid
+    end
+    if self:has_key("villainAction") then
+        return "drawsteel/ability/villain_action_icon.png"
+    end
+
+    if self.targetType == "emptyspace" or self.targetType == "emptyspacefriend" or self.targetType == "anyspace" then
+        for _,behavior in ipairs(self.behaviors or {}) do
+            if behavior.typeName == "ActivatedAbilityRelocateCreatureBehavior" then
+                local movementType = behavior.movementType or "teleport"
+                if movementType == "jump" then
+                    return "drawsteel/ability/Jump.png"
+                elseif movementType == "shift" then
+                    return "drawsteel/ability/move_shift.png"
+                else
+                    return "drawsteel/ability/move.png"
+                end
+            end
+        end
+    end
+
+    if self:HasKeyword("Strike") then
+        if self:HasKeyword("Melee") then
+            if self:HasKeyword("Ranged") then
+                return "drawsteel/ability/versatile_icon.png"
+            else
+                return "drawsteel/ability/melee_icon.png"
+            end
+        elseif self:HasKeyword("Ranged") then
+            return "drawsteel/ability/ranged_icon.png"
+        end
+    end
+
+    if self:HasKeyword("Area") then
+        return "drawsteel/ability/area_icon.png"
+    elseif self.targetType == "self" then
+        return "drawsteel/ability/self_icon.png"
+    end
+
+    return "drawsteel/ability/special_icon.png"
+end
+
+function TriggeredAbility:GetIcon()
+    if not self.hasCustomIcon then
+		return "drawsteel/ability/trigger_icon.png"
+    end
+
+    return self.iconid
+end
+
+-- Cached default display table used when an ability has no custom icon and no
+-- recognized damage type. Returned by reference -- never mutate.
+local g_defaultIconDisplay = {
+    bgcolor = '#ffffffff',
+    hueshift = 0,
+    saturation = 1,
+    brightness = 1,
+}
+
+-- Cached per-damage-type display tables. Lookup is by lowercase damage type
+-- name (matching ActivatedAbility:GetDamageTypesSet() output). Returned by
+-- reference -- never mutate.
+local g_damageTypeIconDisplay = {
+    acid      = { bgcolor = '#89a25eff', hueshift = 0, saturation = 1, brightness = 1 },
+    cold      = { bgcolor = '#2ab6e1ff', hueshift = 0, saturation = 1, brightness = 1 },
+    corruption = { bgcolor = '#f7009cff', hueshift = 0, saturation = 1, brightness = 1 },
+    fire      = { bgcolor = '#fc9300ff', hueshift = 0, saturation = 1, brightness = 1 },
+    holy      = { bgcolor = '#fcfa8bff', hueshift = 0, saturation = 1, brightness = 1 },
+    lightning = { bgcolor = '#71bdffff', hueshift = 0, saturation = 1, brightness = 1 },
+    poison    = { bgcolor = '#72ff01ff', hueshift = 0, saturation = 1, brightness = 1 },
+    psychic   = { bgcolor = '#f8c3d9ff', hueshift = 0, saturation = 1, brightness = 1 },
+    sonic     = { bgcolor = '#1cd1dcff', hueshift = 0, saturation = 1, brightness = 1 },
+}
+
+function ActivatedAbility:GetIconDisplay()
+    if not self.hasCustomIcon then
+        local damageTypes = self:GetDamageTypesSet()
+        for _,dtype in ipairs(damageTypes.strings) do
+            local display = g_damageTypeIconDisplay[dtype]
+            if display ~= nil then
+                return display
+            end
+        end
+        return g_defaultIconDisplay
+    end
+    return self.display
+end
+
+function ActivatedAbility:GetIconGradient()
+    if self.hasCustomIcon then
+        return DisplayGradients.GetGradient(rawget(self, "iconGradient"))
+    end
+
     return nil
 end
 
@@ -4820,9 +4919,12 @@ function ActivatedAbility:Render(options, params)
 
 			gui.Panel{
 				halign = "right",
-				bgimage = self.iconid,
+				bgimage = self:GetIcon(),
 				classes = "icon",
-				selfStyle = self.display,
+				selfStyle = self:GetIconDisplay(),
+				create = function(element)
+					element.selfStyle.gradient = self:GetIconGradient()
+				end,
 			},
 		},
 

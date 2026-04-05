@@ -181,6 +181,11 @@ function ActivatedAbilityRelocateCreatureBehavior:Cast(ability, casterToken, tar
 					local pathDist = path.destination:DistanceInTiles(path.origin)
 
                     local freeMovement = path.freeMovementSteps
+                    -- If the path is actually blocked (collision with wall/creature),
+                    -- use full ability distance so collision force reflects max available force.
+                    if path.hasCollision and requestDist < abilityDist then
+                        requestDist = abilityDist
+                    end
                     local hasCollision = freeMovement < requestDist
                     local collisionSpeed = requestDist - freeMovement
                     print("PATHFIND:: DIST =", pathDist, "freeMovement=", freeMovement, "requestDist=", requestDist, "hasCollision=", hasCollision, "collisionSpeed=", collisionSpeed)

@@ -1421,6 +1421,7 @@ function ShowRequireRollDialog(args)
 			halign = 'left',
 			valign = 'bottom',
 			margin = 18,
+            lmargin = 44,
 			value = false,
 			fontSize = 14,
 			color = 'white',

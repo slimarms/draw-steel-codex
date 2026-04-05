@@ -36,7 +36,28 @@ TokenUI.RegisterIcon{
     icon = "drawsteel/Icon_STA_Winded.png",
     Filter = function(creature)
         --this controls if the icon should display.
-	    return (not creature.minion) and creature.damage_taken >= creature:MaxHitpoints()/2 and dmhub.GetSettingValue("showwoundedicon")
+        local maxhp = creature:MaxHitpoints()
+	    return (not creature.minion) and creature.damage_taken >= maxhp/2 and creature.damage_taken < maxhp and dmhub.GetSettingValue("showwoundedicon")
+    end,
+
+    hoverText = "Winded",
+
+    --Only show to those who can't see the health bar.
+    showToAll = true,
+    showToGM = true,
+    showToController = true,
+    showToFriends = true,
+    showToEnemies = true,
+}
+
+--the dying icon configuration.
+TokenUI.RegisterIcon{
+    id = "dying",
+    icon = "drawsteel/Icon_STA_Dying.png",
+    Filter = function(creature)
+        --this controls if the icon should display.
+        local maxhp = creature:MaxHitpoints()
+	    return (not creature.minion) and creature.damage_taken >= maxhp and dmhub.GetSettingValue("showwoundedicon")
     end,
 
     hoverText = "Winded",

@@ -3692,6 +3692,19 @@ function CreateTitlescreen(dialog, options)
                     element.data.loadingFinished = element.aliveTime
                 end
 
+                -- Any-key-to-continue: require one frame of no keys depressed
+                -- after loading finishes, then fire press on next key down.
+                if not element.data.triggered then
+                    local key = dmhub.DetectBindableKeystroke()
+                    if element.data.keyReleased then
+                        if key ~= nil then
+                            element:FireEvent("press")
+                        end
+                    elseif key == nil then
+                        element.data.keyReleased = true
+                    end
+                end
+
                 local t = element.aliveTime - element.data.loadingFinished
                 element:SetClass("loaded", true)
                 if element:HasClass("hover") then
@@ -3703,9 +3716,14 @@ function CreateTitlescreen(dialog, options)
         end,
 
         press = function(element)
-            if (dmhub.gameLoadingProgress or 0) >= 1 then
+            if (dmhub.gameLoadingProgress or 0) >= 1 and not element.data.triggered then
+                element.data.triggered = true
                 SetTitlescreenState("selection-screen")
                 element:SetClassTree("fade", true)
+                if element.data.pressAnyKeyLabel ~= nil then
+                    element.data.pressAnyKeyLabel:SetClass("fade", true)
+                    element.data.pressAnyKeyLabel.thinkTime = nil
+                end
                 element:ScheduleEvent("destroySelf", 0.2)
                 element.thinkTime = nil
                 audio.FireSoundEvent("Mouse.Click")
@@ -3722,6 +3740,71 @@ function CreateTitlescreen(dialog, options)
     }
 
     titlescreen:AddChild(progressDice)
+
+    local pressAnyKeyLabel = gui.Label{
+        bgimage = true,
+        bgcolor = "white",
+        gradient = gui.Gradient{
+            point_a = {x = 0, y = 0},
+            point_b = {x = 1, y = 0},
+            stops = {
+                {
+                    position = 0,
+                    color = "#00000000",
+                },
+                {
+                    position = 0.2,
+                    color = "#000000DD",
+                },
+                {
+                    position = 0.8,
+                    color = "#000000DD",
+                },
+                {
+                    position = 1,
+                    color = "#00000000",
+                },
+            }
+
+        },
+        hpad = 160,
+        floating = true,
+        text = "PRESS ANY KEY",
+        fontFace = "Gothville",
+        fontSize = 60,
+        color = "white",
+        halign = "center",
+        valign = "bottom",
+        vmargin = 80,
+        width = "auto",
+        height = "auto",
+        styles = {
+            {
+                opacity = 0,
+            },
+            {
+                selectors = {"loaded"},
+                transitionTime = 0.5,
+                opacity = 1,
+            },
+            {
+                selectors = {"fade"},
+                transitionTime = 0.2,
+                opacity = 0,
+            },
+        },
+        thinkTime = 0.1,
+        think = function(element)
+            if (dmhub.gameLoadingProgress or 0) >= 1 then
+                element:SetClass("loaded", true)
+            end
+        end,
+    }
+
+    titlescreen:AddChild(pressAnyKeyLabel)
+
+    -- Fade the label when the user advances past the titlescreen.
+    progressDice.data.pressAnyKeyLabel = pressAnyKeyLabel
 
     dialog.sheet = titlescreen
     titlescreen.data.dialog = dialog

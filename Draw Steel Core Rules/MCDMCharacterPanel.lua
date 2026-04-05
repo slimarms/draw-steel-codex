@@ -91,7 +91,7 @@ TacPanelSizes.Fonts = {
     tempStamLabel = 10,     -- Health bar: "TEMP" label
     tempStamClear = 8,      -- Health bar: clear button X
 
-    movePanelTitle = 14,
+    movePanelTitle = 12,
     movePanelValue = 24,
 
     charTitle = 12,

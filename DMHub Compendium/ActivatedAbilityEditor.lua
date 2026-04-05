@@ -1180,31 +1180,51 @@ function ActivatedAbility:IconEditorPanel()
 		iconColorPicker,
 	}
 
-	local appearancePanel = gui.Panel{
+    local appearancePanel
+    local customIconCheck = gui.Check{
+        value = self.hasCustomIcon,
+        text = "Custom Icon",
+        change = function(element)
+            self.hasCustomIcon = element.value
+            appearancePanel:FireEventTree("updateCustomIcon")
+        end,
+    }
+
+	appearancePanel = gui.Panel{
 		classes = {"appearance"},
 		width = "auto",
 		height = "auto",
 		flow = "vertical",
-		iconPanel,
+        customIconCheck,
         gui.Panel{
-            classes = {"formPanel"},
-            gui.Label{
-                classes = {"formLabel"},
-                text = "Gradient:",
+            classes = {cond(not self.hasCustomIcon, "collapsed-anim")},
+            flow = "vertical",
+            height = "auto",
+            width = "auto",
+            updateCustomIcon = function(element)
+                element:SetClass("collapsed-anim", not self.hasCustomIcon)
+            end,
+            iconPanel,
+            gui.Panel{
+                classes = {"formPanel"},
+                gui.Label{
+                    classes = {"formLabel"},
+                    text = "Gradient:",
+                },
+                gui.Dropdown{
+                    classes = {"formDropdown"},
+                    options = DisplayGradients.GetOptions(),
+                    idChosen = self:try_get("iconGradient", "none"),
+                    change = function(element)
+                        self.iconGradient = element.idChosen
+                        iconEditor:FireEvent('create')
+                    end,
+                }
             },
-            gui.Dropdown{
-                classes = {"formDropdown"},
-                options = DisplayGradients.GetOptions(),
-                idChosen = self:try_get("iconGradient", "none"),
-                change = function(element)
-                    self.iconGradient = element.idChosen
-					iconEditor:FireEvent('create')
-                end,
-            }
+            CreateDisplaySlider{ label = "Hue:", attr = 'hueshift', minValue = 0, maxValue = 1, },
+            CreateDisplaySlider{ label = "Saturation:", attr = 'saturation', minValue = 0, maxValue = 2, },
+            CreateDisplaySlider{ label = "Brightness:", attr = 'brightness', minValue = 0, maxValue = 2, },
         },
-		CreateDisplaySlider{ label = "Hue:", attr = 'hueshift', minValue = 0, maxValue = 1, },
-		CreateDisplaySlider{ label = "Saturation:", attr = 'saturation', minValue = 0, maxValue = 2, },
-		CreateDisplaySlider{ label = "Brightness:", attr = 'brightness', minValue = 0, maxValue = 2, },
 	}
 	
 	return appearancePanel

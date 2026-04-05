@@ -1,6 +1,7 @@
 local mod = dmhub.GetModLoading()
 
---if the effect has been implemented by the importer.
+--effectImplemented is deprecated. Use the 'implementation' field instead.
+--kept as a default so old serialized data doesn't error on access.
 ActivatedAbility.effectImplemented = true
 
 local g_settingTargetObjects = setting {
@@ -800,7 +801,7 @@ function ActivatedAbility:Render(options, params)
     end
 
     local description = self.description
-    if description ~= "" and self.effectImplemented == false and self:try_get("implementation") ~= 3 and ActivatedAbilityDrawSteelCommandBehavior.ValidateRule(description) ~= true then
+    if description ~= "" and self:try_get("implementation", 3) ~= 3 and ActivatedAbilityDrawSteelCommandBehavior.ValidateRule(description) ~= true then
         description = string.format("<alpha=#55>%s<alpha=#ff>", description)
     end
 
@@ -1352,38 +1353,7 @@ function ActivatedAbility:Render(options, params)
 
 
                     },
-
-                    gui.Panel {
-
-                        width = 50,
-                        height = 50,
-                        halign = "right",
-                        bgcolor = "white",
-                        bgimage = mod.images.attack,
-
-                        create = function(element)
-                            if self.categorization == "Signature Ability" then
-                                element.bgimage = mod.images.signature
-                            elseif self.categorization == "Basic Attack" then
-                                element.bgimage = mod.images.attack
-                            else
-                                element.bgimage = mod.images.ability
-                            end
-                        end
-
-
-                    },
-
-
-
-
                 },
-
-
-
-
-
-
             },
 
 

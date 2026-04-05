@@ -1313,7 +1313,7 @@ function GameHud.CreateEmbeddedRollDialog()
 
         triggerPanel = gui.Panel {
             classes = { "hideWhenMinimized", "triggerPanel", cond(dmhub.LookupTokenId(creature) == info.charid, "selftrigger", "othertrigger") },
-            width = 160,
+            width = 80,
             height = 90,
             bgimage = true,
             flow = "vertical",
@@ -1520,7 +1520,7 @@ function GameHud.CreateEmbeddedRollDialog()
             },
             {
                 selectors = { "triggerPanel" },
-                bgcolor = "#00000000",
+                bgcolor = Styles.RichBlack02,
             },
             {
                 selectors = { "triggerPanel", "selftrigger" },

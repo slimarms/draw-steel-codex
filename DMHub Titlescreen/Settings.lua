@@ -1026,6 +1026,16 @@ setting{
 }
 
 setting{
+	id = "analytics:enabled",
+	description = "Send Anonymous Analytics",
+	help = "When enabled, DMHub sends anonymized gameplay analytics and crash reports to the server to help improve the application. When disabled, no analytics events are transmitted.",
+	storage = "account",
+	section = "General",
+	editor = "check",
+	default = true,
+}
+
+setting{
 	id = "theme.charsheet",
 	description = "Character Sheet Theme",
 	help = "Which theme to use when displaying character sheets",

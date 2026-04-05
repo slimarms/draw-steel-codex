@@ -815,8 +815,8 @@ local function ActionBarDrawer(args)
                                 if ability.guid == abilityid then
                                     text = string.format("Used on <b>%s</b>", ability.name)
 
-                                    m_usedAbilityIcon.bgimage = ability.iconid
-                                    m_usedAbilityIcon.selfStyle = ability.display
+                                    m_usedAbilityIcon.bgimage = ability:GetIcon()
+                                    m_usedAbilityIcon.selfStyle = ability:GetIconDisplay()
                                     setIcon = true
                                     break
                                 end
@@ -1394,9 +1394,9 @@ local function AbilityHeading(args)
                     element.selfStyle.brightness = 1
                 else
                     element.text = ""
-                    element.bgimage = ability.iconid
-                    element.selfStyle = ability.display
-                    element.selfStyle.gradient = DisplayGradients.GetGradient(rawget(ability, "iconGradient"))
+                    element.bgimage = ability:GetIcon()
+                    element.selfStyle = ability:GetIconDisplay()
+                    element.selfStyle.gradient = ability:GetIconGradient()
                     element.selfStyle.gradientMapping = true
                 end
             end,
@@ -2078,6 +2078,12 @@ end
 
 local function AddModifierLabelsToMarker(markers, sourceToken, targetToken, ability)
     if markers == nil or ability == nil or sourceToken == nil or targetToken == nil then
+        return
+    end
+
+    local pierceWalls = sourceToken.properties:GetPierceWalls()
+    if sourceToken:GetLineOfSight(targetToken, pierceWalls) == 0 then
+        markers:AddLabel("No Line of Sight", "debuff")
         return
     end
 
@@ -4054,6 +4060,12 @@ CreateAbilityController = function()
                         local requestDist = math.min(loc:DistanceInTiles(path.origin), abilityDist)
                         local pathDist = path.destination:DistanceInTiles(path.origin)
 
+                        -- If the path is actually blocked (collision with wall/creature),
+                        -- use full ability distance so collision force preview reflects max available force.
+                        if path.hasCollision and requestDist < abilityDist then
+                            requestDist = abilityDist
+                        end
+
                         if pathDist < requestDist and (g_currentAbility:try_get("targeting", "direct") == "straightline") and g_token.properties:CalculateNamedCustomAttribute("No Damage From Forced Movement") == 0 then
                             local prevOvershoot = g_pointTargeting.pathEndOvershoot
                             g_pointTargeting.pathEndOvershoot = requestDist - pathDist
@@ -5180,6 +5192,11 @@ CalculateSpellTargeting = function(forceCast, initialSetup)
                 local moveFlags = {}
                 if shifting then
                     moveFlags[#moveFlags + 1] = "shifting"
+                end
+                -- For forced movement (straightline targeting), show all tiles in range
+                -- regardless of walls so the player can target "into" a wall.
+                if g_currentAbility:try_get("targeting", "direct") == "straightline" then
+                    moveFlags[#moveFlags + 1] = "IgnoreWalls"
                 end
 
                 local filterTargetPredicate = g_currentAbility:TargetLocPassesFilterPredicate(g_token, g_currentSymbols)

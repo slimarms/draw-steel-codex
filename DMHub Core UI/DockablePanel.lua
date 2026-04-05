@@ -1924,7 +1924,7 @@ local CreateDockablePanelInstance = function(panelOptions)
 					gui.Panel{
 						idprefix = "dockablePanelScrollParent",
 						interactable = false,
-						width = "100%",
+						width = "100%-4",
 						height = "100%",
 						pad = 2,
 						vscroll = true,
