@@ -506,7 +506,7 @@ function ActivatedAbility:AbilityTypeDescription()
 end
 
 function ActivatedAbility.TabBGImage()
-    return mod.images.tabbg
+    return "drawsteel/power_roll_tab.png"
 end
 
 function ActivatedAbility:Render(options, params)
@@ -1280,22 +1280,43 @@ function ActivatedAbility:Render(options, params)
 
                                 flow = "horizontal",
                                 lmargin = 10,
+                                bgimage = true,
+                                bgcolor = "clear",
+
+                                create = function(element)
+                                    element.interactable = true
+                                end,
 
                                 hover = function(element)
+                                    local text = [[An ability's implementation status indicates how fully the ability's rules work automatically in the Codex.
+
+<b>Gold:</b> This ability works automatically in the Codex.
+
+<b>Silver:</b> This ability's main features work, but may require some Director or Player intervention to function fully.
+
+<b>Bronze:</b> This ability has basic functionality, but its special features will require Director or Player intervention.
+
+<b>Unimplemented:</b> This ability's text is displayed in the Codex, but will require the Director or Player to manually make its mechanics work.
+
+<b>Narrative:</b> This ability is a narrative ability that Players and Directors should role play at appropriate moments during gameplay.
+]]
                                     if self:try_get("implementationDetails") ~= nil and self:try_get("implementationDetails") ~= "" then
-                                        element.tooltip = gui.TooltipFrame(gui.Label {
-                                            text = self:try_get("implementationDetails"),
-                                            width = 300,
-                                            height = "auto",
-                                            wrap = true,
-                                            fontSize = 14,
-                                        }, {})
+                                        text = text .. "\n\n" .. "<b>Notes:</b> " .. self:try_get("implementationDetails")
                                     end
+
+                                    element.tooltip = gui.TooltipFrame(gui.Label {
+                                        text = text,
+                                        width = 300,
+                                        height = "auto",
+                                        wrap = true,
+                                        fontSize = 14,
+                                    }, {})
                                 end,
 
                                 gui.Panel {
 
                                     classes = { "implementationDiamond" },
+                                    rotate = 45,
 
                                     width = 10,
                                     height = 10,
