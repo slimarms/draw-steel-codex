@@ -6482,6 +6482,7 @@ function TacPanel.AddConditionMenu(args)
             placeholderText = "Search...",
             hasFocus = true,
             data = { searchedOption = nil },
+            editlag = 0.2,
             edit = function(element)
                 if not statusExpanded and #statusEffectData > initialCount then
                     statusExpanded = true
