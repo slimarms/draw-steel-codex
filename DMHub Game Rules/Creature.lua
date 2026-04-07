@@ -6807,6 +6807,13 @@ creature.helpSymbols = {
         seealso = {"AltitudeInDeciTiles"},
     },
 
+    flooraltitude = {
+        name = "Floor Altitude",
+        type = "number",
+        desc = "The altitude of the creature relative to the ground level of the floor they are on. 0 if the creature is on the ground. Useful for checking if a creature is airborne.",
+        seealso = {"Altitude", "AltitudeInDeciTiles"},
+    },
+
     distancebelowground = {
         name = "Distance Below Ground",
         type = "number",
@@ -7465,6 +7472,15 @@ creature.lookupSymbols = {
 		local token = dmhub.LookupToken(c)
 		if token ~= nil then
 			return token.altitude
+		end
+
+        return 0
+    end,
+
+    flooraltitude = function(c)
+		local token = dmhub.LookupToken(c)
+		if token ~= nil then
+			return token.floorAltitude
 		end
 
         return 0
