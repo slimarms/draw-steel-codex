@@ -60,9 +60,10 @@ local CHARACTERISTIC_BG = "#0B0F0D"
 
 local TRANSPARENCY = "06"
 
-local TacPanel = {}
+TacPanel = {}
+TacPanelStyles = {}
+
 local TacPanelSizes = {}
-local TacPanelStyles = {}
 
 TacPanelSizes.Panels = {
     fullWidth = 340,        -- Main panel, full right side width
@@ -4599,93 +4600,6 @@ TacPanel.RegisterHeroicResourceDisplay{
     id = "heroic",
     create = TacPanel.HeroicResourcesBox,
     ord = 1,
-}
-
-TacPanel.RegisterHeroicResourceDisplay{
-    id = "acolyte-debt",
-    ord = 0.5,
-    create = function()
-        local EPIC_ID = CharacterResource.epicResourceId
-        return gui.Panel{
-            styles = TacPanelStyles.TokenBox,
-            classes = {"tokenbox", "heroic-resources"},
-            data = { token = nil },
-
-            refreshCharacter = function(element, token)
-                element.data.token = token
-                local isAcolyte = Acolyte and Acolyte.IsAcolyte and Acolyte.IsAcolyte(token.properties)
-                element:SetClass("collapsed", not isAcolyte)
-            end,
-
-            refreshToken = function(element, token)
-                element:FireEvent("refreshCharacter", token)
-            end,
-
-            linger = function(element)
-                local token = element.data.token
-                if token == nil then return end
-                element.tooltip = gui.StatsHistoryTooltip{
-                    description = "Debt",
-                    entries = token.properties:GetStatHistory(EPIC_ID):GetHistory(),
-                }
-            end,
-
-            -- Row 1: title
-            gui.Label{
-                classes = {"tokenbox", "title", "heroic-resources"},
-                text = "DEBT",
-            },
-
-            -- Row 2: icon & value
-            gui.Panel{
-                classes = {"container"},
-                halign = "center",
-                flow = "horizontal",
-                gui.Panel{
-                    classes = {"icon", "heroic-resources"},
-                    selfStyle = {
-                        bgimage = "drawsteel/HeroicResources/T_UI_ICON_FLAT_HR_PIETY.png",
-                        brightness = 0.6,
-                    },
-                },
-                gui.Input{
-                    classes = {"tokenbox", "value", "heroic-resources"},
-                    text = "0",
-                    characterLimit = 3,
-                    selectAllOnFocus = true,
-                    placeholderText = "--",
-                    data = { token = nil },
-                    refreshCharacter = function(element, token)
-                        element.data.token = token
-                        element.textNoNotify = tostring(token.properties:GetEpicResources())
-                    end,
-                    refreshToken = function(element, token)
-                        element:FireEvent("refreshCharacter", token)
-                    end,
-                    change = function(element)
-                        local token = element.data.token
-                        if token == nil then return end
-                        local n = tonum(element.text, nil)
-                        if n == nil or n < 0 then
-                            element:FireEvent("refreshCharacter", token)
-                            return
-                        end
-                        local currentDebt = token.properties:GetEpicResources()
-                        local diff = n - currentDebt
-                        if diff ~= 0 then
-                            token:ModifyProperties{
-                                description = "Change Debt",
-                                execute = function()
-                                    token.properties:AddUnboundedResource(EPIC_ID, diff, "Manually set")
-                                end,
-                            }
-                        end
-                        element.textNoNotify = tostring(token.properties:GetEpicResources())
-                    end,
-                },
-            },
-        }
-    end,
 }
 
 --- Display the heroic resources info
