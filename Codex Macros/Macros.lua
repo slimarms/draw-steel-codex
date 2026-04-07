@@ -547,6 +547,54 @@ Commands.RegisterMacro{
 }
 
 Commands.RegisterMacro{
+    name = "lockobjects",
+    summary = "lock or unlock map objects",
+    doc = "Usage: /lockobjects <keyword> [lock|unlock|toggle]\nLocks, unlocks, or toggles the locked state of map objects matching the keyword.",
+    completions = function(args, argIndex)
+        if argIndex == 1 then
+            local result = {}
+            local seen = {}
+            local objects = game.currentFloor.objects
+            for _, obj in pairs(objects) do
+                if obj.keywords then
+                    for kw, _ in pairs(obj.keywords) do
+                        if not seen[kw] then
+                            seen[kw] = true
+                            result[#result+1] = kw
+                        end
+                    end
+                end
+            end
+            table.sort(result)
+            return result
+        elseif argIndex == 2 then
+            return {{text = "lock", summary = "lock objects"}, {text = "unlock", summary = "unlock objects"}, {text = "toggle", summary = "toggle objects"}}
+        end
+        return {}
+    end,
+    command = function(str)
+        local args = string.split(str, " ")
+        if not args[1] then
+            return
+        end
+
+        local search = args[1]
+        local mode = args[2] or "lock"
+        local objects = game.currentFloor.objects
+        for key, obj in pairs(objects) do
+            local keywords = obj.keywords
+            if keywords and keywords[search] then
+                local newValue = cond(mode == "toggle", not obj.locked, cond(mode == "unlock", false, true))
+                if newValue ~= obj.locked then
+                    obj.locked = newValue
+                    obj:Upload()
+                end
+            end
+        end
+    end,
+}
+
+Commands.RegisterMacro{
     name = "openurl",
     summary = "open a URL",
     doc = "Usage: /openurl <url>\nOpens a URL in the system web browser.",
