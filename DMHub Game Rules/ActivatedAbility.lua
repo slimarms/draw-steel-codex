@@ -2211,6 +2211,10 @@ function ActivatedAbility:FinishCast(casterToken, options)
 	end
 
 	GameSystem.OnEndCastActivatedAbility(casterToken, self, options)
+
+	if self:CountsAsRegularAbilityCast() then
+        casterToken.properties:DispatchEvent("finishability", {usedability = self, cast = options.symbols and options.symbols.cast})
+    end
 end
 
 
@@ -5141,6 +5145,28 @@ local g_lookupSymbols = {
 			return false
 		end
 	end,
+
+    powerrollusesmight = function(c)
+        for _,behavior in ipairs(c.behaviors) do
+            if behavior.typeName == "ActivatedAbilityPowerRollBehavior" then
+                local roll = string.lower(behavior:try_get("roll", ""))
+                if string.find(roll, "might") then
+                    return true
+                end
+            end
+        end
+    end,
+
+    powerrollusesagility = function(c)
+        for _,behavior in ipairs(c.behaviors) do
+            if behavior.typeName == "ActivatedAbilityPowerRollBehavior" then
+                local roll = string.lower(behavior:try_get("roll", ""))
+                if string.find(roll, "agility") then
+                    return true
+                end
+            end
+        end
+    end,
 }
 
 local g_helpCasting = {
@@ -5278,7 +5304,19 @@ local g_helpSymbols = {
 		type = "function",
 		desc = "Returns whether this ability inflicts the provided condition",
 		examples = {'Ability.Inflicts("Frightened")'},
-	}
+	},
+
+    powerrollusesmight = {
+        name = "Power Roll Uses Might",
+        type = "boolean",
+        desc = "Whether the power roll for this ability uses might. Only valid for abilities with a power roll behavior.",
+    },
+
+    powerrollusesagility = {
+        name = "Power Roll Uses Agility",
+        type = "boolean",
+        desc = "Whether the power roll for this ability uses agility. Only valid for abilities with a power roll behavior.",
+    },
 }
 
 ActivatedAbility.lookupSymbols = g_lookupSymbols

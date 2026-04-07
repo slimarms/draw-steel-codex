@@ -2379,7 +2379,9 @@ function ActivatedAbility:TargetTypeEditor()
 					element:FireEvent("refreshAbility")
 				end,
 				refreshAbility = function(element)
-					if self.targetType == 'line' then
+                    if self.targetType == 'cube' then
+						element.text = 'Size:'
+					elseif self.targetType == 'line' then
 						element.text = 'Width:'
 					else
 						element.text = 'Radius:'
