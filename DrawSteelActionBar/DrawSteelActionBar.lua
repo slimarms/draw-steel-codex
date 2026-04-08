@@ -4770,6 +4770,11 @@ CreateAbilityController = function()
                             moveFlags[#moveFlags + 1] = "shifting"
                         end
 
+                        local forcedMovement = g_currentAbility:try_get("targeting", "direct") == "straightline"
+                        if forcedMovement then
+                            moveFlags[#moveFlags+1] = "IgnoreMovementType"
+                        end
+
                         local filterTargetPredicate = g_currentAbility:TargetLocPassesFilterPredicate(g_token, g_currentSymbols)
                         local radiusMarker = g_token:MarkMovementRadius(g_range,
                             { moveFlags = moveFlags, waypoints = waypoints, mask = mask, filter = filterTargetPredicate})
@@ -5225,6 +5230,7 @@ CalculateSpellTargeting = function(forceCast, initialSetup)
                 -- regardless of walls so the player can target "into" a wall.
                 if g_currentAbility:try_get("targeting", "direct") == "straightline" then
                     moveFlags[#moveFlags + 1] = "IgnoreWalls"
+                    moveFlags[#moveFlags + 1] = "IgnoreMovementType"
                 end
 
                 local filterTargetPredicate = g_currentAbility:TargetLocPassesFilterPredicate(g_token, g_currentSymbols)
