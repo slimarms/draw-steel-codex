@@ -614,7 +614,18 @@ end
 --records resource usage for the resource with the given key, which is an arbitrary string
 --and the given refreshType, which is one of the standard refresh types.
 function creature:ConsumeResource(key, refreshType, quantity, note)
+    local resourceInfo = dmhub.GetTable(CharacterResource.tableName)[key]
+
 	if refreshType == 'none' then
+        if quantity > 0 and resourceInfo ~= nil then
+            --fire an event to notify the attempt to use this resource.
+            --this is significant to track e.g. when a free triggered action is used.
+            self:DispatchEvent("useresource", {
+                resource = string.lower(resourceInfo.name),
+                quantity = quantity,
+            })
+        end
+
 		return 0
 	end
 
@@ -624,8 +635,6 @@ function creature:ConsumeResource(key, refreshType, quantity, note)
 			return self:GetMentor():ConsumeResource(key, refreshType, quantity, note)
 		end
 	end
-
-    local resourceInfo = dmhub.GetTable(CharacterResource.tableName)[key]
 
 	local resourceTable = self:GetResourceTable(refreshType)
 
