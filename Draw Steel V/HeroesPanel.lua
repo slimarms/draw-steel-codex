@@ -189,7 +189,7 @@ local CreateDirectorPanel = function(userid)
         },
 
         update = function(element, info)
-            if info.loggedOut or info.timeSinceLastContact > 35 then
+            if info.loggedOut or info.timeSinceLastContact > 140 then
                 element.data.order = "dx" .. string.lower(info.displayName)
             else
                 element.data.order = "da" .. string.lower(info.displayName)
@@ -314,7 +314,7 @@ local CreateDirectorPanel = function(userid)
                 flow = "horizontal",
 
                 update = function(element, info)
-                    if info.loggedOut or info.timeSinceLastContact > 35 then
+                    if info.loggedOut or info.timeSinceLastContact > 140 then
                         element.selfStyle.saturation = 0
                     else
                         element.selfStyle.saturation = 1
@@ -369,7 +369,7 @@ local CreateDirectorPanel = function(userid)
 
                             local perf = sessionInfo.perf
                             local loggedInText = "Logged In"
-                            if sessionInfo.loggedOut or sessionInfo.timeSinceLastContact > 15 then
+                            if sessionInfo.loggedOut or sessionInfo.timeSinceLastContact > 60 then
                                 loggedInText = string.format("Last seen %s",
                                     DescribeSecondsAgo(sessionInfo.timeSinceLastContact))
                             else
@@ -527,7 +527,7 @@ local CreateDirectorPanel = function(userid)
             flow = "horizontal",
 
             update = function(element, info)
-                if info.loggedOut or info.timeSinceLastContact > 35 then
+                if info.loggedOut or info.timeSinceLastContact > 140 then
                     element.text = "Offline"
                 elseif info.richStatus == nil then
                     element.text = "Online"
@@ -599,7 +599,7 @@ local CreatePlayerPanel = function(userid)
         },
 
         update = function(element, info)
-            if info.loggedOut or info.timeSinceLastContact > 35 then
+            if info.loggedOut or info.timeSinceLastContact > 140 then
                 element.data.order = "px" .. string.lower(info.displayName)
             else
                 element.data.order = "pa" .. string.lower(info.displayName)
@@ -745,7 +745,7 @@ local CreatePlayerPanel = function(userid)
 
                     end
 
-                    if info.loggedOut or info.timeSinceLastContact >= 35 then
+                    if info.loggedOut or info.timeSinceLastContact >= 140 then
                         element.selfStyle.saturation = 0
                     else
                         element.selfStyle.saturation = 1
@@ -802,7 +802,7 @@ local CreatePlayerPanel = function(userid)
 
                             local perf = sessionInfo.perf
                             local loggedInText = "Logged In"
-                            if sessionInfo.loggedOut or sessionInfo.timeSinceLastContact > 15 then
+                            if sessionInfo.loggedOut or sessionInfo.timeSinceLastContact > 60 then
                                 loggedInText = string.format("Last seen %s",
                                     DescribeSecondsAgo(sessionInfo.timeSinceLastContact))
                             else
@@ -1008,7 +1008,7 @@ local CreatePlayerPanel = function(userid)
             flow = "horizontal",
 
             update = function(element, info)
-                if info.loggedOut or info.timeSinceLastContact > 35 then
+                if info.loggedOut or info.timeSinceLastContact > 140 then
                     element.text = "Offline"
                 elseif info.richStatus == nil then
                     if dmhub.initiativeQueue ~= nil and not dmhub.initiativeQueue.hidden then

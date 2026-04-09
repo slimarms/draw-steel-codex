@@ -473,6 +473,33 @@ function creature:CanClimb()
     return not self:try_get("_tmp_prone")
 end
 
+--- Determines the fall animation type for this creature at a given height.
+--- The engine calls this when a fall begins to decide the animation style.
+--- @param height number The fall distance in game units
+--- @return string "clumsy" (tumble + impact) or "onfeet" (flip + clean landing)
+function creature:GetFallType(height)
+    print("FALL::", height)
+    if height - self:CalculateNamedCustomAttribute("Fall Reduction", 0) < 2 then
+        return "onfeet"
+    end
+
+    return "clumsy"
+end
+
+--- Plays a single footstep sound matching the landing surface type.
+--- Called by the engine for on-feet landings on solid ground.
+--- @param surfaceType number The surface type ID from TileGameRules
+function creature:PlayLandingFootstep(surfaceType)
+    local soundName = "Foot.Generic_Generic"
+    if AudioSurfaceTypes ~= nil then
+        local entry = AudioSurfaceTypes.surfaces[surfaceType]
+        if entry ~= nil and entry.sound ~= nil then
+            soundName = entry.sound
+        end
+    end
+    audio.FireSoundEvent(soundName, { volume = 0.4 })
+end
+
 --- Whether this creature is a natural climber (climb speed >= walk speed).
 --- Used to determine eligibility for climbers-only surfaces.
 --- @return boolean

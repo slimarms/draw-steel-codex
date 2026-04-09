@@ -594,7 +594,7 @@ CreateUserSessionPanel = function(userid)
 
 					local perf = sessionInfo.perf
 					local loggedInText = "Logged In"
-					if sessionInfo.loggedOut or sessionInfo.timeSinceLastContact > 15 then
+					if sessionInfo.loggedOut or sessionInfo.timeSinceLastContact > 60 then
 						loggedInText = string.format("Last seen %s", DescribeSecondsAgo(sessionInfo.timeSinceLastContact))
 					else
 						if sessionInfo.ping == nil then
@@ -636,9 +636,9 @@ CreateUserSessionPanel = function(userid)
 
                     local status = sessionInfo.richStatus;
                     if status == nil then
-                        if sessionInfo.loggedOut or sessionInfo.timeSinceLastContact >= 35 then
+                        if sessionInfo.loggedOut or sessionInfo.timeSinceLastContact >= 140 then
                             status = "Offline"
-                        elseif sessionInfo.timeSinceLastContact >= 25 then
+                        elseif sessionInfo.timeSinceLastContact >= 100 then
                             status = "Away"
                         elseif sessionInfo.dm then
                             status = "Online"
@@ -670,11 +670,11 @@ CreateUserSessionPanel = function(userid)
 
 					nameLabel.selfStyle.color = color
 
-					if sessionInfo.loggedOut or sessionInfo.timeSinceLastContact > 35 then
+					if sessionInfo.loggedOut or sessionInfo.timeSinceLastContact > 140 then
                         statusIcon:SetClassTree("offline", true)
                         statusIcon:SetClassTree("online", false)
                         statusIcon:SetClassTree("afk", false)
-					elseif sessionInfo.timeSinceLastContact > 25 then
+					elseif sessionInfo.timeSinceLastContact > 100 then
                         statusIcon:SetClassTree("offline", false)
                         statusIcon:SetClassTree("online", false)
                         statusIcon:SetClassTree("afk", true)
