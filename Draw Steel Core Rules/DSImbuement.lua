@@ -11,6 +11,12 @@
 --- Represents an imbuement: a magical enhancement that can be applied to a mundane item.
 DSImbuement = RegisterGameType("DSImbuement")
 
+DSImbuement.ArmorGuids = {
+    [1] = "8670dc44-3c60-4c40-9e23-ebbbe378fea2",
+    [5] = "5e404a72-9492-4d84-b5d0-bf4e4653e94c",
+    [9] = "f27d7287-7ce2-49e8-a5f4-0c35c8899199",
+}
+
 DSImbuement.imbueReplacesPrereq = false
 
 --- Create a unique mundane item to be imbued
@@ -89,11 +95,40 @@ function DSImbuement.CanImbue(imbueItem, targetItem)
     return imbuements[prereq] == true
 end
 
+--- Add the core damage bonus by level to a weapon imbuement
+--- @param imbueItem equipment
+--- @return nil
+function DSImbuement.AddDamageToweapon(imbueItem)
+    local itemLevel = imbueItem:try_get("imbueLevel", 1)
+    local damageByLevel = { [1] = 1, [5] = 2, [9] = 3 }
+    local damage = damageByLevel[itemLevel] or damageByLevel[1]
+    local sourceGuid = dmhub.GenerateGuid()
+end
+
+--- Add the core damage bonus by level to an implement imbuement
+--- @param imbueItem equipment
+--- @return nil
+function DSImbuement.AddDamageToImplement(imbueItem)
+    local itemLevel = imbueItem:try_get("imbueLevel", 1)
+    local damageByLevel = { [1] = 1, [5] = 2, [9] = 3 }
+    local damage = damageByLevel[itemLevel] or damageByLevel[1]
+    local sourceGuid = dmhub.GenerateGuid()
+end
+
+--- Add the core stamina bonus by level to an armor imbuement
+--- @param imbueItem equipment
+--- @return nil
 function DSImbuement.AddStaminaToArmor(imbueItem)
     local itemLevel = imbueItem:try_get("imbueLevel", 1)
     local staminaByLevel = { [1] = 6, [5] = 12, [9] = 21 }
     local stamina = staminaByLevel[itemLevel] or staminaByLevel[1]
-    local sourceGuid = dmhub.GenerateGuid()
+    local sourceGuid = DSImbuement.ArmorGuids[itemLevel]
+    if sourceGuid == nil then return end
+    for _,existing in ipairs(imbueItem:try_get("features", {})) do
+        if existing.guid == sourceGuid then
+            return
+        end
+    end
     local f = CharacterFeature.new{
         addText = "Add Magical Property",
         itemAttached = true,
@@ -131,6 +166,7 @@ function DSImbuement.ImbueItem(imbueItem, targetItem)
     if targetItem:try_get("imbueTarget", "absent-target") ~= imbueItem:try_get("imbueTargetType", "absent-imbue") then
         return nil, "Imbuement type does not match item type."
     end
+    -- print("THC:: IMBUE::", json(imbueItem))
 
     local imbuements = targetItem:get_or_add("imbuements", {})
     imbuements.byLevel = imbuements.byLevel or {}
@@ -178,8 +214,19 @@ function DSImbuement.ImbueItem(imbueItem, targetItem)
         removeChain(prereq)
     end
 
-    -- Add stamina bonus when imbuing armor
+    -- Add stamina bonus when imbuing armor, and strip any stamina feature
+    -- contributed by a lower-tier armor imbuement already on the target.
     if imbueItem:try_get("imbueTargetType") == "armor" then
+        local targetFeatures = targetItem:try_get("features", {})
+        for lowerLevel, lowerGuid in pairs(DSImbuement.ArmorGuids) do
+            if lowerLevel < imbueLevel then
+                for i = #targetFeatures, 1, -1 do
+                    if targetFeatures[i].guid == lowerGuid then
+                        table.remove(targetFeatures, i)
+                    end
+                end
+            end
+        end
         DSImbuement.AddStaminaToArmor(imbueItem)
     end
 
