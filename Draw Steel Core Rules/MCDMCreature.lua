@@ -61,6 +61,7 @@ function creature:Invalidate()
     self._tmp_grantsFlanking = nil
     self._tmp_highestCharacteristic = nil
     self._tmp_maxSurgeCount = nil
+    self._tmp_creaturesize = nil
 end
 
 local g_creatureSingleMaxHitpoints = creature.MaxHitpoints
