@@ -468,7 +468,7 @@ function CountLoggedInUsers()
     local count = 0
     for i,userid in ipairs(dmhub.users) do
         local info = dmhub.GetSessionInfo(userid)
-        if (not info.loggedOut) and info.timeSinceLastContact < 30 then
+        if (not info.loggedOut) and info.timeSinceLastContact < 120 then
             count = count + 1
         end
     end

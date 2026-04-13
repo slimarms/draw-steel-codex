@@ -1820,7 +1820,7 @@ ActionMenu = function()
         end,
 
         hideability = function(element, ability)
-            if m_showingAbility == ability then
+            if m_showingAbility == ability or (m_showingAbility and ability and m_showingAbility.typeName == "ActiveTrigger" and ability.typeName == "ActiveTrigger" and m_showingAbility.id == ability.id) then
                 CharacterPanel.HideAbility(m_showingAbility)
                 m_showingAbility = false
             end
@@ -2076,14 +2076,19 @@ local function GetArrowColor(ability, sourceToken, targetToken)
     return "black"
 end
 
-local function AddModifierLabelsToMarker(markers, sourceToken, targetToken, ability)
+local function AddModifierLabelsToMarker(markers, sourceToken, targetToken, ability, range)
     if markers == nil or ability == nil or sourceToken == nil or targetToken == nil then
         return
     end
 
     local pierceWalls = sourceToken.properties:GetPierceWalls()
     if sourceToken:GetLineOfSight(targetToken, pierceWalls) == 0 then
-        markers:AddLabel("No Line of Sight", "debuff")
+        markers:AddLabel("No Line of Sight", "forbidden")
+        return
+    end
+
+    if range ~= nil and targetToken:Distance(sourceToken) > range + dmhub.unitsPerSquare then
+        markers:AddLabel("Out of Range", "forbidden")
         return
     end
 
@@ -2122,15 +2127,16 @@ end
 
 ---@param rays table<{a: Token, b: Token}>[]
 ---@param ability ActivatedAbility|nil
-local function ReplaceTargetLineOfSightRays(rays, ability)
+---@param range number|nil
+local function ReplaceTargetLineOfSightRays(rays, ability, range)
     local t = {}
     for i, ray in ipairs(rays) do
         local key = string.format("%s-%s", ray.a.id, ray.b.id)
         if m_targetLineOfSightRays[key] ~= nil then
             t[key] = m_targetLineOfSightRays[key]
         else
-            t[key] = dmhub.MarkLineOfSight(ray.a, ray.b, ray.a.properties:GetPierceWalls(), GetArrowColor(ability, ray.a, ray.b))
-            AddModifierLabelsToMarker(t[key], ray.a, ray.b, ability)
+            t[key] = dmhub.MarkLineOfSight(ray.a, ray.b, ray.a.properties:GetPierceWalls(), GetArrowColor(ability, ray.a, ray.b), range)
+            AddModifierLabelsToMarker(t[key], ray.a, ray.b, ability, range)
         end
         m_targetLineOfSightRays[key] = nil
     end
@@ -2267,10 +2273,10 @@ local function CreateTargetInfo(spell)
         type = string.lower(spell.typeName),
         guid = dmhub.GenerateGuid(),
         action = spell,
-        execute = function(targetToken, info) --info has {targetEffects = {list of effect panels}}
+        execute = function(targetToken, info) --info has {targetEffect = {list of effect panels}}
             local exists = list_contains(g_targetsChosen, targetToken.id)
 
-            for i, effect in ipairs(info.targetEffect) do
+            for i, effect in ipairs(info.targetEffect or {}) do
                 effect:SetClass('target-selected', true)
                 effect:SetClass('two', false)
                 effect:SetClass('three', false)
@@ -2292,7 +2298,7 @@ local function CreateTargetInfo(spell)
                         end
                     end
 
-                    for i, effect in ipairs(info.targetEffect) do
+                    for i, effect in ipairs(info.targetEffect or {}) do
                         effect:SetClass('two', ntargets >= 2)
                         effect:SetClass('three', ntargets >= 3)
                     end
@@ -2309,7 +2315,7 @@ local function CreateTargetInfo(spell)
                     if g_firstTarget == targetToken.id then
                         g_firstTarget = g_targetsChosen[1]
                     end
-                    for i, effect in ipairs(info.targetEffect) do
+                    for i, effect in ipairs(info.targetEffect or {}) do
                         effect:SetClass('target-selected', false)
                     end
                 end
@@ -2429,6 +2435,16 @@ local g_castChargesInput = nil
 local g_shifting = true
 
 local function CreateShiftController()
+
+
+    local m_label = gui.Label {
+        fontSize = 14,
+        width = "auto",
+        height = "auto",
+        text = "You are shifting. You can choose to move normally instead.",
+        vmargin = 2,
+    }
+
     local resultPanel
     local slider = gui.EnumeratedSliderControl {
         halign = "center",
@@ -2440,6 +2456,15 @@ local function CreateShiftController()
         },
         value = g_shifting,
         beginCasting = function(element)
+
+            if g_token ~= nil and (g_token.properties:CalculateNamedCustomAttribute("Shift Disabled") or 0) > 0 then
+                g_currentSymbols.shiftingOverride = false
+                element.value = false
+                m_label.text = "<color=#ff0000><b>You cannot shift.</b></color> You may move normally instead."
+                return
+            end
+
+            m_label.text = "You are shifting. You can choose to move normally instead."
             element.value = true
         end,
         change = function(element)
@@ -2459,13 +2484,8 @@ local function CreateShiftController()
         blurBackground = true,
         pad = 4,
 
-        gui.Label {
-            fontSize = 14,
-            width = "auto",
-            height = "auto",
-            text = "You are shifting. You can choose to move normally instead.",
-            vmargin = 2,
-        },
+        m_label,
+
         slider,
     }
     return resultPanel
@@ -3897,8 +3917,8 @@ CreateAbilityController = function()
                 --new one to highlight and maintain any existing ones.
                 for _, ray in ipairs(rays) do
                     if ray.b.id == targetToken.id and m_targetLineOfSightRays[string.format("%s-%s", ray.a.id, ray.b.id)] == nil then
-                        m_markLineOfSight = dmhub.MarkLineOfSight(ray.a, ray.b, ray.a.properties:GetPierceWalls(), GetArrowColor(g_currentAbility, ray.a, ray.b))
-                        AddModifierLabelsToMarker(m_markLineOfSight, ray.a, ray.b, g_currentAbility)
+                        m_markLineOfSight = dmhub.MarkLineOfSight(ray.a, ray.b, ray.a.properties:GetPierceWalls(), GetArrowColor(g_currentAbility, ray.a, ray.b), range)
+                        AddModifierLabelsToMarker(m_markLineOfSight, ray.a, ray.b, g_currentAbility, range)
                         m_markLineOfSightToken = targetToken
                         m_markLineOfSightSourceToken = g_token
                         break
@@ -3906,9 +3926,9 @@ CreateAbilityController = function()
                 end
             else
                 --we just target from the source to the target.
-                m_markLineOfSight = dmhub.MarkLineOfSight(g_token, targetToken, g_token.properties:GetPierceWalls(), GetArrowColor(g_currentAbility, g_token, targetToken))
+                m_markLineOfSight = dmhub.MarkLineOfSight(g_token, targetToken, g_token.properties:GetPierceWalls(), GetArrowColor(g_currentAbility, g_token, targetToken), range)
                 if m_markLineOfSight ~= nil then
-                    AddModifierLabelsToMarker(m_markLineOfSight, g_token, targetToken, g_currentAbility)
+                    AddModifierLabelsToMarker(m_markLineOfSight, g_token, targetToken, g_currentAbility, range)
                     m_markLineOfSightToken = targetToken
                     m_markLineOfSightSourceToken = g_token
                 end
@@ -4515,6 +4535,9 @@ CreateAbilityController = function()
                     end
 
                     local locs = g_pointTargeting.shape.locations
+                    if locs == nil or #locs == 0 then
+                        locs = { { withGroundAltitude = { point3 = point } } }
+                    end
                     local point = locs[1].withGroundAltitude.point3
                     local minx = point.x
                     local miny = point.y
@@ -4745,6 +4768,11 @@ CreateAbilityController = function()
                         local moveFlags = {}
                         if shifting then
                             moveFlags[#moveFlags + 1] = "shifting"
+                        end
+
+                        local forcedMovement = g_currentAbility:try_get("targeting", "direct") == "straightline"
+                        if forcedMovement then
+                            moveFlags[#moveFlags+1] = "IgnoreMovementType"
                         end
 
                         local filterTargetPredicate = g_currentAbility:TargetLocPassesFilterPredicate(g_token, g_currentSymbols)
@@ -4994,7 +5022,12 @@ local function CalculateSpellTargetFocusing(symbols)
                         end
 
                         targetToken.sheet.data.targetInfo = g_targetInfo
-                        targetToken.sheet:FireEvent('target', { valid = valid, classes = classes, reason = failReason })
+                        --out-of-range is shown as an arrow label instead of a token tooltip.
+                        local tooltipReason = failReason
+                        if tooltipReason ~= nil and string.starts_with(tooltipReason, "Out of range") then
+                            tooltipReason = nil
+                        end
+                        targetToken.sheet:FireEvent('target', { valid = valid, classes = classes, reason = tooltipReason })
 
                         potentialTargetTokens[#potentialTargetTokens + 1] = targetToken
                     end
@@ -5029,7 +5062,7 @@ CalculateSpellTargeting = function(forceCast, initialSetup)
         --if this spell dictates specific targeting rays to use.
         local rays = g_currentAbility:GetTargetingRays(g_token, range, g_currentSymbols, targets)
         if rays ~= nil then
-            ReplaceTargetLineOfSightRays(rays, g_currentAbility)
+            ReplaceTargetLineOfSightRays(rays, g_currentAbility, range)
 
             --record the targeting as symbols.
             local targetPairs = {}
@@ -5197,7 +5230,13 @@ CalculateSpellTargeting = function(forceCast, initialSetup)
                 -- regardless of walls so the player can target "into" a wall.
                 if g_currentAbility:try_get("targeting", "direct") == "straightline" then
                     moveFlags[#moveFlags + 1] = "IgnoreWalls"
+                    moveFlags[#moveFlags + 1] = "IgnoreMovementType"
                 end
+
+                m_allowedAltitudeCalculator = g_currentAbility:TargetLocMaxElevationChangeFunction(g_token, g_currentSymbols)
+                m_altitudeController:SetClass("collapsed", m_allowedAltitudeCalculator == nil)
+                print("ALT:: CALC ALT:", m_allowedAltitudeCalculator)
+
 
                 local filterTargetPredicate = g_currentAbility:TargetLocPassesFilterPredicate(g_token, g_currentSymbols)
 
@@ -5237,8 +5276,7 @@ CalculateSpellTargeting = function(forceCast, initialSetup)
                     print("MovementRadius:: MARK", range)
                     AddRadiusMarker(loc, range, 'white', filterTargetPredicate)
 
-                    m_allowedAltitudeCalculator = g_currentAbility:TargetLocMaxElevationChangeFunction(g_token,
-                        g_currentSymbols)
+                    m_allowedAltitudeCalculator = g_currentAbility:TargetLocMaxElevationChangeFunction(g_token, g_currentSymbols)
                     m_altitudeController:SetClass("collapsed", m_allowedAltitudeCalculator == nil)
                 else
                     AddCustomAreaMarker(customLocs, 'white')

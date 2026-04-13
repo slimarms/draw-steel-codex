@@ -61,6 +61,7 @@ function creature:Invalidate()
     self._tmp_grantsFlanking = nil
     self._tmp_highestCharacteristic = nil
     self._tmp_maxSurgeCount = nil
+    self._tmp_creaturesize = nil
 end
 
 local g_creatureSingleMaxHitpoints = creature.MaxHitpoints
@@ -1534,7 +1535,7 @@ local function GetEnemyCreaturesAtLoc(token, allowedTokenIds, loc, result)
     local tokensAtLoc = dmhub.GetTokensAtLoc(loc)
     if tokensAtLoc ~= nil then
         for _, otherTok in ipairs(tokensAtLoc) do
-            if token.charid ~= otherTok.charid and (allowedTokenIds == nil or allowedTokenIds[otherTok.charid]) and token:IsFriend(otherTok) == false and otherTok:GetLineOfSight(token, otherTok.properties:GetPierceWalls()) > 0 and (not otherTok.properties:IsDead()) then
+            if token.charid ~= otherTok.charid and (allowedTokenIds == nil or allowedTokenIds[otherTok.charid]) and token:IsFriend(otherTok) == false and otherTok:GetLineOfSight(token, otherTok.properties:GetPierceWalls(), "basic") > 0 and (not otherTok.properties:IsDead()) then
                 local alreadyFound = false
                 for _, existing in ipairs(result) do
                     if existing.charid == otherTok.charid then
@@ -1680,7 +1681,7 @@ function creature:GetFlankingTokens(tokensOverride)
 
     --remove any enemies that we don't have line of sight to or that can't grant flanking.
     for i = #adjacentEnemies, 1, -1 do
-        local los = adjacentEnemies[i]:GetLineOfSight(token, adjacentEnemies[i].properties:GetPierceWalls())
+        local los = adjacentEnemies[i]:GetLineOfSight(token, adjacentEnemies[i].properties:GetPierceWalls(), "basic")
         if los <= 0 or not adjacentEnemies[i].properties:CanGrantFlanking() then
             table.remove(adjacentEnemies, i)
         end
@@ -2813,7 +2814,6 @@ creature.RegisterSymbol {
 function creature:InflictCondition(conditionid, args)
     local immunities = self:GetConditionImmunities()
 
-    print("INFLICT:: CONDITION", conditionid, "VS IMMUNITIES", immunities)
     --this creature is immune to the condition.
     if immunities[conditionid] and (not args.purge) then
         return
@@ -3444,6 +3444,7 @@ function creature:ShowCharacteristicRollDialog(attrid)
 
     local displaying = false
     if token ~= nil then
+        CharacterPanel.UnlockDisplayAbility()
         displaying = CharacterPanel.DisplayAbility(token, syntheticAbility, nil, {lock = true, renderAsAbility = true})
     end
 
@@ -3660,7 +3661,7 @@ function creature.TakeDamage(self, amount, note, info)
     if info.damagetype == "collide" then
         local forcedMovementCast = self:try_get("_tmp_forcedMovementCast")
         if forcedMovementCast ~= nil then
-            forcedMovementCast:CountForcedMovementDamage(amount)
+            forcedMovementCast:CountForcedMovementDamage(amount, self)
         end
     end
 

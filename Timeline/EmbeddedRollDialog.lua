@@ -671,6 +671,33 @@ function GameHud.CreateEmbeddedRollDialog()
     end
 
 
+    -- Find the line-of-sight marker for a given target token. For normal
+    -- abilities the key is "casterId-targetId". For minion squad abilities
+    -- the source of each ray is a different squad member, so we fall back
+    -- to scanning all keys for one ending with the target's charid.
+    local function FindMarkerForTarget(casterToken, targetToken)
+        if m_options == nil or m_options.markLineOfSight == nil then
+            return nil
+        end
+
+        -- Fast path: direct caster -> target key.
+        local key = string.format("%s-%s", casterToken.charid, targetToken.charid)
+        local markers = m_options.markLineOfSight[key]
+        if markers ~= nil then
+            return markers
+        end
+
+        -- Slow path: squad targeting -- scan for any ray ending at target.
+        local suffix = "-" .. targetToken.charid
+        for k, m in pairs(m_options.markLineOfSight) do
+            if string.ends_with(k, suffix) then
+                return m
+            end
+        end
+
+        return nil
+    end
+
     -- Update the targeting arrow labels for the current target based on enabled modifiers.
     local function UpdateArrowLabelsForCurrentTarget()
         if m_options == nil or m_options.markLineOfSight == nil then
@@ -688,8 +715,7 @@ function GameHud.CreateEmbeddedRollDialog()
             return
         end
 
-        local key = string.format("%s-%s", casterToken.charid, targetToken.charid)
-        local markers = m_options.markLineOfSight[key]
+        local markers = FindMarkerForTarget(casterToken, targetToken)
         if markers == nil then
             return
         end
@@ -739,8 +765,7 @@ function GameHud.CreateEmbeddedRollDialog()
             return
         end
 
-        local key = string.format("%s-%s", casterToken.charid, target.token.charid)
-        local markers = m_options.markLineOfSight[key]
+        local markers = FindMarkerForTarget(casterToken, target.token)
         if markers == nil then
             return
         end
@@ -770,7 +795,8 @@ function GameHud.CreateEmbeddedRollDialog()
             nottierone = m_rollInfo.nottierone,
             nottierthree = m_rollInfo.nottierthree,
         }
-        local tier = (targetRollProps and targetRollProps:try_get("overrideTier"))
+        local tier = (rollProperties and rollProperties:try_get("overrideTier"))
+                     or (targetRollProps and targetRollProps:try_get("overrideTier"))
                      or RollUtils.DiceResultToTier(tierRollInfo)
 
         -- Get the power table text from this target's rollProperties.
@@ -811,6 +837,8 @@ function GameHud.CreateEmbeddedRollDialog()
 
     -- After the roll is made, replace all arrow labels with tier results.
     -- Uses each target's saved rollProperties so per-target modifiers are reflected.
+    -- For squad targeting where multiple minions attack the same target, only the
+    -- first minion's arrow gets the tier label to avoid duplicate labels.
     local function UpdateArrowLabelsWithTierResults()
         if m_options == nil or m_options.markLineOfSight == nil then
             return
@@ -824,9 +852,13 @@ function GameHud.CreateEmbeddedRollDialog()
             return
         end
 
+        local labeledTargets = {}
         for _, target in ipairs(m_multitargets) do
-            local targetRollProps = target.rollProperties or rollProperties
-            UpdateArrowLabelForTarget(casterToken, target, targetRollProps)
+            if target.token ~= nil and not labeledTargets[target.token.charid] then
+                labeledTargets[target.token.charid] = true
+                local targetRollProps = target.rollProperties or rollProperties
+                UpdateArrowLabelForTarget(casterToken, target, targetRollProps)
+            end
         end
     end
 
@@ -2018,12 +2050,13 @@ function GameHud.CreateEmbeddedRollDialog()
             {
                 selectors = { "tokenContainer" },
                 bgimage = "panels/square.png",
-                bgcolor = "#00000000",
+                bgcolor = "clear",
             },
             {
                 selectors = { "tokenContainer", "selected" },
                 bgimage = "panels/square.png",
-                bgcolor = "#ffffff18",
+                borderWidth = 1,
+                borderColor = "black",
             },
             {
                 selectors = { "tokenContainer", "hover" },
@@ -2041,6 +2074,22 @@ function GameHud.CreateEmbeddedRollDialog()
                 selectors = { "icon", "activated" },
                 bgcolor = "white",
             },
+
+            {
+                selectors = {"label"},
+                priority = 5,
+                color = "black",
+            },
+            {
+                selectors = {"label","rolling"},
+                priority = 5,
+                color = Styles.textColor,
+            },
+            {
+                selectors = {"label","finishedRolling"},
+                priority = 5,
+                color = Styles.textColor,
+            },
         },
         width = "auto",
         height = "auto",
@@ -2049,6 +2098,7 @@ function GameHud.CreateEmbeddedRollDialog()
         vscroll = true,
         halign = "center",
         valign = "top",
+        bmargin = 4,
         flow = "horizontal",
         wrap = true,
         prepare = function(element, options)
@@ -2066,7 +2116,6 @@ function GameHud.CreateEmbeddedRollDialog()
                     fontSize = 12,
                     minFontSize = 8,
                     bold = true,
-                    color = Styles.textColor,
                     width = "95%",
                     height = "auto",
                     maxHeight = 30,
@@ -2077,7 +2126,6 @@ function GameHud.CreateEmbeddedRollDialog()
                 }
                 local boonLabel = gui.Label {
                     fontSize = 10,
-                    color = cond(target.text == nil, Styles.textColor, "#9999ffff"),
                     width = "95%",
                     height = "auto",
                     halign = "center",
@@ -2152,7 +2200,7 @@ function GameHud.CreateEmbeddedRollDialog()
 
                         for k, _ in pairs(maintargetModifiers) do
                             if multitargetModifiers[k] == nil then
-                                text = text .. " <s><color=#BBBBBB>" .. k .. "</color></s>"
+                                text = text .. " <s>" .. k .. "</s>"
                             end
                         end
 
@@ -2167,7 +2215,7 @@ function GameHud.CreateEmbeddedRollDialog()
                 }
 
                 local surges = {}
-                for surgeNum = 3, 1, -1 do
+                for surgeNum = ((creature ~= nil) and creature:GetMaxSurgeCount() or 3), 1, -1 do
                     surges[#surges + 1] = gui.Panel {
                         classes = { "icon", "hideWhenMinimized" },
                         textCalculated = function(element, calculationOptions)
@@ -2201,7 +2249,9 @@ function GameHud.CreateEmbeddedRollDialog()
                 local tokenPanel = gui.Panel {
                     classes = { "tokenContainer", "hideWhenMinimized", cond(targetCreature == target.token.properties, "selected") },
                     width = 80,
-                    height = 80,
+                    minHeight = 80,
+                    maxHeight = 120,
+                    height = "auto",
                     flow = "vertical",
                     halign = "center",
 
@@ -2229,6 +2279,7 @@ function GameHud.CreateEmbeddedRollDialog()
                         gui.CreateTokenImage(target.token, {
                             halign = "center",
                             valign = "top",
+                            tmargin = 4,
                             width = 48,
                             height = 48,
                             bgcolor = "white",
@@ -2446,8 +2497,9 @@ function GameHud.CreateEmbeddedRollDialog()
                     surgesOverride = surgesOverride - 1
                 end
 
-                if surgesOverride > 3 then
-                    surgesOverride = 3
+                local maxSurges = (creature ~= nil) and creature:GetMaxSurgeCount() or 3
+                if surgesOverride > maxSurges then
+                    surgesOverride = maxSurges
                 end
 
                 local options = m_lastCalculationOptions or {}
@@ -3536,6 +3588,16 @@ function GameHud.CreateEmbeddedRollDialog()
         end
 
         resultPanel:FireEventTree("recalculatedMultiTargets", m_multitargets, rollProperties)
+
+        -- Now that every target's rollProperties/boons/banes have been updated
+        -- for the current modifier set, refresh all targeting-ray labels using
+        -- the fresh per-target data. Individual UpdateCurrentTargetArrowLabel
+        -- calls made during the loop above read target.boons/banes that are
+        -- written only at the end of each iteration, so the labels would
+        -- otherwise lag one modifier-toggle behind.
+        if resultPanel.valid and resultPanel:HasClass("finishedRolling") then
+            UpdateArrowLabelsWithTierResults()
+        end
 
         if needReroll then
             rollAgainButton:FireEvent("press")

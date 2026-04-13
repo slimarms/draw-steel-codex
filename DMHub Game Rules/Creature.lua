@@ -473,6 +473,33 @@ function creature:CanClimb()
     return not self:try_get("_tmp_prone")
 end
 
+--- Determines the fall animation type for this creature at a given height.
+--- The engine calls this when a fall begins to decide the animation style.
+--- @param height number The fall distance in game units
+--- @return string "clumsy" (tumble + impact) or "onfeet" (flip + clean landing)
+function creature:GetFallType(height)
+    print("FALL::", height)
+    if height - self:CalculateNamedCustomAttribute("Fall Reduction", 0) < 2 then
+        return "onfeet"
+    end
+
+    return "clumsy"
+end
+
+--- Plays a single footstep sound matching the landing surface type.
+--- Called by the engine for on-feet landings on solid ground.
+--- @param surfaceType number The surface type ID from TileGameRules
+function creature:PlayLandingFootstep(surfaceType)
+    local soundName = "Foot.Generic_Generic"
+    if AudioSurfaceTypes ~= nil then
+        local entry = AudioSurfaceTypes.surfaces[surfaceType]
+        if entry ~= nil and entry.sound ~= nil then
+            soundName = entry.sound
+        end
+    end
+    audio.FireSoundEvent(soundName, { volume = 0.4 })
+end
+
 --- Whether this creature is a natural climber (climb speed >= walk speed).
 --- Used to determine eligibility for climbers-only surfaces.
 --- @return boolean
@@ -993,6 +1020,13 @@ function creature:InflictCondition(conditionid, args)
 	self.inflictedConditions = inflictedConditions
 
     audio.DispatchSoundEvent(conditionInfo:SoundEvent())
+
+    self:DispatchEvent("inflictcondition", {
+        condition = conditionInfo.name,
+        hasattacker = false,
+        attacker = nil,
+    })
+
 end
 
 function creature:FillCalculatedStatusIcons(result)
@@ -4579,6 +4613,8 @@ function creature:RefreshToken(token)
                     end
 
 					--Skip local-only triggers since they already fired on the originating machine.
+                    info = info or {}
+                    info.remote = true
 					self:TriggerEvent(eventInfo.eventName, info, true, "skipLocal")
 				end
 			end
@@ -4971,7 +5007,7 @@ end
 function creature:FillBaseActiveModifiers(result)
 	local modTable = GetTableCached(GlobalRuleMod.TableName) or {}
 	local globalFeatures = {}
-    local isretainer = self:try_get("_tmp_retainer") or false
+    local isretainer = self:IsRetainer()
 	local ismonster = (not isretainer) and self:IsMonster()
 	local ischaracter = self.typeName == "character"
     local iscompanion = self.typeName == "AnimalCompanion"
@@ -5726,7 +5762,7 @@ function creature:GetResources()
                     ignore = true
                 end
             end
-
+            
             if not ignore then
 			    result[key] = (result[key] or 0) + resource.unbounded
             end
@@ -5773,6 +5809,9 @@ end
 
 --called by dmhub when a creature teleports.
 function creature:OnTeleport()
+	if self:try_get("_tmp_suppressTeleportEvent") then
+		return
+	end
 	self:DispatchEvent("teleport")
 end
 
@@ -6807,6 +6846,13 @@ creature.helpSymbols = {
         seealso = {"AltitudeInDeciTiles"},
     },
 
+    flooraltitude = {
+        name = "Floor Altitude",
+        type = "number",
+        desc = "The altitude of the creature relative to the ground level of the floor they are on. 0 if the creature is on the ground. Useful for checking if a creature is airborne.",
+        seealso = {"Altitude", "AltitudeInDeciTiles"},
+    },
+
     distancebelowground = {
         name = "Distance Below Ground",
         type = "number",
@@ -7470,6 +7516,15 @@ creature.lookupSymbols = {
         return 0
     end,
 
+    flooraltitude = function(c)
+		local token = dmhub.LookupToken(c)
+		if token ~= nil then
+			return token.floorAltitude
+		end
+
+        return 0
+    end,
+
     distancebelowground = function(c)
         local token = dmhub.LookupToken(c)
         if token ~= nil then
@@ -7630,14 +7685,7 @@ creature.lookupSymbols = {
 	end,
 
 	size = function(c)
-		local token = dmhub.LookupToken(c)
-		if token ~= nil and token.valid then
-            return token.creatureSizeNumber
-		end
-
-		local num = creature:GetBaseCreatureSizeNumber()
-
-		return num or 1
+		return c:GetCalculatedCreatureSizeAsNumber()
 	end,
 
 	tilesize = function(c)
@@ -7646,7 +7694,7 @@ creature.lookupSymbols = {
             return token.tileSize
 		end
 
-		local num = creature:GetBaseCreatureSizeNumber()
+		local num = c:GetBaseCreatureSizeNumber()
 		if num ~= nil then
 			return math.max(1, num - 3)
 		end
@@ -9515,6 +9563,8 @@ function creature:EventDropImage(path)
 		portraitZoom = token.portraitZoom,
 	}
 
+	local snapshot = token:PrepareUploadAppearance()
+
 	assets:UploadImageAsset{
 		path = path,
 		imageType = "Avatar",
@@ -9537,7 +9587,7 @@ function creature:EventDropImage(path)
 			token.portrait = imageid
 			token.portraitOffset = {x = 0, y = 0}
 			token.portraitZoom = 1
-			token:UploadAppearance()
+			token:UploadAppearance(snapshot)
 			dmhub.Debug("COMPLETED PASTE")
 		end,
 		addlocal = function(imageid)
@@ -9571,6 +9621,8 @@ function creature:EventPaste()
 
 	dmhub.Debug("PASTING CREATURE...")
 
+	local snapshot = token:PrepareUploadAppearance()
+
 	assets:UploadImageAsset{
 		path = "CLIPBOARD",
 		imageType = "Avatar",
@@ -9593,7 +9645,7 @@ function creature:EventPaste()
 			token.portrait = imageid
 			token.portraitOffset = {x = 0, y = 0}
 			token.portraitZoom = 1
-			token:UploadAppearance()
+			token:UploadAppearance(snapshot)
 			dmhub.Debug("COMPLETED PASTE")
 		end,
 		addlocal = function(imageid)
@@ -10064,7 +10116,7 @@ function creature:IsValid()
         return false
     end
 
-    if getmetatable(self.culture) == nil then
+    if getmetatable(self.culture) == nil and rawget(self, "culture") ~= nil then
         printf("Creature validation: culture is invalid")
         return false
     end
@@ -10172,7 +10224,7 @@ function creature:Repair(localOnly)
 
     if self.typeName == "character" and (rawget(self, "characterDescription") == nil or self.characterDescription.typeName == nil) then
         self.characterDescription = CharacterDescription.new{}
-        printf("Creature validation: characterDescription missing %s, resetting. localOnly = %s new type =", charid, tostring(localOnly), self.characterDescription.typeName)
+        printf("Creature validation: characterDescription missing %s, resetting. localOnly = %s new type = %s", charid, tostring(localOnly), self.characterDescription.typeName)
     end
 
     --reset culture.
@@ -10197,7 +10249,7 @@ function creature:Repair(localOnly)
         table.remove(remoteInvokes, 1)
         if #remoteInvokes == 0 then
             remoteInvokes = nil
-            self.removeInvokes = nil
+            self.remoteInvokes = nil
         end
     end
 
@@ -10229,15 +10281,16 @@ function creature:Repair(localOnly)
 
 	deleteList = {}
 
-	for i,resistanceEntry in ipairs(self:try_get("resistances", {})) do
+	for i,resistanceEntry in ipairs(table.shallow_copy(self:try_get("resistances", {}))) do
 		if getmetatable(resistanceEntry) == nil then
 			if type(resistanceEntry) == "table" then
 				printf("Creature validation: repair resistance for %s by adding ResistanceEntry for character %s", json(resistanceEntry), charid)
 				self.resistances[i] = ResistanceEntry.new(resistanceEntry)
 			else
 				--unrecognized resistances, just dump them.
-				printf("Creature validation: invalid resistances for %s, puring them.", charid)
+				printf("Creature validation: invalid resistances for %s, purging them.", charid)
 				self.resistances = {}
+                break
 			end
 		end
 	end
@@ -10280,7 +10333,7 @@ function creature:Repair(localOnly)
 	end
 
 	for _,itemid in ipairs(deleteList) do
-		printf("Creature validation: remove character %s itemid %s due to corrupt entry.", charid, k)
+		printf("Creature validation: remove character %s itemid %s due to corrupt entry.", charid, itemid)
 		self.inventory[itemid] = nil
 	end
 

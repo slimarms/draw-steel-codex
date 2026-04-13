@@ -6,6 +6,7 @@
 --- @field whiteLabel WhiteLabel The current 'white label' version of the engine this is. May be 'dmhub' or 'mcdm'
 --- @field whiteLabelEntityName string The name of the publisher of the product the engine is running as.
 --- @field whiteLabelAppName string The name of the app the engine is running as, suitable for showing to users.
+--- @field platform string The platform the engine is running on. Returns 'windows', 'macOS', or 'linux'.
 --- @field nodiagonals boolean If true, the game rules are set up to have no pythagorean theorem when calculating diagonals.
 --- @field betaBranch nil|string Which branch the app is opted-in to updating from. This is not relevant if the app is being updated from Steam, Itch, or similar.
 --- @field GetSelectedCharacters fun(): string[]|nil A function that can be set to tell the engine which characters are currently selected. Returns a list of token ids.
@@ -94,6 +95,7 @@
 --- @field connectionErrorStatus any The current connection error status, if any. Used to display connection issues to the user.
 --- @field writeErrors any A list of failed and unconfirmed write receipts that haven't been acknowledged. Each entry is a WriteReceipt with path, method, failureReason, isFailed, isUnconfirmed, and acknowledged fields.
 --- @field pendingWriteCount number The number of writes currently pending (in-flight to the cloud).
+--- @field durableObjectSeq number Latest sequence number stamped by the Durable Object game server on inbound messages. The DO resets this counter to 0 on every cold start/hibernation wake. Returns 0 if the current game is not DO-backed or no seq has been received yet.
 --- @field patronTier number The Patreon tier level of the current user. 0 means not a patron.
 --- @field subscriptionTier number The subscription tier level of the current user. 0 means no subscription.
 --- @field isAdminAccount boolean True if the current user has admin privileges on their account.
@@ -1017,9 +1019,28 @@ function dmhub.Redo()
 	-- dummy implementation for documentation purposes only
 end
 
+--- GetDurableObjectSeqHistory: Returns a Lua array of the last ~20 inbound Durable Object messages that carried a seq field, oldest first. Each entry is a pre-formatted string like '42 put game/characters/abc' or '42 ack ok w-001'.
+--- @return string[]
+function dmhub:GetDurableObjectSeqHistory()
+	-- dummy implementation for documentation purposes only
+end
+
 --- AcknowledgeAllWriteErrors: Acknowledges all current write errors so they are no longer returned by writeErrors.
 --- @return nil
 function dmhub:AcknowledgeAllWriteErrors()
+	-- dummy implementation for documentation purposes only
+end
+
+--- SetRichPresenceActivity: Sets a short-lived rich-presence activity string (e.g. 'Building Orc Fury') that is pushed to both Steam and Discord. Pass nil or an empty string to clear. The activity auto-expires a few seconds after the last call, so panels should re-push from a think handler while open.
+--- @param status string
+--- @return nil
+function dmhub:SetRichPresenceActivity(status)
+	-- dummy implementation for documentation purposes only
+end
+
+--- DumpSteamRichPresence: Logs what Steam currently has stored for the local user's rich presence, for debugging. Echoes back each key we sent plus the full server-side key list.
+--- @return nil
+function dmhub:DumpSteamRichPresence()
 	-- dummy implementation for documentation purposes only
 end
 
@@ -1171,6 +1192,13 @@ end
 --- @param settingid string
 --- @return boolean
 function dmhub.HasSetting(settingid)
+	-- dummy implementation for documentation purposes only
+end
+
+--- GetSettingInfo: Returns a table with 'description' and 'value' fields for the given setting, or nil if the setting does not exist.
+--- @param settingid string
+--- @return {description: string, value: string}|nil
+function dmhub.GetSettingInfo(settingid)
 	-- dummy implementation for documentation purposes only
 end
 
@@ -1478,13 +1506,14 @@ function dmhub.HighlightLine(options)
 	-- dummy implementation for documentation purposes only
 end
 
---- MarkLineOfSight: Mark the line of sight between the attacker and target on the map. Call Destroy() on the returned reference to clear the marker. Optionally pass pierceSurfaces to ignore thin walls. arrowColor sets the arrow color: 'red' (enemies), 'green' (allies), 'black' (mixed).
+--- MarkLineOfSight: Mark the line of sight between the attacker and target on the map. Call Destroy() on the returned reference to clear the marker. Optionally pass pierceSurfaces to ignore thin walls. arrowColor sets the arrow color: 'red' (enemies), 'green' (allies), 'black' (mixed). maxRange greys out the portion of the arrow past the range boundary (in tile units).
 --- @param attacker CharacterToken
 --- @param target CharacterToken
 --- @param pierceSurfaces number? Optional number of thin wall surfaces (thickness <= 1 square) to ignore.
 --- @param arrowColor string? Arrow color: 'red' (default), 'green', or 'black'.
+--- @param maxRange number? Optional max range in tile units. If the target is beyond this distance, the portion of the arrow past the range boundary is greyed out.
 --- @return LuaTargetingMarkers
-function dmhub.MarkLineOfSight(attacker, target, pierceSurfacesArg, arrowColorArg)
+function dmhub.MarkLineOfSight(attacker, target, pierceSurfacesArg, arrowColorArg, maxRangeArg)
 	-- dummy implementation for documentation purposes only
 end
 

@@ -33,6 +33,16 @@ setting{
 }
 
 setting{
+    id = "redactdirectorlocation",
+    description = "Redact Director Location",
+    help = "When on, directors' rich-status/location is hidden in the Heroes and User Status panels for everyone in the game; only Online/Away/Offline is shown for director users.",
+    storage = "game",
+    section = "General",
+    editor = "check",
+    default = true,
+}
+
+setting{
 	id = "sensitivity",
 	description = "Scroll Sensitivity",
 	help = "Controls the speed which the screen moves when panning.",
@@ -1429,6 +1439,19 @@ setting{
 }
 
 setting{
+	id = "macos:cmdAsCtrl",
+	description = "Use Cmd for keyboard shortcuts",
+	help = "When enabled, the Cmd key acts as Ctrl for all keyboard shortcuts (e.g. Cmd+Z for undo). This matches standard macOS behavior. Disable if you want Cmd and Ctrl to be separate modifier keys.",
+	storage = "preference",
+	section = "game",
+	editor = "check",
+	default = true,
+	visible = function()
+		return dmhub.platform == "macOS"
+	end,
+}
+
+setting{
 	id = "permissions.playerlibrary",
 	description = "Allow players to access the library",
 	default = true,
@@ -2352,6 +2375,17 @@ setting{
 	classes = {"dmonly"},
 	section = "Game",
 	default = 1,
+	storage = "game",
+	editor = "check",
+}
+
+setting{
+	id = "walls:indestructible",
+	description = "Indestructible Walls",
+	help = "When enabled, forced movement cannot break through walls, regardless of their solidity.",
+	classes = {"dmonly"},
+	section = "Game",
+	default = false,
 	storage = "game",
 	editor = "check",
 }
