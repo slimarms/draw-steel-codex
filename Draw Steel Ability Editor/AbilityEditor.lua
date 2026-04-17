@@ -1316,6 +1316,42 @@ local function _sharedFormStyles(colors)
             valign = "center",
             rmargin = 10,
         },
+        -- Field-level input/textarea/dropdown classes: match the ability
+        -- editor's nae-field-* widths so labels and controls read as the
+        -- same component family across editors.
+        gui.Style{
+            selectors = {"ds-field-input"},
+            priority = 4,
+            width = "100%",
+            height = 28,
+            halign = "left",
+            hpad = 6,
+            vpad = 2,
+            borderBox = true,
+            fontSize = 14,
+            textAlignment = "left",
+        },
+        gui.Style{
+            selectors = {"ds-field-textarea"},
+            priority = 4,
+            width = "100%",
+            height = "auto",
+            minHeight = 60,
+            halign = "left",
+            hpad = 6,
+            vpad = 4,
+            borderBox = true,
+            fontSize = 14,
+            textAlignment = "topleft",
+        },
+        gui.Style{
+            selectors = {"ds-field-dropdown"},
+            priority = 4,
+            width = 280,
+            height = 30,
+            halign = "left",
+            fontSize = 14,
+        },
         gui.Style{
             selectors = {"ds-field-hint"},
             width = "100%",

@@ -394,6 +394,32 @@ function CharacterFeature:EditorPanel(editorPanelOptions)
 		}
 	end
 
+	-- Inline variant: label + compact widget on a single row. Themed uses
+	-- ds-field-row-inline from GetSharedFormStyles; classic falls back to
+	-- the existing horizontal formPanel/formLabel pattern.
+	local function makeInlineRow(labelText, inputElement, extraRowClass)
+		if themed then
+			return gui.Panel{
+				classes = {"ds-field-row-inline", extraRowClass, optionsCollapseDescription},
+				children = {
+					gui.Label{
+						classes = {"ds-field-label-inline"},
+						text = labelText,
+					},
+					inputElement,
+				},
+			}
+		end
+		return gui.Panel{
+			classes = {"formPanel", extraRowClass, optionsCollapseDescription},
+			gui.Label{
+				text = labelText,
+				classes = {"formLabel"},
+			},
+			inputElement,
+		}
+	end
+
 	modifiersPanel = gui.Panel{
 		classes = "modifiers-panel",
 
@@ -524,16 +550,55 @@ function CharacterFeature:EditorPanel(editorPanelOptions)
 			end
 
 			if themed and type(abilityEditor.OpenModifierPicker) == "function" then
-				children[#children+1] = gui.Button{
-					text = "+ Add Modifier",
+				-- Mirror the ability editor's bottom-bar layout: Add next to
+				-- Paste, with Paste collapsed-anim'd in only when the
+				-- internal clipboard holds a pasteable modifier/ability.
+				local function clipboardHasPasteable()
+					local item = dmhub.GetInternalClipboard()
+					if item == nil then return false end
+					return item.typeName == "CharacterModifier"
+						or item.typeName == "ActivatedAbility"
+					end
+
+				local pasteButton
+				pasteButton = gui.Button{
+					text = "Paste Modifier",
 					fontSize = 16,
 					width = 180,
 					height = 34,
 					halign = "left",
-					vmargin = 8,
+					classes = {cond(not clipboardHasPasteable(), "collapsed-anim")},
 					click = function(element)
-						abilityEditor.OpenModifierPicker(self, addModifierById)
+						addModifierById("CLIPBOARD")
 					end,
+					thinkTime = 0.5,
+					think = function(element)
+						element:SetClass("collapsed-anim", not clipboardHasPasteable())
+					end,
+				}
+
+				children[#children+1] = gui.Panel{
+					width = "auto",
+					height = "auto",
+					flow = "horizontal",
+					halign = "left",
+					valign = "center",
+					vmargin = 8,
+					bgcolor = "clear",
+					children = {
+						gui.Button{
+							text = "+ Add Modifier",
+							fontSize = 16,
+							width = 180,
+							height = 34,
+							halign = "left",
+							rmargin = 8,
+							click = function(element)
+								abilityEditor.OpenModifierPicker(self, addModifierById)
+							end,
+						},
+						pasteButton,
+					},
 				}
 			else
 				local options = DeepCopy(CharacterModifier.Types)
@@ -706,9 +771,12 @@ function CharacterFeature:EditorPanel(editorPanelOptions)
 		end
 	end
 
+	local inputClasses = themed and {"input", "ds-field-input"} or {"input", "form-input"}
+	local textareaClasses = themed and {"input", "ds-field-textarea"} or {"input", "form-input"}
+
 	local nameInput = gui.Input{
 		text = self.name,
-		classes = {"input", "form-input"},
+		classes = inputClasses,
 		events = {
 			change = function(element)
 				self.name = element.text
@@ -721,7 +789,7 @@ function CharacterFeature:EditorPanel(editorPanelOptions)
 
 	local sourceInput = gui.Input{
 		text = self.source,
-		classes = {"input", "form-input"},
+		classes = inputClasses,
 		events = {
 			change = function(element)
 				self.source = element.text
@@ -742,12 +810,12 @@ function CharacterFeature:EditorPanel(editorPanelOptions)
 	local descriptionInput = gui.Input{
 		text = self:GetDescription(),
 		multiline = true,
-		classes = {"input", "form-input"},
+		classes = textareaClasses,
 		characterLimit = 8192,
 		selfStyle = {
 			textAlignment = "topleft",
 			height = "auto",
-			minHeight = 40,
+			minHeight = themed and 80 or 40,
 			width = themed and nil or 600,
 		},
 		events = {
@@ -785,7 +853,7 @@ function CharacterFeature:EditorPanel(editorPanelOptions)
 
 		makeFormRow("Name:", nameInput, "namePanel"),
 		makeFormRow("Source:", sourceInput, "sourcePanel"),
-		makeFormRow("Implementation:", implementationWidget),
+		makeInlineRow("Implementation:", implementationWidget),
 		makeFormRow("Description:", descriptionInput, "descriptionPanel"),
 
 		prerequisitesPanel,

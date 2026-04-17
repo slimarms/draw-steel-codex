@@ -391,59 +391,6 @@ local function _buildGroupPanel(groupDef, entries, onSelect)
     }
 end
 
--- Pinned clipboard-paste row. Only shown when the internal clipboard holds a
--- CharacterModifier or ActivatedAbility (matching the original dropdown flow
--- at CharacterFeature.lua:448-462). Clicking emits a synthetic "CLIPBOARD" id
--- to onSelect so the caller can dispatch to the existing paste handler.
-local function _makeClipboardCard(onSelect)
-    local clipboardItem = dmhub.GetInternalClipboard()
-    if clipboardItem == nil then return nil end
-    if clipboardItem.typeName ~= "CharacterModifier" and clipboardItem.typeName ~= "ActivatedAbility" then
-        return nil
-    end
-
-    local label = string.format("Paste %s", clipboardItem.name or clipboardItem.typeName)
-    local subtitle = string.format("Paste from clipboard (%s)", clipboardItem.typeName)
-
-    return gui.Panel{
-        width = "100%",
-        height = "auto",
-        flow = "vertical",
-        hpad = 10,
-        vpad = 6,
-        bmargin = 8,
-        bgimage = "panels/square.png",
-        bgcolor = COLORS.PANEL_BG,
-        borderWidth = 2,
-        borderColor = COLORS.GOLD_BRIGHT,
-        cornerRadius = 3,
-        borderBox = true,
-
-        press = function()
-            onSelect("CLIPBOARD")
-        end,
-
-        gui.Label{
-            width = "100%",
-            height = "auto",
-            fontSize = 14,
-            bold = true,
-            color = COLORS.GOLD_BRIGHT,
-            textAlignment = "left",
-            text = label,
-        },
-        gui.Label{
-            width = "100%",
-            height = "auto",
-            fontSize = 12,
-            italics = true,
-            color = COLORS.CREAM,
-            textAlignment = "left",
-            text = subtitle,
-        },
-    }
-end
-
 -- ============================================================================
 -- Public API
 -- ============================================================================
@@ -510,12 +457,6 @@ function AbilityEditor.OpenModifierPicker(feature, onAdd)
             if query == "" then query = nil end
 
             local children = {}
-
-            -- Pinned clipboard-paste action (search-independent).
-            local clipboardCard = _makeClipboardCard(onSelect)
-            if clipboardCard ~= nil then
-                children[#children + 1] = clipboardCard
-            end
 
             -- Recently-used band (only when search is empty).
             if query == nil and #AbilityEditor._recentModifiers > 0 then
