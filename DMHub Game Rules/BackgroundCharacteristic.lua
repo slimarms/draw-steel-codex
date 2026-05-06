@@ -98,6 +98,7 @@ function BackgroundCharacteristic.EmbedEditor(parentFeature, children, onchange)
 
 		for i,characteristic in ipairs(parentFeature:try_get("characteristics", {})) do
 
+<<<<<<< Updated upstream
 			--starting equipment editor.
 			characteristicsPanels[#characteristicsPanels+1] = gui.Panel{
 				width = "auto",
@@ -125,6 +126,36 @@ function BackgroundCharacteristic.EmbedEditor(parentFeature, children, onchange)
 								}
 							}
 						}
+=======
+			local header
+			header = gui.Panel{
+				classes = {"featureCardHeader"},
+				tri,
+				gui.Label{
+					fontSize = 18,
+					bold = true,
+					width = 320,
+					lmargin = 20,
+					height = "auto",
+					halign = "left",
+					valign = "center",
+					textWrap = true,
+					textAlignment = "left",
+					text = string.format("Characteristic: %s", characteristic:Name()),
+				},
+				gui.DeleteItemButton{
+					halign = "right",
+					valign = "center",
+					hmargin = 4,
+					width = 16,
+					height = 16,
+					requireConfirm = true,
+					click = function(element)
+						m_expandedCharacteristics = {}
+						table.remove(parentFeature.characteristics, index)
+						onchange()
+						RefreshCharacteristics()
+>>>>>>> Stashed changes
 					end,
 
 					press = function(element)
@@ -168,11 +199,48 @@ function BackgroundCharacteristic.EmbedEditor(parentFeature, children, onchange)
 						valign = "center",
 					}
 				},
+<<<<<<< Updated upstream
 			}
 
 			if m_expandedCharacteristics[i] then
 				--maintain expansion of characteristics.
 				characteristicsPanels[#characteristicsPanels].children[1]:FireEvent("press")
+=======
+				click = function(element)
+					body:SetClass("collapsed-anim", not body:HasClass("collapsed-anim"))
+					tri:SetClass("expanded", not tri:HasClass("expanded"))
+					element:SetClass("expanded", tri:HasClass("expanded"))
+					m_expandedCharacteristics[index] = tri:HasClass("expanded")
+				end,
+				rightClick = function(element)
+					element.popup = gui.ContextMenu{
+						entries = {
+							{
+								text = "Delete",
+								click = function()
+									m_expandedCharacteristics = {}
+									table.remove(parentFeature.characteristics, index)
+									onchange()
+									RefreshCharacteristics()
+									element.popup = nil
+								end,
+							}
+						}
+					}
+				end,
+			}
+
+			characteristicsPanels[#characteristicsPanels+1] = gui.Panel{
+				classes = {"featureCard"},
+				header,
+				body,
+			}
+
+			if m_expandedCharacteristics[i] then
+				body:SetClass("collapsed-anim", false)
+				tri:SetClass("expanded", true)
+				header:SetClass("expanded", true)
+>>>>>>> Stashed changes
 			end
 		end
 

@@ -133,5 +133,1478 @@ ThemeEngine.RegisterTheme{
             bgcolor = "@backgroundAlt",
             borderColor = "@border"
         },
+<<<<<<< Updated upstream
+=======
+        {
+            selectors = {"dropdown", "expandedTop"},
+            border = {x1 = 2, x2 = 2, y1 = 2, y2 = 0},
+        },
+        {
+            selectors = {"dropdown", "expandedBottom"},
+            border = {x1 = 2, x2 = 2, y1 = 0, y2 = 2},
+        },
+        {
+            selectors = {"dropdown", "hover", "~search"},
+            bgcolor = "@fg",
+        },
+        {
+            selectors = {"label", "dropdownLabel"},
+            fontFace = "@input",
+            fontSize = 18,
+            minFontSize = 10,
+            color = "@fg",
+            halign = "left",
+            valign = "center",
+            width = "100%-40",
+            height = "100%",
+            hmargin = 6,
+        },
+        {
+            selectors = {"label", "dropdownLabel", "parent:hover"},
+            color = "@fgInverse",
+        },
+        {
+            selectors = {"dropdownTriangle"},
+            height = "30%",
+            width = "160% height",
+            bgcolor = "@fg",
+            halign = "right",
+            valign = "center",
+            hmargin = 6,
+        },
+        {
+            selectors = {"dropdownTriangle", "parent:hover"},
+            bgcolor = "@fgInverse",
+        },
+        {
+            selectors = {"dropdownBorder"},
+            bgcolor = "@bg",
+            border = {x1 = 2, x2 = 2, y1 = 2, y2 = 0},
+            borderColor = "@border",
+        },
+        {
+            selectors = {"dropdownBorder", "vcenter"},
+            border = {x1 = 2, x2 = 2, y1 = 2, y2 = 2},
+            vpad = 4,
+        },
+        {
+            selectors = {"dropdownBorder", "top"},
+            border = {x1 = 2, x2 = 2, y1 = 0, y2 = 2},
+        },
+        {
+            selectors = {"dropdownBorder", "detached"},
+            border = {x1 = 2, x2 = 2, y1 = 2, y2 = 2},
+        },
+        {
+            selectors = {"dropdownMenuSub"},
+            bgimage = true,
+            bgcolor = "@bg",
+            border = {x1 = 2, x2 = 2, y1 = 2, y2 = 2},
+            borderColor = "@border",
+            flow = "vertical",
+            width = "auto",
+            height = "auto",
+            valign = "top",
+            hidden = 1,
+        },
+        {
+            selectors = {"dropdownMenuSub", "parent:hover"},
+            hidden = 0,
+        },
+        {
+            selectors = {"dropdownOption"},
+            bgimage = true,
+            width = "100%-2",
+            height = "auto",
+            halign = "center",
+            hpad = 6,
+            fontSize = 18,
+            color = "@fg",
+        },
+        {
+            selectors = {"dropdownOption", "hover"},
+            color = "@bg",
+            bgcolor = "@fg",
+        },
+        {
+            selectors = {"dropdownOption", "searchfocus"},
+            color = "@bg",
+            bgcolor = "@fg",
+        },
+        {
+            selectors = {"dropdownOption", "disabled"},
+            color = "@fgMuted",
+        },
+        {
+            selectors = {"submenuArrow"},
+            bgcolor = "@fg",
+        },
+        {
+            selectors = {"submenuArrow", "parent:hover"},
+            bgcolor = "@bg",
+        },
+
+        --[[ Multiselect chip ]]
+        --
+        -- gui.Multiselect renders selected items as removable chips next to
+        -- a Dropdown. Each chip is a {panel, multiselectChip} container
+        -- holding a {label, multiselectChipText} text label and a
+        -- {panel, multiselectChipRemove} delete button (with an X label
+        -- inside) that's hidden until the parent chip is hovered.
+        {
+            selectors = {"panel", "multiselectChip"},
+            flow = "horizontal",
+            width = "auto",
+            height = "auto",
+            pad = 4,
+            margin = 4,
+            bgimage = true,
+            bgcolor = "@bg",
+            border = 1,
+            borderColor = "@border",
+            cornerRadius = 2,
+        },
+        {
+            selectors = {"panel", "multiselectChip", "hover"},
+            brightness = 1.2,
+        },
+        {
+            selectors = {"label", "multiselectChipText"},
+            width = "auto",
+            height = "auto",
+            valign = "center",
+            margin = 0,
+            pad = 0,
+            fontFace = "@input",
+            fontSize = 14,
+        },
+        -- No fill on the remove button -- it sits on top of the chip's `@bg`
+        -- via the cascade. The red `@danger` border + X glyph carry the
+        -- "danger zone" signal without an alpha wash.
+        {
+            selectors = {"panel", "multiselectChipRemove"},
+            width = 14,
+            height = 14,
+            halign = "right",
+            valign = "center",
+            lmargin = 4,
+            bgimage = true,
+            border = 1,
+            borderColor = "@danger",
+            cornerRadius = 2,
+            bold = true,
+            hidden = 1,
+        },
+        {
+            selectors = {"panel", "multiselectChipRemove", "parent:hover"},
+            hidden = 0,
+        },
+        {
+            selectors = {"panel", "multiselectChipRemove", "hover"},
+            brightness = 1.5,
+        },
+        -- The "X" label inside the remove button. Color is @fg (not @danger)
+        -- so the letter contrasts against its own red-bordered red-wash
+        -- container; the parent's border + faint bg already carry the
+        -- "danger zone" signal so the X just needs to be readable.
+        {
+            selectors = {"label", "multiselectChipRemove"},
+            width = "100%",
+            height = "100%",
+            halign = "center",
+            valign = "center",
+            margin = 0,
+            pad = 0,
+            textAlignment = "center",
+            color = "@fg",
+            fontFace = "@input",
+            fontSize = 8,
+        },
+        {
+            selectors = {"label", "multiselectChipRemove", "parent:hover"},
+            brightness = 1.5,
+        },
+
+        --[[ Slider ]]
+        --
+        -- gui.Slider (Gui.lua wrapper) -- emits sliderHandleBorder /
+        -- sliderHandleInner on its internal handle parts.
+        --
+        -- gui.EnumeratedSliderControl (core widget) -- composed of an
+        -- enumSlider container with a row of enumSliderOption labels.
+        -- The widget's .lua only applies classes; all styling lives here
+        -- so themes/schemes own it.
+        {
+            selectors = {"sliderHandleBorder"},
+            borderWidth = 2,
+            borderColor = "@border",
+            bgcolor = "@bg",
+            bgimage = true,
+            width = "60%",
+            height = "60%",
+            halign = "center",
+            valign = "center",
+        },
+        {
+            selectors = {"sliderHandleInner"},
+            bgimage = true,
+            bgcolor = "@fg",
+            width = "30%",
+            height = "30%",
+            halign = "center",
+            valign = "center",
+        },
+        {
+            selectors = {"sliderNotch"},
+            bgimage = true,
+            bgcolor = "@borderInverse",
+            width = "100%",
+            halign = "center",
+            borderWidth = 0,
+        },
+        {
+            selectors = {"sliderFill"},
+            bgimage = true,
+            bgcolor = "@fg",
+            height = 2,
+            halign = "left",
+            borderWidth = 0,
+        },
+        {
+            selectors = {"enumSlider"},
+            width = "100%",
+            height = 24,
+            flow = "horizontal",
+        },
+        {
+            selectors = {"enumSliderOption"},
+            bgimage = true,
+            bgcolor = "@bg",
+            color = "@fg",
+            borderColor = "@border",
+            borderWidth = 2,
+            fontSize = 12,
+            bold = true,
+            halign = "center",
+            valign = "center",
+            textAlignment = "center",
+            height = "100%",
+        },
+        {
+            selectors = {"enumSliderOption", "selected"},
+            bgcolor = "@fg",
+            color = "@bg",
+            transitionTime = 0.2,
+        },
+        {
+            selectors = {"enumSliderOption", "hover"},
+            bgcolor = "@fg",
+            color = "@bg",
+            brightness = 1.5,
+            transitionTime = 0.2,
+        },
+
+        --[[ Checkbox ]]
+        -- Transparent fill on the checkbox container -- the checkmark and
+        -- check-background panels below paint the visual; the container
+        -- itself just lays out the row.
+        {
+            selectors = {"checkbox"},
+            halign = "left",
+            bgimage = true,
+            flow = "horizontal",
+            bgcolor = "clear",
+            height = 30,
+            width = "auto",
+            minWidth = 200,
+            hpad = 4,
+        },
+        {
+            selectors = {"checkbox", "hover", "~disabled"},
+            borderWidth = 1,
+            borderColor = "@fg",
+        },
+        {
+            selectors = {"checkBackground"},
+            bgimage = true,
+            bgcolor = "@bg",
+            halign = "left",
+            valign = "center",
+            height = "70%",
+            width = "100% height",
+            rmargin = 6,
+            borderColor = "@border",
+            borderWidth = 2,
+        },
+        {
+            selectors = {"checkBackground", "disabled"},
+            saturation = 0,
+        },
+        {
+            selectors = {"checkMark"},
+            bgimage = true,
+            bgcolor = "@fg",
+            halign = "center",
+            valign = "center",
+            width = "50%",
+            height = "50%",
+        },
+        {
+            selectors = {"checkMark", "disabled"},
+            saturation = 0,
+        },
+        {
+            selectors = {"checkboxLabel"},
+            halign = "left",
+            valign = "center",
+            textAlignment = "left",
+            borderWidth = 0,
+            width = "auto",
+            height = "auto",
+            fontSize = 18,
+        },
+        {
+            selectors = {"checkboxLabel", "rightAlign"},
+            rmargin = 8,
+        },
+        {
+            selectors = {"checkboxLabel", "disabled"},
+            color = "@fgMuted",
+        },
+
+        --[[ Tab ]]
+        {
+            selectors = {"tab"},
+            textAlignment = "center",
+            bgimage = true,
+            borderWidth = 1,
+            borderColor = "@border",
+            width = 130,
+            height = 40,
+            fontSize = 18,
+            bgcolor = "@bg",
+            color = "@fgMuted",
+            hpad = 6,
+        },
+        {
+            selectors = {"tab", "hover"},
+            brightness = 1.2,
+        },
+        {
+            selectors = {"tab", "selected"},
+            bold = true,
+            color = "@fgStrong",
+            bgcolor = "@bgAlt",
+            borderColor = "@fg",
+            borderWidth = 2,
+        },
+        {
+            selectors = {"tabBar"},
+            flow = "horizontal",
+            width = "auto",
+            height = "auto",
+            halign = "center",
+        },
+
+        --[[ Tooltip ]]
+        --
+        -- tooltipLabel / tooltipIcon / hasTooltip are engine-emitted on
+        -- gui.Tooltip elements; theme rules match those names verbatim.
+        {
+            selectors = {"label", "tooltipLabel"},
+            color = "@fg",
+            fontSize = 16,
+            width = "auto",
+            height = "auto",
+            halign = "left",
+        },
+        {
+            selectors = {"label", "tooltipLabel", "title"},
+            bold = true,
+            width = "100%",
+            fontSize = 24,
+        },
+        -- bgcolor "white" is image-tint-neutral (see top of section 1).
+        {
+            selectors = {"icon", "tooltipIcon"},
+            halign = "right",
+            valign = "top",
+            width = 32,
+            height = 32,
+            bgcolor = "white",
+        },
+        {
+            selectors = {"hasTooltip"},
+            color = "@accent",
+        },
+        {
+            selectors = {"hasTooltip", "hover"},
+            color = "@accentHover",
+        },
+
+        --[[ Icon button (generic + HUD) ]]
+        --
+        -- iconButton: small accent-able click target. Default size is sizeM
+        -- (24x24); pair with a size class (sizeXs..sizeXxl) to override.
+        -- Pair with a withSuccess / withInfo / withWarning / withDanger
+        -- class to recolor the hover state.
+        --
+        -- gui.Button{ icon = ... } (no `text`) returns a panel with this
+        -- class automatically; see Gui.lua's gui.Button.
+        --
+        -- hudIconButton: larger HUD-bar button with selected/disabled
+        -- states and a child hudIconButtonIcon that scales on hover.
+        {
+            selectors = {"iconButton"},
+            bgcolor = "@fg",
+            width = 24,
+            height = 24,
+            valign = "center",
+        },
+        {
+            selectors = {"iconButton", "flipped"},
+	        scale = {x = -1, y = 1},
+        },
+        {
+            selectors = {"iconButton", "hover"},
+            brightness = 1.5,
+            transitionTime = 0.1,
+        },
+        {
+            selectors = {"iconButton", "press"},
+            brightness = 0.7,
+            transitionTime = 0.1,
+        },
+        {
+            selectors = {"iconButton", "withSuccess", "hover"},
+            bgcolor = "@success",
+        },
+        {
+            selectors = {"iconButton", "withInfo", "hover"},
+            bgcolor = "@info",
+        },
+        {
+            selectors = {"iconButton", "withWarning", "hover"},
+            bgcolor = "@warning",
+        },
+        {
+            selectors = {"iconButton", "withDanger", "hover"},
+            bgcolor = "@danger",
+        },
+        -- Kind variants. Each registered kind class (see gui.iconButtonClasses
+        -- in Gui.lua) supplies its own bgimage here; size/tint/hover/press
+        -- continue to inherit from the {iconButton} family above.
+        {
+            selectors = {"iconButton", "addButton"},
+            bgimage = "ui-icons/Plus.png",
+        },
+        {
+            selectors = {"iconButton", "closeButton"},
+            bgimage = "ui-icons/close.png",
+        },
+        {
+            selectors = {"iconButton", "copyButton"},
+            bgimage = "icons/icon_app/icon_app_108.png",
+        },
+        {
+            selectors = {"iconButton", "deleteButton"},
+            bgimage = "icons/icon_tool/icon_tool_44.png",
+        },
+        {
+            selectors = {"iconButton", "deleteButton", "hover"},
+            bgcolor = "@danger",
+        },
+        {
+            selectors = {"iconButton", "settingsButton"},
+            bgimage = "ui-icons/skills/98.png",
+        },
+
+        --[[
+            Composable variants.
+        ]]
+        {
+            selectors = {"bordered"},
+            bgimage = true,
+            border = 1,
+            borderColor = "@border",
+        },
+        {
+            selectors = {"bold"},
+            bold = true,
+            priority = 5,
+        },
+        {
+            selectors = {"noBold"},
+            bold = false,
+            priority = 5,
+        },
+        {
+            selectors = {"iconButton", "sizeXxs"},
+            width = 12,
+            height = 12,
+            priority = 5,
+        },
+        {
+            selectors = {"iconButton", "sizeXs"},
+            width = 16,
+            height = 16,
+            priority = 5,
+        },
+        {
+            selectors = {"iconButton", "sizeS"},
+            width = 20,
+            height = 20,
+            priority = 5,
+        },
+        {
+            selectors = {"iconButton", "sizeM"},
+            width = 24,
+            height = 24,
+            priority = 5,
+        },
+        {
+            selectors = {"iconButton", "sizeL"},
+            width = 32,
+            height = 32,
+            priority = 5,
+        },
+        {
+            selectors = {"iconButton", "sizeXl"},
+            width = 48,
+            height = 48,
+            priority = 5,
+        },
+        {
+            selectors = {"iconButton", "sizeXxl"},
+            width = 58,
+            height = 58,
+            priority = 5,
+        },
+        -- {
+        --     selectors = {"hudIconButton"},
+        --     width = 58,
+        --     height = 58,
+        --     bgimage = true,
+        --     bgcolor = "@bg",
+        --     borderColor = "@fg",
+        --     borderWidth = 1,
+        -- },
+        -- {
+        --     selectors = {"hudIconButton", "hover"},
+        --     brightness = 2.5,
+        --     transitionTime = 0.1,
+        -- },
+        -- {
+        --     selectors = {"hudIconButton", "press"},
+        --     brightness = 0.8,
+        --     transitionTime = 0.1,
+        -- },
+        -- {
+        --     selectors = {"hudIconButton", "disabled"},
+        --     brightness = 0.5,
+        --     saturation = 0.2,
+        -- },
+        -- {
+        --     selectors = {"hudIconButton", "selected"},
+        --     brightness = 3.0,
+        --     saturation = 1.4,
+        -- },
+        -- {
+        --     selectors = {"hudIconButton", "selected", "tab"},
+        --     brightness = 1,
+        --     saturation = 1,
+        --     bgcolor = "@bg",
+        --     border = {x1 = 1, x2 = 1, y1 = 0, y2 = 1},
+        -- },
+        -- {
+        --     selectors = {"hudIconButtonIcon"},
+        --     width = "75%",
+        --     height = "75%",
+        --     halign = "center",
+        --     valign = "center",
+        --     bgcolor = "@fg",
+        -- },
+        -- {
+        --     selectors = {"hudIconButtonIcon", "parent:hover"},
+        --     brightness = 1.5,
+        --     transitionTime = 0.1,
+        --     scale = 1.15,
+        -- },
+        -- {
+        --     selectors = {"hudIconButtonIcon", "parent:press"},
+        --     brightness = 0.8,
+        --     transitionTime = 0.1,
+        -- },
+        -- {
+        --     selectors = {"hudIconButtonIcon", "parent:deselected"},
+        --     saturation = 0.0,
+        --     brightness = 0.8,
+        -- },
+        -- {
+        --     selectors = {"hudIconButtonIcon", "parent:disabled"},
+        --     saturation = 0.2,
+        --     brightness = 0.5,
+        --     scale = 1,
+        -- },
+        -- {
+        --     selectors = {"hudIconButtonIcon", "parent:selected"},
+        --     saturation = 1.5,
+        --     brightness = 1.5,
+        -- },
+
+        --[[ Iconographic buttons (close / plus / delete) ]]
+        -- {
+        --     selectors = {"closeButton"},
+        --     width = 24,
+        --     height = 24,
+        --     margin = 6,
+        --     halign = "right",
+        --     valign = "top",
+        --     bgcolor = "@fg",
+        -- },
+        -- {
+        --     selectors = {"closeButton", "hover"},
+        --     brightness = 2,
+        -- },
+        -- {
+        --     selectors = {"closeButton", "press"},
+        --     brightness = 0.5,
+        -- },
+        -- {
+        --     selectors = {"plusButton"},
+        --     width = 24,
+        --     height = 24,
+        --     bgcolor = "@fg",
+        -- },
+        -- {
+        --     selectors = {"plusButton", "hover"},
+        --     brightness = 1.4,
+        -- },
+        -- {
+        --     selectors = {"plusButton", "press"},
+        --     brightness = 0.8,
+        -- },
+        -- {
+        --     selectors = {"deleteItemButton"},
+        --     width = 24,
+        --     height = 24,
+        -- },
+
+        --[[ Triangle (expand/collapse arrow) ]]
+        --
+        -- Defaults to "closed" (rotate = 90, pointing right). Toggling the
+        -- "expanded" class rotates to point down with a short transition.
+        {
+            selectors = {"triangle"},
+            bgimage = "panels/triangle.png",
+            bgcolor = "@fg",
+            width = 12,
+            height = 12,
+            hmargin = 4,
+            valign = "center",
+            halign = "left",
+        },
+        {
+            selectors = {"triangle", "hover"},
+            brightness = 1.5,
+        },
+
+        --[[ Menu (horizontal menu strip, e.g. title bar dropdowns) ]]
+        {
+            selectors = {"menuItem"},
+            bgimage = true,
+            bgcolor = "clear",
+            hpad = 8,
+        },
+        {
+            selectors = {"menuItem", "hover"},
+            bgcolor = "@fg",
+        },
+        {
+            selectors = {"menuLabel"},
+            fontSize = 16,
+            width = "auto",
+            height = "auto",
+            valign = "center",
+            hmargin = 4,
+            color = "@fg",
+        },
+        {
+            selectors = {"menuLabel", "parent:hover"},
+            color = "@bg",
+        },
+        {
+            selectors = {"menuItemIcon"},
+            bgcolor = "@fg",
+        },
+        {
+            selectors = {"menuItemIcon", "parent:hover"},
+            bgcolor = "@bg",
+        },
+
+        --[[ Context menu ]]
+
+        -- The popup panel itself
+        {
+            selectors = {"contextMenu"},
+            bgimage = true,
+            bgcolor = "white",
+            gradient = "@surfaceLinear",
+            borderColor = "@fg",
+            borderWidth = 2,
+            flow = "vertical",
+        },
+
+        -- Rows: transparent at rest so the panel surface paints through;
+        -- hover/press states give them distinct backgrounds.
+        {
+            selectors = {"contextMenuItem"},
+            bgimage = true,
+            bgcolor = "clear",
+            color = "@fg",
+            borderWidth = 0,
+        },
+        {
+            selectors = {"contextMenuItem", "hover"},
+            bgcolor = "@fg",
+            color = "@bg",
+            transitionTime = 0.2,
+        },
+        {
+            selectors = {"contextMenuItem", "press"},
+            brightness = 1.2,
+            transitionTime = 0.2,
+        },
+
+        -- Row label
+        {
+            selectors = {"label", "contextMenuLabel"},
+            color = "@fg",
+            fontSize = 16,
+        },
+        {
+            selectors = {"contextMenuLabel", "disabled"},
+            color = "@fgMuted",
+        },
+        {
+            selectors = {"contextMenuLabel", "parent:hover"},
+            color = "@bg",
+        },
+
+        -- Bind label (keyboard shortcut hint)
+        {
+            selectors = {"contextMenuBind"},
+            color = "@fg",
+            fontSize = 16,
+        },
+        {
+            selectors = {"contextMenuBind", "disabled"},
+            color = "@fgMuted",
+        },
+        {
+            selectors = {"contextMenuBind", "parent:hover"},
+            color = "@bg",
+        },
+
+        -- Icon glyph (image-tint to text color)
+        {
+            selectors = {"contextMenuIcon"},
+            bgcolor = "@fg",
+        },
+        {
+            selectors = {"contextMenuIcon", "parent:hover"},
+            bgcolor = "@bg",
+        },
+
+        -- Checkmark glyph
+        {
+            selectors = {"contextMenuCheck"},
+            bgcolor = "@fg",
+        },
+        {
+            selectors = {"contextMenuCheck", "parent:hover"},
+            bgcolor = "@bg",
+        },
+
+        -- Divider
+        {
+            selectors = {"contextMenuDiv"},
+            bgimage = true,
+            bgcolor = "@fg",
+            vmargin = 2,
+        },
+
+        -- Submenu arrow (bgimage is the triangle, set inline at construction)
+        {
+            selectors = {"contextMenuArrow"},
+            bgcolor = "@fg",
+        },
+
+        --[[ Table primitives ]]
+        --
+        -- oddRow / evenRow / highlight are emitted by the engine's table
+        -- striping. headerRow is applied by callers on the first row of a
+        -- gui.Table so the theme can style it (bold, darker bg).
+        {
+            selectors = {"label", "tableLabel"},
+            pad = 6,
+            fontSize = 16,
+            width = "auto",
+            height = "auto",
+            color = "@fg",
+        },
+        {
+            selectors = {"row"},
+            width = "auto",
+            height = "auto",
+            bgimage = true,
+        },
+        {
+            selectors = {"row", "headerRow"},
+            bgcolor = "@bg",
+        },
+        {
+            selectors = {"label", "parent:headerRow"},
+            bold = true,
+        },
+        {
+            selectors = {"row", "evenRow"},
+            bgcolor = "@bg",
+        },
+        {
+            selectors = {"row", "oddRow"},
+            bgcolor = "@bgAlt",
+        },
+        {
+            selectors = {"row", "highlight"},
+            bgcolor = "@info",
+        },
+
+        -- =====================================================================
+        -- 2. FORMS -- label/control layouts
+        -- =====================================================================
+
+        --[[ Default form (label-left + control-right) ]]
+        --
+        -- Authoring pattern: row containers take `formRow` (full-width) or
+        -- `formPanel` (compact, used by feature editors). Every child
+        -- (label, input, dropdown, multiselect, ...) takes the single
+        -- namespace class `form`. The cascade conjuncts `form` with each
+        -- child's primitive class to pick the right rule; controls without
+        -- a primitive-specific rule fall through to the `{form}` catch-all.
+        -- `formValue` is a separate read-only-display label class.
+        {
+            selectors = {"formRow"},
+            flow = "horizontal",
+            width = "98%",
+            height = "auto",
+            halign = "left",
+            valign = "top",
+            vmargin = 4,
+        },
+        --[[ Compact horizontal row (used by compendium feature editors) ]]
+        {
+            selectors = {"formPanel"},
+            flow = "horizontal",
+            width = "auto",
+            height = "auto",
+            halign = "left",
+            vmargin = 2,
+        },
+        {
+            selectors = {"label", "form"},
+            fontSize = 18,
+            color = "@fgStrong",
+            width = "auto",
+            height = "auto",
+            minWidth = 140,
+            halign = "left",
+            valign = "center",
+            hmargin = 8,
+        },
+        -- Catch-all for any form child without a primitive-specific rule
+        -- below (multiselect, custom widgets, etc.).
+        {
+            selectors = {"form"},
+            halign = "left",
+            valign = "center",
+        },
+        {
+            selectors = {"input", "form"},
+            fontSize = 16,
+            width = 180,
+            height = 26,
+            color = "@fg",
+            halign = "left",
+            valign = "center",
+            textAlignment = "left",
+        },
+        {
+            selectors = {"input", "form", "multiline"},
+            textAlignment = "topleft",
+        },
+        {
+            selectors = {"dropdown", "form"},
+            halign = "left",
+            vmargin = 4,
+            width = 240,
+            height = 30,
+        },
+        {
+            selectors = {"formValue"},
+            halign = "right",
+            vmargin = 4,
+            width = 180,
+            height = 30,
+            fontSize = 14,
+        },
+
+        --[[ Stacked form (label-above-control) ]]
+        --
+        -- Vertical layout. The row container takes `formStackedRow`; every
+        -- child (label, input, dropdown, multiselect, ...) takes the
+        -- single namespace class `formStacked`. The cascade conjuncts
+        -- `formStacked` with each child's primitive class to pick the
+        -- right rule; controls without a primitive-specific rule fall
+        -- through to the `{formStacked}` catch-all. Compound selectors on
+        -- the input/dropdown rules so the size beats any surface-specific
+        -- {input}/{dropdown} sizes in caller MergeStyles extras.
+        {
+            selectors = {"formStackedRow"},
+            flow = "vertical",
+            width = "70%",
+            height = "auto",
+            halign = "left",
+            valign = "top",
+            lmargin = 12,
+            bmargin = 8,
+        },
+        {
+            selectors = {"label", "formStacked"},
+            fontSize = 18,
+            width = "98%",
+            height = "auto",
+            halign = "left",
+            valign = "top",
+            bmargin = 4,
+            bold = true,
+        },
+        -- Catch-all for any formStacked child without a primitive-specific
+        -- rule below (multiselect, custom widgets, etc.).
+        {
+            selectors = {"formStacked"},
+            width = "98%",
+            halign = "left",
+        },
+        -- Inputs in stacked forms: 98% width, height 30 with internal padding
+        -- so text isn't cramped against the borders. fontSize matches the
+        -- dropdown (18) for visual consistency between input and dropdown
+        -- controls in the same form.
+        {
+            selectors = {"input", "formStacked"},
+            width = "98%",
+            height = 30,
+            halign = "left",
+            hpad = 6,
+            vpad = 4,
+            fontSize = 18,
+        },
+        -- Dropdowns in stacked forms: 98% width and height matching inputs.
+        {
+            selectors = {"dropdown", "formStacked"},
+            width = "98%",
+            height = 30,
+        },
+
+        -- =====================================================================
+        -- 3. CARDS -- collapsible feature-card layouts
+        -- =====================================================================
+        --
+        -- A featureCard is an outer frame holding a featureCardHeader (top
+        -- strip with expand triangle, name display, delete button) and a
+        -- featureCardBody (the body that the card's @bgAlt shows through).
+        -- featureCardNested adjusts width and bottom margin for cards
+        -- rendered inside another card's option list.
+        --
+        -- Used by class / race / background / kit feature editors in the
+        -- compendium UI.
+        {
+            selectors = {"featureCard"},
+            bgimage = true,
+            bgcolor = "@bgAlt",
+            width = "70%",
+            height = "auto",
+            halign = "left",
+            flow = "vertical",
+            bmargin = 12,
+        },
+        {
+            selectors = {"featureCardNested"},
+            width = "70%+8",
+            bmargin = 0,
+        },
+        -- Header: full border drawn here so the card's outer frame sits on
+        -- the top + sides; the bottom edge separates header from body.
+        -- Transparent fill so the card's bgAlt shows through.
+        {
+            selectors = {"featureCardHeader"},
+            bgimage = true,
+            bgcolor = "clear",
+            border = { x1 = 1, x2 = 1, y1 = 0, y2 = 1 },
+            borderColor = "@border",
+            borderBox = true,
+            width = "100%",
+            height = 30,
+            flow = "horizontal",
+            hpad = 0,
+        },
+        -- Collapsed state: header reads as a closed box, so re-add the bottom edge.
+        {
+            selectors = {"featureCardHeader", "~expanded"},
+            border = { x1 = 1, x2 = 1, y1 = 1, y2 = 1 },
+        },
+        -- Body: border on left/right/bottom; top edge is the header's bottom
+        -- border. Same fill as the card so the inside reads as one continuous
+        -- bgAlt surface.
+        {
+            selectors = {"featureCardBody"},
+            bgimage = true,
+            bgcolor = "@bgAlt",
+            border = { x1 = 1, x2 = 1, y1 = 1, y2 = 0 },
+            borderColor = "@border",
+            borderBox = true,
+            width = "100%",
+            height = "auto",
+            flow = "vertical",
+            pad = 12,
+        },
+
+        -- =====================================================================
+        -- 4. DIALOGS -- modal / framed surfaces
+        -- =====================================================================
+
+        --[[ Plain dialog ]]
+        --
+        -- dialogTitle / dialogPanel / dialogBorder are emitted by the
+        -- engine's gui.Dialog construction; theme rules must match those
+        -- names verbatim.
+        {
+            selectors = {"panel", "dialog"},
+            bgimage = true,
+            bgcolor = "white",
+            cornerRadius = 4,
+            gradient = "@surfaceLinear",
+            borderWidth = 2.2,
+            borderColor = "@border",
+        },
+        -- Launchable-hosted content. Use this class on the root panel
+        -- returned from `LaunchablePanel.Register{ content = ... }`.
+        -- The launchable host paints its own frame and chrome (close
+        -- button, drag handle, etc.) around our content, so this rule
+        -- stays transparent so we don't double-frame or overwrite the
+        -- host's UI.
+        {
+            selectors = {"panel", "launchablePanel"},
+        },
+        {
+            selectors = {"label", "dialogTitle"},
+            width = "96%",
+            height = "auto",
+            valign = "top",
+            halign = "center",
+            textAlignment = "center",
+            fontSize = 24,
+        },
+        -- bgcolor "white" is image-tint-neutral (see top of section 1).
+        {
+            selectors = {"dialogPanel"},
+            bgimage = "panels/InventorySlot_Background.png",
+            bgcolor = "white",
+            bgslice = 20,
+            border = 10,
+        },
+        {
+            selectors = {"dialogPanel", "fadein"},
+            opacity = 0,
+            uiscale = {x = 0.01, y = 0.01},
+            transitionTime = 0.2,
+        },
+        {
+            selectors = {"dialogBorder"},
+            hidden = 1,
+        },
+
+        --[[ Modal dialog ]]
+        {
+            selectors = {"modalDialog"},
+            bgimage = true,
+            bgcolor = "@bgInverse",
+            borderWidth = 2,
+            borderColor = "@bg",
+            cornerRadius = 8,
+        },
+        -- {
+        --     selectors = {"prettyButton"},
+        --     width = 140,
+        --     height = 60,
+        -- },
+        -- {
+        --     selectors = {"prettyButtonLabel"},
+        --     fontSize = 20,
+        --     bold = true,
+        --     textAlignment = "center",
+        --     width = "auto",
+        --     height = "auto",
+        -- },
+        {
+            selectors = {"label", "modalTitle"},
+            halign = "center",
+            valign = "top",
+            textAlignment = "center",
+            width = "80%",
+            height = "auto",
+            fontSize = 28,
+            color = "@fgStrong",
+            bold = true,
+        },
+        {
+            selectors = {"label", "modalMessage"},
+            halign = "center",
+            valign = "center",
+            textAlignment = "left",
+            width = "80%",
+            height = "auto",
+            fontSize = 18,
+            color = "@fg",
+        },
+
+        --[[ Framed panel ]]
+        -- @surfaceLinear gradient paints the visible color; bgcolor "white"
+        -- is image-tint-neutral (see top of section 1).
+        {
+            selectors = {"framedPanel"},
+            bgimage = true,
+            bgcolor = "white",
+            cornerRadius = 4,
+            gradient = "@surfaceLinear",
+            borderWidth = 2.2,
+            borderColor = "@fg",
+        },
+        {
+            selectors = {"framedPanel", "toplevel"},
+            borderWidth = 0,
+            opacity = 0.98,
+        },
+        {
+            selectors = {"framedPanel", "create", "~hidden", "~collapsed"},
+            soundEvent = "UI.WindowOpen",
+        },
+
+        -- =====================================================================
+        -- 5. UTILITIES -- visibility, animation, scroll
+        -- =====================================================================
+
+        {
+            selectors = {"hidden"},
+            hidden = 1,
+        },
+        {
+            selectors = {"collapsed"},
+            collapsed = 1,
+        },
+        {
+            selectors = {"collapseAnim"},
+            collapsed = 1,
+            transitionTime = 0.2,
+            uiscale = {x = 1, y = 0.001},
+        },
+        {
+            selectors = {"hideForPlayers", "player"},
+            hidden = 1,
+        },
+
+        --[[ Color composition utilities ]]
+        -- Composable color classes. Each scheme color exposes a class so
+        -- callers can opt panels/labels into a token via classes, without
+        -- authoring a one-off rule. Naming convention:
+        --   * Surface tokens (bg*)   -> set `bgcolor`.
+        --   * Foreground tokens (fg*) -> set `color`.
+        --   * Border tokens          -> set `borderColor`.
+        --   * Accent / status / implStatus -> set `color` by default;
+        --     `bg`-/`border`-prefixed variants set the alternate property.
+
+        -- Surfaces
+        { selectors = {"bg"},        bgcolor = "@bg" },
+        { selectors = {"bgAlt"},     bgcolor = "@bgAlt" },
+        { selectors = {"bgInverse"}, bgcolor = "@bgInverse" },
+
+        -- Foregrounds
+        { selectors = {"fg"},        color = "@fg" },
+        { selectors = {"fgStrong"},  color = "@fgStrong" },
+        { selectors = {"fgMuted"},   color = "@fgMuted" },
+        { selectors = {"fgPending"}, color = "@fgPending" },
+        { selectors = {"fgInverse"}, color = "@fgInverse" },
+
+        -- Borders
+        { selectors = {"border"},        borderColor = "@border" },
+        { selectors = {"borderInverse"}, borderColor = "@borderInverse" },
+
+        -- Accent + interactive (color default; bg/border variants)
+        { selectors = {"accent"},            color       = "@accent" },
+        { selectors = {"accentHover"},       color       = "@accentHover" },
+        { selectors = {"bgAccent"},          bgcolor     = "@accent" },
+        { selectors = {"bgAccentHover"},     bgcolor     = "@accentHover" },
+        { selectors = {"borderAccent"},      borderColor = "@accent" },
+        { selectors = {"borderAccentHover"}, borderColor = "@accentHover" },
+
+        -- Disabled (the state class lives elsewhere; these are explicit color picks)
+        { selectors = {"fgDisabled"},     color       = "@disabled" },
+        { selectors = {"bgDisabled"},     bgcolor     = "@disabled" },
+        { selectors = {"borderDisabled"}, borderColor = "@disabled" },
+
+        -- Implementation status (used by ability/feature impl indicators)
+        { selectors = {"implStatus0"}, color = "@implStatus0" },
+        { selectors = {"implStatus1"}, color = "@implStatus1" },
+        { selectors = {"implStatus2"}, color = "@implStatus2" },
+        { selectors = {"implStatus3"}, color = "@implStatus3" },
+        { selectors = {"implStatus4"}, color = "@implStatus4" },
+
+        --[[ Status color utilities ]]
+        -- Composable accents. The plain status names tint foreground;
+        -- the bg-prefixed names tint background. Use to highlight a
+        -- single label or panel without authoring a one-off rule.
+        {
+            selectors = {"success"},
+            color = "@success",
+        },
+        {
+            selectors = {"info"},
+            color = "@info",
+        },
+        {
+            selectors = {"warning"},
+            color = "@warning",
+        },
+        {
+            selectors = {"danger"},
+            color = "@danger",
+        },
+        {
+            selectors = {"bgSuccess"},
+            bgcolor = "@success",
+        },
+        {
+            selectors = {"bgInfo"},
+            bgcolor = "@info",
+        },
+        {
+            selectors = {"bgWarning"},
+            bgcolor = "@warning",
+        },
+        {
+            selectors = {"bgDanger"},
+            bgcolor = "@danger",
+        },
+        {
+            selectors = {"borderSuccess"},
+            borderColor = "@success",
+        },
+        {
+            selectors = {"borderInfo"},
+            borderColor = "@info",
+        },
+        {
+            selectors = {"borderWarning"},
+            borderColor = "@warning",
+        },
+        {
+            selectors = {"borderDanger"},
+            borderColor = "@danger",
+        },
+
+        --[[ Token image ]]
+        --
+        -- gui.CreateTokenImage builds a 3-panel structure: outer (tokenImage)
+        -- holds a portrait (tokenImagePortrait) with the token's portrait as
+        -- bgimage, and a frame (tokenImageFrame) overlay. The portrait's
+        -- bgcolor "white" is image-tint-neutral (see top of section 1).
+        --
+        -- The factory also emits the legacy kebab class names alongside these
+        -- so existing non-themed consumers (Styles.lua) keep rendering.
+        {
+            selectors = {"tokenImage"},
+            halign = "center",
+            valign = "center",
+            width = 60,
+            height = 60,
+        },
+        {
+            selectors = {"tokenImagePortrait"},
+            bgcolor = "white",
+            width = "100%",
+            height = "100%",
+        },
+        {
+            selectors = {"tokenImageFrame"},
+            width = "100%",
+            height = "100%",
+        },
+
+        -- =====================================================================
+        -- 6. DOCKABLE PANELS -- dock/tab chrome used by every dockable panel.
+        -- The dock framework (DockablePanel.lua) wires drag/resize/minimize
+        -- behavior in event handlers; this section provides the visual
+        -- cascade those handlers toggle classes on. Themers can re-tint
+        -- every dock surface here.
+        -- =====================================================================
+
+        -- Slide-in/out animation. 364 matches DockablePanel.DockWidth.
+        { selectors = {"dock", "offscreen", "left"},  x = -364, transitionTime = 0.2 },
+        { selectors = {"dock", "offscreen", "right"}, x =  364, transitionTime = 0.2 },
+
+        -- Dock frame surface beneath each dock column.
+        {
+            selectors = {"dockFrame"},
+            bgimage = true,
+            bgcolor = "clear",
+            width = "100%",
+            height = "100%",
+            valign = "bottom",
+        },
+        { selectors = {"dockFrame", "~uiblur"},      bgcolor = "@bg" },
+        { selectors = {"dockFrame", "parent:empty"}, collapsed = 1 },
+
+        -- Inner dockable-panel content area.
+        {
+            selectors = {"dockablePanel"},
+            width = "100%",
+            height = "100%",
+            halign = "center",
+            valign = "center",
+            vpad = 4,
+        },
+
+        -- Header gradient strip across the top of each panel/tab group.
+        {
+            selectors = {"tabContainer"},
+            bgimage = true,
+            gradient = "@surfaceLinear",
+            bgcolor = "white",
+            borderColor = "@border",
+            border = { x1 = 0, x2 = 0, y1 = 0, y2 = 1 },
+        },
+        { selectors = {"tabContainer", "~mono"}, border = { x1 = 0, x2 = 0, y1 = 1, y2 = 0 } },
+
+        -- Per-tab clickable container.
+        {
+            selectors = {"buttonContainer"},
+            bgimage = true,
+            bgcolor = "clear",
+            borderColor = "@border",
+            border = { y1 = 1, x1 = 0, x2 = 0, y2 = 0 },
+        },
+        {
+            selectors = {"buttonContainer", "selected"},
+            bgimage = true,
+            bgcolor = "@bgAlt",
+            border = { y1 = 0, x1 = 1, x2 = 1, y2 = 1 },
+        },
+        {
+            selectors = {"buttonContainer", "mono"},
+            bgcolor = "clear",
+            border = { y1 = 0, x1 = 0, x2 = 0, y2 = 0 },
+        },
+
+        -- Dock tab icon container. bgcolor "white" is image-tint-neutral so
+        -- the icon (set inline as bgimage = p.data.icon) renders at its true
+        -- colors. Class is `dockTab` (NOT `tab`) to avoid collision with the
+        -- form-style `{tab}` rule in section 1.
+        {
+            selectors = {"dockTab"},
+            width = 20,
+            height = 20,
+            bgcolor = "white",
+            halign = "center",
+            valign = "center",
+        },
+
+        -- Hide tab labels on non-selected tabs when the strip is crowded
+        -- (3+ tabs). The selected tab keeps its label visible.
+        { selectors = {"tabLabel", "crowded", "~selected"}, collapsed = 1 },
+
+        -- Drag preview shown while dragging a panel between docks.
+        { selectors = {"dragGhost"},                         opacity = 0,   bgcolor = "@info" },
+        { selectors = {"dragGhost", "dragging"},             opacity = 0.5 },
+        { selectors = {"dragGhost", "dragging", "deleting"}, bgcolor = "@danger" },
+        { selectors = {"dragGhost", "floatingTarget"},       opacity = 0 },
+
+        -- Vertical drag handles between stacked panels (top-of-panel resize).
+        {
+            selectors = {"verticalDragInvisibleHandle"},
+            width = "100%",
+            y = -4,
+            height = 8,
+            opacity = 0,
+            bgimage = "panels/square.png",
+            bgcolor = "white",
+            valign = "top",
+            halign = "center",
+        },
+        {
+            selectors = {"verticalDragDivider"},
+            width = "100%-8",
+            halign = "center",
+            valign = "top",
+            height = 2,
+        },
+
+        -- Side dock close handle (the icon you click to slide a dock off-screen).
+        -- bgcolor "white" is image-tint-neutral so the dock-handle PNG renders
+        -- at its true colors (then desaturated and brightened by the rule).
+        {
+            selectors = {"dockHandleImage"},
+            width = 32,
+            height = 64,
+            bgimage = "panels/dock-handle.png",
+            bgcolor = "white",
+            saturation = 0,
+            brightness = 2,
+            opacity = 0.8,
+            x = 8,
+        },
+        {
+            selectors = {"dockHandle"},
+            width = 32,
+            height = 64,
+            bgimage = "panels/square.png",
+            bgcolor = "clear",
+            valign = "bottom",
+            halign = "right",
+        },
+        {
+            selectors = {"dockHandle", "left"},
+            scale = {x = -1},
+            x = 32,
+            y = 8,
+        },
+        {
+            selectors = {"dockHandle", "right"},
+            halign = "left",
+            x = -32,
+            y = 8,
+        },
+        { selectors = {"dockHandle", "parent:empty"}, collapsed = 1 },
+        {
+            selectors = {"dockHandleImage", "hover"},
+            x = -8,
+            transitionTime = 0.1,
+            brightness = 2,
+        },
+
+        -- Chevron visibility (minimize/maximize per-panel arrows on the right).
+        { selectors = {"minimizeArrow", "lastExpanded"},                 collapsed = 1 },
+        { selectors = {"collapseArrow", "~minimizeArrow", "minimizeSet"}, collapsed = 1 },
+        { selectors = {"minimizeArrow", "maximized"},                    collapsed = 1 },
+>>>>>>> Stashed changes
     },
 }

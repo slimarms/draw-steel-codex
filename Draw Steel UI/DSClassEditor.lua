@@ -344,6 +344,7 @@ local CreateChoiceEditor = function(feature, featuresList, index, parentPanel, c
 		click = function(element)
 			body:SetClass('collapsed-anim', not body:HasClass('collapsed-anim'))
 			tri:SetClass("expanded", not tri:HasClass("expanded"))
+			element:SetClass("expanded", tri:HasClass("expanded"))
 		end,
 
 		rightClick = function(element)
