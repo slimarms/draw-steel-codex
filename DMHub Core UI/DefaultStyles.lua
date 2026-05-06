@@ -1926,19 +1926,13 @@ ThemeEngine.RegisterTheme{
         },
         {
             selectors = {"parent:drag-target"},
-            bgcolor = "@accent",
             color = "@fgInverse",
             priority = 5,
-            -- transitionTime = 0.2,
         },
         {
             selectors = {"parent:drag-target-hover"},
-            borderWidth = 2,
-            borderColor = '@accent',
-            bgcolor = '@accentHover',
             color = "@fgInverse",
             priority = 5,
-            -- transitionTime = 0.2,
         },
     },
 }
