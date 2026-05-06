@@ -1,12 +1,10 @@
 local mod = dmhub.GetModLoading()
 
---- DefaultStyles — registers ThemeEngine's default color scheme and default theme.
---- These act as the ultimate fallback for sparse/inheriting third-party registrations
---- and define the canonical color names and font slots a scheme/theme is expected to
---- cover. Intentionally minimal for now; grow as the engine absorbs more of the UI.
+--- DefaultStyles -- registers ThemeEngine's default color scheme and default theme.
+---
 
 -- =============================================================================
--- Default color scheme — canonical color name set
+-- Default color scheme -- usage-named colors and gradients
 -- =============================================================================
 
 ThemeEngine.RegisterColorScheme{
@@ -14,27 +12,50 @@ ThemeEngine.RegisterColorScheme{
     name        = "Default",
     description = "The Draw Steel default color palette.",
     colors = {
-        -- surfaces
-        background    = "#080B09",
-        backgroundAlt = "#191A18",
+        -- Surfaces
+        bg            = "#080B09",
+        bgAlt         = "#191A18",
+        bgInverse     = "#9C9C9C",
 
-        -- borders
-        border        = "#666663",
+        -- Foreground / text
+        fg            = "#CECECE",
+        fgStrong      = "#EFEFEF",
+        fgMuted       = "#9F9F9B",
+        fgPending     = "#999999",
+        fgInverse     = "#040404",
 
-        -- text
-        text          = "#DFCFC0",
-        textMuted     = "#666663",
-        textInverse   = "#040807",
+        -- Borders
+        border        = "#DFDFDF",
+        borderInverse = "#666666",
 
-        -- accent family
-        accent        = "#966D4B",
-        accentStrong  = "#F1D3A5",
-        accentHover   = "#E9B86F",
+        -- Accent + interactive
+        accent        = "#999999",
+        accentHover   = "#DDDDDD",
 
-        -- semantic statuses
+        -- Status
+        success       = "#6BA84F", -- Also healthy, good, etc.
+        info          = "#E9C868",
+        warning       = "#E08A2E", -- Also winded, etc.
+        danger        = "#C73131", -- Also dying, bad, etc.
+
+        -- Disabled
+        disabled      = "#343434",
+
+        --[[
+            Implementation status for abilities. Users will expect these to be
+            consistent across color schemes so the best approach is to avoid
+            redefining these unless they would be difficult to see in your
+            color scheme.
+        ]]--
+        implStatus0   = "#F82FCD",
+        implStatus1   = "#FF0000",
+        implStatus2   = "#CD7F32",
+        implStatus3   = "#C0C0C0",
+        implStatus4   = "#FFD700",
     },
     gradients = {
-        panelRadial = {
+        -- Surfaces
+        surfaceRadial = {
             type = "radial",
             point_a = {x = 0.5, y = 0.5},
             point_b = {x = 0.5, y = 1.0},
@@ -51,11 +72,124 @@ ThemeEngine.RegisterColorScheme{
                 {position = 1.00,  color = "#080b09"},
             },
         },
+
+        surfaceLinear = {
+            point_a = {x = 0, y = 0},
+            point_b = {x = 1, y = 1},
+            stops = {
+                {position = 0, color = "#1A1B19"},
+                {position = 1, color = "#050605"},
+            },
+        },
+
+        -- Bars
+        -- Important: This is used in the title bar
+        barTrack = {
+            point_a = {x = -0.02, y = 0},
+            point_b = {x = 1.02,  y = 0},
+            stops = {
+                {position = 0, color = "#060605"},
+                {position = 1, color = "@bgAlt"},
+            },
+        },
+
+        -- Alpha-fade masks (utility)
+        maskHorizontal = {
+            point_a = {x = 0, y = 0},
+            point_b = {x = 1, y = 0},
+            stops = {
+                {position = 0,   color = "#FFFFFF00"},
+                {position = 0.2, color = "#FFFFFFFF"},
+                {position = 0.8, color = "#FFFFFFFF"},
+                {position = 1,   color = "#FFFFFF00"},
+            },
+        },
+
+        maskVertical = {
+            point_a = {x = 0, y = 0},
+            point_b = {x = 0, y = 1},
+            stops = {
+                {position = 0,   color = "#FFFFFF00"},
+                {position = 0.2, color = "#FFFFFFFF"},
+                {position = 0.8, color = "#FFFFFFFF"},
+                {position = 1,   color = "#FFFFFF00"},
+            },
+        },
     },
 }
 
 -- =============================================================================
--- Default theme — canonical font slots + base widget rules
+-- Warm Gold color scheme -- warm dark surfaces, cream foreground, gold accents.
+-- The engine falls back to the default scheme for any color name this scheme
+-- doesn't define.
+-- =============================================================================
+
+ThemeEngine.RegisterColorScheme{
+    id          = "warm-gold",
+    name        = "Warm Gold",
+    description = "Warm dark surfaces with bright cream text and gold accents.",
+    colors = {
+        -- Surfaces
+        bg            = "#1B1310",
+        bgAlt         = "#2A1E15",
+        bgInverse     = "#E9B86F",
+
+        -- Foreground / text
+        fg            = "#F5E9D3",
+        fgStrong      = "#FFF5DD",
+        fgMuted       = "#A89377",
+        fgPending     = "#8B7960",
+        fgInverse     = "#1B1310",
+
+        -- Borders
+        border        = "#C49562",
+        borderInverse = "#5A4128",
+
+        -- Accent + interactive
+        accent        = "#B8884C",
+        accentHover   = "#F1D3A5",
+
+        -- Status (kept semantic so they read consistently across schemes)
+        success       = "#6BA84F",
+        info          = "#E9C868",
+        warning       = "#E08A2E",
+        danger        = "#C73131",
+
+        -- Disabled
+        disabled      = "#3A2D22",
+    },
+    gradients = {
+        -- Surfaces -- warm-tinted to match the scheme's brown surface palette.
+        -- Tuned to be noticeable but not loud; mirrors the default scheme's
+        -- approach (top-left lighter, bottom-right darker; radial vignette
+        -- bright at center, darker at edge) but stays inside the warm family.
+        surfaceLinear = {
+            point_a = {x = 0, y = 0},
+            point_b = {x = 1, y = 1},
+            stops = {
+                {position = 0, color = "#3A2B1E"},
+                {position = 1, color = "#0F0A06"},
+            },
+        },
+
+        surfaceRadial = {
+            type = "radial",
+            point_a = {x = 0.5, y = 0.5},
+            point_b = {x = 0.5, y = 1.0},
+            stops = {
+                {position = -0.01, color = "#2D211A"},
+                {position = 0.00,  color = "#2D211A"},
+                {position = 0.25,  color = "#251A12"},
+                {position = 0.50,  color = "#1D140E"},
+                {position = 0.75,  color = "#160F0A"},
+                {position = 1.00,  color = "#100A06"},
+            },
+        },
+    },
+}
+
+-- =============================================================================
+-- Default theme -- canonical font slots + base widget rules
 -- =============================================================================
 
 ThemeEngine.RegisterTheme{
@@ -67,74 +201,352 @@ ThemeEngine.RegisterTheme{
     fonts = {
         heading = "Berling",
         label   = "Berling",
-        input   = "Inter",
+        input   = "LiberationSans",
         number  = "Newzald",
     },
 
     styles = {
-        -- Base widget rules. Variants and utilities get appended later as the
-        -- engine grows to cover more of the UI.
 
-        --[[ Panels ]]
+        -- =====================================================================
+        -- 1. BASICS -- generic widget vocabulary
+        -- =====================================================================
+        --
+        -- Convention: bgcolor = "white" is image-tint-neutral. Setting it
+        -- on a bgimage-bearing rule opts that surface out of the cascade's
+        -- @bg tint so the asset paints in its natural colors. Used by
+        -- {panel, image}, portraitImage, tooltipIcon, dialogPanel,
+        -- framedPanel, tokenImagePortrait, and similar.
+
+        --[[ Panel ]]
         {
             selectors = {"panel"},
-            bgcolor = "@background",
+            bgcolor = "@bg",
+            scrollHandleColor = "@fgMuted",
         },
         {
-            selectors = {"panel", "radial-gradient"},
+            selectors = {"panel", "surfaceLinear"},
             bgimage = true,
-            gradient = "@panelRadial",
+            bgcolor = "white",
+            gradient = "@surfaceLinear",
         },
         {
-            selectors = {"panel", "border"},
+            selectors = {"panel", "surfaceRadial"},
             bgimage = true,
-            border = 1,
+            bgcolor = "white",
+            gradient = "@surfaceRadial",
+        },
+        {
+            selectors = {"panel", "barTrack"},
+            bgimage = true,
+            bgcolor = "white",
+            gradient = "@barTrack",
+        },
+        -- Image-displaying panels. bgcolor "white" is image-tint-neutral
+        -- (see top of section 1). Borders are intentionally NOT set here --
+        -- callers manage borderWidth / borderColor per their needs.
+        {
+            selectors = {"panel", "image"},
+            bgcolor = "white",
+        },
+        -- Portrait image editor (compendium sidebars on Race / Class /
+        -- Career / etc.). 196x294 with a 2px @border frame; bgcolor
+        -- "white" is image-tint-neutral (see top of section 1).
+        {
+            selectors = {"portraitImage"},
+            bgcolor = "white",
             borderColor = "@border",
+            borderWidth = 2,
+            width = 196,
+            height = "150% width",
+        },
+        -- Live dice preview surface marker class. The render-texture
+        -- hookup itself (`bgimage = "#DicePreview"`) and the
+        -- image-tint-neutral `bgcolor = "white"` MUST live inline on
+        -- the call site -- the engine's "#" render-target rendering
+        -- doesn't honor cascade-derived properties, and any visual
+        -- chrome we'd add here (border, cornerRadius, bgcolor tint)
+        -- gets fully covered by the render texture anyway. The class
+        -- is kept as a marker so future theme-able properties (e.g.,
+        -- a scheme-driven scene bgcolor set via a runtime hook) have
+        -- a place to land.
+        {
+            selectors = {"panel", "dicePreview"},
+        },
+        -- The icon child gui.Button auto-creates when called with `icon = ...`.
+        -- Tints the bgimage to @fg so the glyph reads against the surrounding
+        -- button surface and follows the active scheme.
+        {
+            selectors = {"panel", "buttonIcon"},
+            bgcolor = "@fg",
+            height = "100%",
+            width = "100%",
+        },
+        {
+            selectors = {"panel", "buttonIcon", "hover"},
+            brightness = 2,
         },
 
-        --[[ Labels ]]
+        --[[ Label ]]
         {
             selectors = {"label"},
+            width = "auto",
+            height = "auto",
             fontFace = "@label",
             fontSize = 14,
-            color = "@text"
+            color = "@fgStrong",
+            bold = false,
+        },
+        {
+            selectors = {"label", "sizeXxs"},
+            fontSize = 10,
+            priority = 5,
+        },
+        {
+            selectors = {"label", "sizeXs"},
+            fontSize = 12,
+            priority = 5,
+        },
+        {
+            selectors = {"label", "sizeS"},
+            fontSize = 14,
+            priority = 5,
+        },
+        {
+            selectors = {"label", "sizeM"},
+            fontSize = 16,
+            priority = 5,
+        },
+        {
+            selectors = {"label", "sizeL"},
+            fontSize = 18,
+            priority = 5,
+        },
+        {
+            selectors = {"label", "sizeXl"},
+            fontSize = 24,
+            priority = 5,
+        },
+        {
+            selectors = {"label", "sizeXxl"},
+            fontSize = 28,
+            priority = 5,
         },
         {
             selectors = {"label", "number"},
             fontFace = "@number",
         },
-
-        --[[ Buttons ]]
         {
-            selectors = {"button"},
-            fontFace = "@label",
-            fontSize = 14,
-            color = "@text",
-            bgcolor = "@accent",
-            borderColor = "@border"
+            selectors = {"label", "pending"},
+            color = "@fgPending",
+        },
+        {
+            selectors = {"label", "link"},
+            color = "@accent",
+        },
+        {
+            selectors = {"label", "link", "hover"},
+            color = "@accentHover",
+        },
+        {
+            selectors = {"label", "link", "press"},
+            brightness = 0.8,
         },
 
-        --[[ Inputs ]]
+        --[[ Button (sizes + states + variants) ]]
+        {
+            selectors = {"label", "button"},
+            height = 31,
+            width = 129,
+            bgimage = true,
+            fontFace = "@label",
+            fontSize = 16,
+            textAlignment = "center",
+            color = "@fg",
+            bgcolor = "@bg",
+            borderColor = "@border",
+            border = 1,
+            borderWidth = 1,
+            fontWeight = "light",
+            bold = false,
+        },
+        {
+            selectors = {"button", "sizeXxs"},
+            width = 24,
+            height = 18,
+            fontSize = 10,
+            priority = 5,
+        },
+        {
+            selectors = {"button", "sizeXs"},
+            width = 31,
+            height = 20,
+            fontSize = 12,
+            priority = 5,
+        },
+        {
+            selectors = {"button", "sizeS"},
+            width = 57,
+            height = 26,
+            fontSize = 14,
+            priority = 5,
+        },
+        {
+            selectors = {"button", "sizeM"},
+            width = 129,
+            height = 31,
+            fontSize = 16,
+            priority = 5,
+        },
+        {
+            selectors = {"button", "sizeL"},
+            width = 175,
+            height = 35,
+            fontSize = 18,
+            priority = 5,
+        },
+        {
+            selectors = {"button", "sizeXl"},
+            width = 175,
+            height = 35,
+            fontSize = 18,
+            priority = 5,
+        },
+        {
+            selectors = {"button", "sizeXxl"},
+            width = 175,
+            height = 35,
+            fontSize = 18,
+            priority = 5,
+        },
+        {
+            selectors = {"button", "hasIcon"},
+            width = "100% height",
+            border = 0,
+            borderWidth = 0,
+            bgcolor = "clear",
+        },
+        {
+            selectors = {"button", "disabled"},
+            bgcolor = "@disabled",
+        },
+        {
+            selectors = {"label", "button", "~disabled", "hasIcon", "hover"},
+            bgcolor = "@bg"
+        },
+        {
+            selectors = {"label", "button", "~disabled", "~hasIcon", "hover"},
+            bgcolor = "@bgInverse",
+            color = "@fgInverse",
+            borderColor = "@borderInverse",
+            fontWeight = "light",
+        },
+        {
+            selectors = {"label", "button", "press"},
+            transitionTime = 0.1,
+            brightness = 0.7,
+            soundEvent = "Mouse.Click",
+        },
+        {
+            selectors = {"label", "button", "selected"},
+            color = "@fgInverse",
+            bgcolor = "@bgInverse",
+            textAlignment = "center",
+            fontWeight = "bold",
+        },
+        {
+            selectors = {"label", "button", "focus"},
+            borderColor = "@fg",
+        },
+
+        --[[ Input ]]
         {
             selectors = {"input"},
-            fontFace = "@input", 
-            fontSize = 14, 
-            color = "@text",
-            bgcolor = "@backgroundAlt",
-            borderColor = "@border"
+            bgimage = true,
+            fontFace = "@input",
+            fontSize = 14,
+            color = "@fg",
+            bgcolor = "@bg",
+            borderColor = "@border",
+            border = 2,
+            bold = false,
+        },
+        {
+            selectors = {"input", "focus"},
+            borderColor = "@fg",
+        },
+        {
+            selectors = {"inputFaded"},
+            borderColor = "@borderInverse",
+            borderWidth = 3,
+            borderFade = true,
+            bgcolor = "@bg",
+        },
+        -- Default search input has no border. Surfaces that want a bordered
+        -- search input add it via their own MergeStyles extras.
+        {
+            selectors = {"searchInput"},
+            bgimage = true,
+            hpad = 6,
+            fontSize = 16,
+            bold = true,
+            borderFade = false,
+            color = "@fg",
+            bgcolor = "@bg",
+            borderWidth = 0,
+        },
+        -- Magnifying-glass icon child auto-created by gui.SearchInput.
+        -- Tinted to @fg so the glyph follows the active scheme. The
+        -- `floating = true` and `x = -20` positioning stay inline at
+        -- the call site -- floating is a structural property (controls
+        -- layout participation) that the engine doesn't honor through
+        -- the style cascade.
+        {
+            selectors = {"searchInputIcon"},
+            bgcolor = "@fg",
+            vmargin = 0,
+            halign = "left",
+            valign = "center",
+            height = "90%",
+            width = "100% height",
+        },
+        -- Color picker main button (gui.ColorPicker mainPanel).
+        -- The button shows the currently-selected color via
+        -- selfStyle.bgcolor (set at runtime by the widget); the theme
+        -- owns the border frame.
+        {
+            selectors = {"colorPicker"},
+            bgimage = true,
+            borderColor = "@border",
+            borderWidth = 2,
+        },
+        {
+            selectors = {"colorPicker", "hover"},
+            borderColor = "@accentHover",
+        },
+        {
+            selectors = {"colorPicker", "press"},
+            borderColor = "@fg",
         },
 
-        --[[ Dropdowns ]]
+        --[[ Dropdown -- closed control + open popup machinery ]]
+        --
+        -- The dropdown's internal sub-element classes (dropdownLabel,
+        -- dropdownTriangle, dropdownBorder, dropdownMenuSub, dropdownOption,
+        -- submenuArrow) are emitted by the DMHub engine itself, so theme
+        -- rules must match those names verbatim.
+        --
+        -- Open state composition: a dropdownBorder container holds a
+        -- dropdownMenuSub (or inline option list) full of dropdownOption
+        -- rows. submenuArrow is the indicator on options that open a sub-popup.
         {
             selectors = {"dropdown"},
             fontFace = "@input",
             fontSize = 14,
-            color = "@text",
-            bgcolor = "@backgroundAlt",
-            borderColor = "@border"
+            color = "@fg",
+            bgcolor = "@bgAlt",
+            borderColor = "@border",
+            border = 2,
         },
-<<<<<<< Updated upstream
-=======
         {
             selectors = {"dropdown", "expandedTop"},
             border = {x1 = 2, x2 = 2, y1 = 2, y2 = 0},
@@ -1150,18 +1562,13 @@ ThemeEngine.RegisterTheme{
             selectors = {"featureCardHeader"},
             bgimage = true,
             bgcolor = "clear",
-            border = { x1 = 1, x2 = 1, y1 = 0, y2 = 1 },
+            border = { x1 = 1, x2 = 1, y1 = 1, y2 = 1 },
             borderColor = "@border",
             borderBox = true,
             width = "100%",
             height = 30,
             flow = "horizontal",
             hpad = 0,
-        },
-        -- Collapsed state: header reads as a closed box, so re-add the bottom edge.
-        {
-            selectors = {"featureCardHeader", "~expanded"},
-            border = { x1 = 1, x2 = 1, y1 = 1, y2 = 1 },
         },
         -- Body: border on left/right/bottom; top edge is the header's bottom
         -- border. Same fill as the card so the inside reads as one continuous
@@ -1605,6 +2012,46 @@ ThemeEngine.RegisterTheme{
         { selectors = {"minimizeArrow", "lastExpanded"},                 collapsed = 1 },
         { selectors = {"collapseArrow", "~minimizeArrow", "minimizeSet"}, collapsed = 1 },
         { selectors = {"minimizeArrow", "maximized"},                    collapsed = 1 },
->>>>>>> Stashed changes
     },
 }
+
+-- =============================================================================
+-- Default Rounded theme -- inherits everything from default and only overrides
+-- cornerRadius on bordered surfaces. 10px for panel-class surfaces, 5px for
+-- interactive controls (buttons, inputs, dropdowns, checkboxes, tabs, …).
+-- =============================================================================
+
+ThemeEngine.RegisterTheme{
+    id          = "default-rounded",
+    name        = "Default Rounded",
+    description = "Default theme with rounded corners on bordered surfaces.",
+    colorScheme = "default",
+
+    styles = {
+        -- Panel surfaces
+        { selectors = {"panel", "bordered"},   cornerRadius = 10 },
+        { selectors = {"panel", "dialog"},     cornerRadius = 10 },
+        { selectors = {"modalDialog"},         cornerRadius = 10 },
+        { selectors = {"framedPanel"},         cornerRadius = 10 },
+        { selectors = {"contextMenu"},         cornerRadius = 10 },
+        { selectors = {"featureCardHeader"},   cornerRadius = {x1 = 10, x2 = 0, y1 = 10, y2 = 0} },
+        { selectors = {"featureCardBody"},     cornerRadius = {x1 = 0, x2 = 10, y1 = 0, y2 = 10} },
+
+        -- Interactive controls
+        { selectors = {"label", "button"},        cornerRadius = 5 },
+        { selectors = {"input"},                  cornerRadius = 5 },
+        { selectors = {"searchInput"},            cornerRadius = 5 },
+        { selectors = {"dropdown"},               cornerRadius = 5 },
+        { selectors = {"colorPicker"},            cornerRadius = 5 },
+        { selectors = {"multiselectChip"},        cornerRadius = 5 },
+        { selectors = {"multiselectChipRemove"},  cornerRadius = 5 },
+        { selectors = {"enumSliderOption"},       cornerRadius = 5 },
+        { selectors = {"checkBackground"},        cornerRadius = 5 },
+        { selectors = {"tab"},                    cornerRadius = {x1 = 5, x2 = 0, y1 = 5, y2 = 0} },
+    },
+}
+
+-- After schemes and themes are registered, restore the user's
+-- saved selections (defaults to "default" / "default" if they
+-- haven't picked anything yet).
+ThemeEngine.RestoreActiveSelection()

@@ -59,12 +59,14 @@ mod.shared.ImportMapDialog = function(paths, options)
     local perfectFitChecked = false
     local perfectFitActive = false
 
+    -- Forward-declare so the confirmButton closure (defined below) can capture them as upvalues.
+    -- Set later inside the floorImport branch when the user clicks "Match Existing Map".
+    local matchApplied = false
+    local capturedMatchCalibration = nil
 
-    local confirmButton = gui.PrettyButton{
-        classes = {"hidden"},
+    local confirmButton = gui.Button{
+        classes = {"sizeL", "hidden"},
         text = "Finish",
-        height = 50,
-        width = 180,
         valign = "center",
         halign = "center",
         click = function()
@@ -78,6 +80,10 @@ mod.shared.ImportMapDialog = function(paths, options)
                     local imgW = importPanel.imageWidth
                     local imgH = importPanel.imageHeight
 
+                    printf("FLOOR_ALIGN_DIAG:: Confirm finish (Finish button). imgW=%s imgH=%s info.width=%s info.height=%s matchApplied=%s",
+                        tostring(imgW), tostring(imgH), tostring(info.width), tostring(info.height), tostring(matchApplied))
+                    printf("FLOOR_ALIGN_DIAG:: Confirm info=%s", json(info))
+
                     gui.CloseModal()
 
                     g_modalDialog = nil
@@ -87,6 +93,10 @@ mod.shared.ImportMapDialog = function(paths, options)
                         info.paths = paths
                         info.imageWidth = imgW
                         info.imageHeight = imgH
+                        if matchApplied and capturedMatchCalibration ~= nil then
+                            info.matchCalibration = capturedMatchCalibration
+                            printf("FLOOR_ALIGN_DIAG:: Attached matchCalibration to info: %s", json(capturedMatchCalibration))
+                        end
                         options.finish(info)
                     end
                     return
@@ -98,11 +108,9 @@ mod.shared.ImportMapDialog = function(paths, options)
     }
 
 
-    local continueButton = gui.PrettyButton{
-        classes = {"hidden"},
+    local continueButton = gui.Button{
+        classes = {"sizeL", "hidden"},
         text = "Continue>>",
-        height = 50,
-        width = 180,
         valign = "center",
         halign = "center",
         click = function()
@@ -111,11 +119,9 @@ mod.shared.ImportMapDialog = function(paths, options)
     }
 
 
-    local previousButton = gui.PrettyButton{
-        classes = {"hidden"},
+    local previousButton = gui.Button{
+        classes = {"sizeL", "hidden"},
         text = "Back",
-        height = 50,
-        width = 180,
         valign = "center",
         halign = "left",
         click = function()
@@ -170,19 +176,42 @@ mod.shared.ImportMapDialog = function(paths, options)
 
     -- "Match Existing Map" panel for floor imports.
     local matchMapPanel = nil
-    local matchApplied = false
 
     if options.floorImport then
         local dim = game.currentMap.dimensions
         local mapW = dim.x2 - dim.x1
         local mapH = dim.y2 - dim.y1
 
+        printf("FLOOR_ALIGN_DIAG:: ImportMapDialog opened with floorImport=true. Existing currentMap.dimensions: x1=%s y1=%s x2=%s y2=%s -> mapW=%d mapH=%d",
+            json(dim.x1), json(dim.y1), json(dim.x2), json(dim.y2), mapW, mapH)
+
+        -- Try to find the existing primary map LevelObject so we can compare calibration later.
+        local existingMapObj = nil
+        for _, floor in ipairs(game.currentMap.floors) do
+            for _, obj in pairs(floor.objects) do
+                if obj:GetComponent("Map") ~= nil then
+                    existingMapObj = obj
+                    break
+                end
+            end
+            if existingMapObj ~= nil then break end
+        end
+        if existingMapObj ~= nil then
+            local d = existingMapObj.mapAlignmentDiagnostic
+            if d ~= nil then
+                printf("FLOOR_ALIGN_DIAG:: Existing map LevelObject calibration: %s", json(d))
+            else
+                printf("FLOOR_ALIGN_DIAG:: existingMapObj had no mapAlignmentDiagnostic (component not yet calculated?)")
+            end
+        else
+            printf("FLOOR_ALIGN_DIAG:: No existing map LevelObject with a Map component found on currentMap.")
+        end
+
         if mapW > 0 and mapH > 0 then
             local matchInfoLabel = gui.Label{
                 width = 380,
                 height = "auto",
                 fontSize = 14,
-                color = "#cccccc",
                 text = "",
                 wrap = true,
             }
@@ -198,6 +227,8 @@ mod.shared.ImportMapDialog = function(paths, options)
                     local tileW = imgW / mapW
                     local tileH = imgH / mapH
                     local ratio = math.abs(tileW - tileH) / math.max(tileW, tileH)
+                    printf("FLOOR_ALIGN_DIAG:: updateMatchInfo: imgW=%s imgH=%s mapW=%d mapH=%d -> tileW=%.4f tileH=%.4f ratio=%.4f",
+                        tostring(imgW), tostring(imgH), mapW, mapH, tileW, tileH, ratio)
                     if ratio < 0.02 then
                         matchInfoLabel.text = string.format("Image dimensions match the existing map. Tile size would be %.0f x %.0f px.", tileW, tileH)
                     else
@@ -215,14 +246,59 @@ mod.shared.ImportMapDialog = function(paths, options)
 
                 matchInfoLabel,
 
-                gui.PrettyButton{
+                gui.Button{
+                    classes = {"sizeL"},
                     text = "Match Existing Map",
-                    width = 200,
-                    height = 40,
                     halign = "left",
                     vmargin = 4,
-                    fontSize = 18,
                     click = function(element)
+                        printf("FLOOR_ALIGN_DIAG:: 'Match Existing Map' clicked. Calling CreateGridless + SetMapDimensions(%d, %d). imgW=%s imgH=%s",
+                            mapW, mapH, tostring(importPanel.imageWidth), tostring(importPanel.imageHeight))
+
+                        -- Capture the existing Map LevelObject's calibration so the
+                        -- new floor can copy controlPoints/scaling/mapType verbatim.
+                        -- This makes the new image render with identical _tileDim and
+                        -- _mapPivot, so it occupies the same world bounds as the existing
+                        -- when placed at the same (obj.x, obj.y).
+                        capturedMatchCalibration = nil
+                        for _, floor in ipairs(game.currentMap.floors) do
+                            for _, obj in pairs(floor.objects) do
+                                if obj:GetComponent("Map") ~= nil then
+                                    local d = obj.mapAlignmentDiagnostic
+                                    if d ~= nil then
+                                        local cps = {}
+                                        local cpCount = d.controlPointCount or 0
+                                        if d.controlPoints ~= nil then
+                                            for i = 1, cpCount do
+                                                local p = d.controlPoints[i]
+                                                if p ~= nil then
+                                                    cps[#cps+1] = {x = p.x, y = p.y}
+                                                end
+                                            end
+                                        end
+                                        capturedMatchCalibration = {
+                                            controlPoints = cps,
+                                            scaling = d.scaling or 1,
+                                            mapType = d.mapType or "squares",
+                                            x = d.x or 0,
+                                            y = d.y or 0,
+                                            sourceFloorid = d.floorid,
+                                            sourceObjid = d.objid,
+                                            sourceTileDimX = d.tileDimX,
+                                            sourceTileDimY = d.tileDimY,
+                                        }
+                                        printf("FLOOR_ALIGN_DIAG:: Captured match calibration from %s/%s: cps=%d, scaling=%d, mapType=%s, x=%.4f, y=%.4f",
+                                            d.floorid, d.objid, #cps, d.scaling or 1, tostring(d.mapType), d.x or 0, d.y or 0)
+                                        break
+                                    end
+                                end
+                            end
+                            if capturedMatchCalibration ~= nil then break end
+                        end
+                        if capturedMatchCalibration == nil then
+                            printf("FLOOR_ALIGN_DIAG:: WARNING: Match Existing Map clicked but no existing Map LevelObject found to capture from.")
+                        end
+
                         importPanel:CreateGridless()
                         gridlessChoice.value = false
                         importPanel:SetMapDimensions(mapW, mapH)
@@ -259,7 +335,7 @@ mod.shared.ImportMapDialog = function(paths, options)
             height = "auto",
             fontSize = 28,
             bold = true,
-            color = "#66dd66",
+            color = "@success",
             text = "A Perfect Fit!",
             vmargin = 4,
         },
@@ -269,7 +345,6 @@ mod.shared.ImportMapDialog = function(paths, options)
             width = 380,
             height = "auto",
             fontSize = 16,
-            color = "#cccccc",
             wrap = true,
             text = "",
             vmargin = 8,
@@ -280,7 +355,6 @@ mod.shared.ImportMapDialog = function(paths, options)
             width = 380,
             height = "auto",
             fontSize = 20,
-            color = "white",
             text = "",
             vmargin = 4,
         },
@@ -290,13 +364,11 @@ mod.shared.ImportMapDialog = function(paths, options)
             height = 24,
         },
 
-        gui.PrettyButton{
+        gui.Button{
+            classes = {"sizeL"},
             id = "perfectFitAccept",
             text = "Accept",
-            width = 200,
-            height = 50,
             halign = "left",
-            fontSize = 22,
             click = function(element)
                 -- Trigger the same confirm flow as the Finish button.
                 resultPanel.children = {
@@ -321,12 +393,10 @@ mod.shared.ImportMapDialog = function(paths, options)
             end,
         },
 
-        gui.PrettyButton{
+        gui.Button{
+            classes = {"sizeL"},
             text = "Customize Grid...",
-            width = 200,
-            height = 40,
             halign = "left",
-            fontSize = 16,
             vmargin = 8,
             click = function(element)
                 perfectFitActive = false
@@ -397,25 +467,25 @@ mod.shared.ImportMapDialog = function(paths, options)
             width = "auto",
             height = "auto",
             gui.Label{
+                classes = {"sizeL"},
                 width = 90,
                 height = "auto",
                 text = "Width:",
-                fontSize = 18,
             },
             statusWidth,
             gui.Label{
+                classes = {"sizeL"},
+                lmargin = 4,
                 width = "auto",
                 height = "auto",
                 text = "px",
-                fontSize = 18,
             },
         },
 
-        gui.Panel{
-            bgimage = "icons/icon_tool/icon_tool_30_unlocked.png",
-            width = 16,
-            height = 16,
-            bgcolor = "white",
+        gui.Button{
+            classes = {"sizeM"},
+            vmargin = 8,
+            icon = "icons/icon_tool/icon_tool_30_unlocked.png",
 
             data = {
                 unlocked = true,
@@ -433,17 +503,18 @@ mod.shared.ImportMapDialog = function(paths, options)
             width = "auto",
             height = "auto",
             gui.Label{
+                classes = {"sizeL"},
                 width = 90,
                 height = "auto",
                 text = "Height:",
-                fontSize = 18,
             },
             statusHeight,
             gui.Label{
+                classes = {"sizeL"},
+                lmargin = 4,
                 width = "auto",
                 height = "auto",
                 text = "px",
-                fontSize = 18,
             },
         },
     }
@@ -555,7 +626,6 @@ mod.shared.ImportMapDialog = function(paths, options)
         width = 280,
         height = "auto",
         fontSize = 14,
-        color = "#cccccc",
         text = "",
 
         updateInfo = function(element)
@@ -673,17 +743,16 @@ mod.shared.ImportMapDialog = function(paths, options)
             width = "auto",
             height = "auto",
             gui.Label{
+                classes = {"sizeL"},
+                hmargin = 4,
                 width = "auto",
                 height = "auto",
                 text = "1 tile = ",
-                fontSize = 18,
             },
 
             gui.Input{
                 characterLimit = 3,
                 width = 90,
-                height = 20,
-                fontSize = 18,
                 text = tostring(MeasurementSystem.NativeToDisplayString(dmhub.unitsPerSquare)),
                 edit = function(element)
                     local num = MeasurementSystem.DisplayToNative(tonumber(element.text))
@@ -718,17 +787,20 @@ mod.shared.ImportMapDialog = function(paths, options)
             },
             
             gui.Label{
+                classes = {"sizeL"},
+                lmargin = 4,
                 width = "auto",
                 height = "auto",
                 text = string.format(" %s", string.lower(MeasurementSystem.UnitName())),
-                fontSize = 18,
             },
         },
 
         gui.Label{
+            classes = {"form", "sizeL"},
+            tmargin = 8,
+            lmargin = 52,
             width = 280,
             height = "auto",
-            fontSize = 18,
             create = function(element)
                 element:FireEvent("updateScaling")
             end,
@@ -992,7 +1064,6 @@ mod.shared.ImportMapDialog = function(paths, options)
                 width = "auto",
                 height = "auto",
                 fontSize = 18,
-                color = "white",
                 text = importPanel.errorMessage
             }
         }
@@ -1079,26 +1150,25 @@ local function ImportMapWizard(options)
 				contentPanel:FireEvent("processFiles", paths)
 			end,
 
-			styles = {
+			styles = ThemeEngine.MergeTokens({
 				{
 					width = "80%",
 					height = "60%",
 					valign = "center",
 					selectors = {"dropArea"},
-					bgcolor = "#ffffff33",
-					borderColor = "white",
+					bgcolor = "@bgAlt",
+					borderColor = "@border",
 					borderWidth = 6,
 					cornerRadius = 16,
 				},
 				{
 					selectors = {"dropArea","hover"},
-					bgcolor = "#ffffff99",
+					bgcolor = "@accent",
 				}
 
-			},
+			}),
 
 			gui.Label{
-				color = "white",
 				fontSize = 24,
 				width = "auto",
 				height = "auto",
@@ -1113,17 +1183,14 @@ local function ImportMapWizard(options)
 			valign = "center",
 			halign = "center",
 			fontSize = 16,
-			color = "white",
 			width = "auto",
 			height = "auto",
 			text = "-or-",
 		},
 
 		gui.Button{
+			classes = {"sizeL"},
 			text = "Choose Files",
-			width = 320,
-			height = 70,
-            fontSize = 36,
 			click = function(element)
 
 				dmhub.OpenFileDialog{
@@ -1150,10 +1217,7 @@ local function ImportMapWizard(options)
 		height = 940,
 		pad = 8,
 		flow = "vertical",
-		styles = {
-			Styles.Default,
-			Styles.Panel,
-		},
+		styles = ThemeEngine.GetStyles(),
 
 		destroy = function(element)
 			if g_modalDialog == element then

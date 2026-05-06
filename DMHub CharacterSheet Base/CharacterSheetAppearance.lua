@@ -1539,18 +1539,13 @@ function CharSheet.AppearancePanel()
             width = "100%",
             flow = "horizontal",
 
-            CharSheet.AvatarSelectionPanel(),
-
-            --only valid if we are using a popout avatar.
-            CharSheet.PortraitSelectionPanel(),
-
             --panel allowing variation selection.
             gui.Panel {
                 height = "auto",
                 width = "auto",
                 flow = "vertical",
                 valign = "top",
-                halign = "right",
+                halign = "left",
                 minWidth = 200,
 
 
@@ -1620,7 +1615,7 @@ function CharSheet.AppearancePanel()
                                         CharacterSheet.instance:FireEvent("refreshAll")
                                     end,
                                     rightClick = function(element)
-                                        if element:HasClass("selected") then
+                                        if nvariations <= 1 then
                                             return
                                         end
 
@@ -1629,8 +1624,18 @@ function CharSheet.AppearancePanel()
                                                 {
                                                     text = "Delete",
                                                     click = function()
-                                                        CharacterSheet.instance.data.info.token
-                                                            :DeleteAppearanceVariation(index - 1)
+
+                                                        if element:HasClass("selected") then
+                                                            local targetIndex = 1
+                                                            if index == 1 then
+                                                                targetIndex = 2
+                                                            end
+
+                                                            local info = CharacterSheet.instance.data.info
+                                                            info.token:SwitchAppearanceVariation(targetIndex-1)
+                                                        end
+
+                                                        CharacterSheet.instance.data.info.token :DeleteAppearanceVariation(index - 1)
                                                         element.popup = nil
                                                         CharacterSheet.instance:FireEvent("refreshAll")
                                                     end,
@@ -1760,6 +1765,11 @@ function CharSheet.AppearancePanel()
                     end,
                 },
             },
+
+            CharSheet.AvatarSelectionPanel(),
+
+            --only valid if we are using a popout avatar.
+            CharSheet.PortraitSelectionPanel(),
         },
 
         gui.Panel {
@@ -2178,7 +2188,15 @@ function CharSheet.AppearancePanel()
                 border = { y1 = 2, x1 = 0, x2 = 0, y2 = 0 },
                 borderColor = Styles.textColor,
 
-            }
+            },
+            {
+                selectors = { "sliderNotch" },
+                bgimage = true,
+                bgcolor = "#A0A0A0",
+                width = "100%",
+                halign = "center",
+                borderWidth = 0,
+            },
         },
 
         leftPanel,
