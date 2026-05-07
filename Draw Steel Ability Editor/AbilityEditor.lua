@@ -80,6 +80,21 @@ local COLORS = {
 -- Expose colors for other files in the module.
 AbilityEditor.COLORS = COLORS
 
+-- Concatenate any number of style-rule arrays into one flat array. Use this
+-- when composing a helper's return that must include both the engine's
+-- classic Styles.Form pack (a nested array of rules) and DS-specific rule
+-- tables -- ThemeEngine.MergeStyles requires a flat array of rule tables,
+-- and the engine itself prefers flat arrays at the cascade root.
+local function _flatten(...)
+    local result = {}
+    for _, arr in ipairs({...}) do
+        for _, rule in ipairs(arr) do
+            result[#result + 1] = rule
+        end
+    end
+    return result
+end
+
 -- The ordered section list. Section IDs are stable; labels can change later
 -- without breaking state.
 local SECTIONS = {
@@ -102,15 +117,14 @@ AbilityEditor.SECTIONS = SECTIONS
     Colors and fonts match Character Builder so the editor feels consistent.
 ]]
 local function _editorStyles()
+    -- Returns a flat array of DS-specific rule tables suitable for
+    -- ThemeEngine.MergeStyles. Styles.Form (the engine's classic
+    -- formPanel/formLabel/formInput pack used by SourceReference:Editor)
+    -- contains gui.Style{} userdata objects, which MergeStyles cannot
+    -- process; callers must include Styles.Form separately at the
+    -- cascade root, e.g.
+    --   styles = { Styles.Form, ThemeEngine.MergeStyles(_editorStyles()) }
     return {
-        -- SourceReference:Editor (DMHub Utils/SourceReference.lua) relies on
-        -- classic formPanel/formLabel/formDropdown/formInput class styles to
-        -- render with sensible widths. Without these the Source row
-        -- collapses to ~0 height and the dropdown is invisible. Styles.Form
-        -- is the shared engine-side style pack defined in
-        -- DMHub Titlescreen/Styles.lua:1177.
-        Styles.Form,
-
         {
             selectors = {"nae-root"},
             fontFace = "Berling",
@@ -1030,10 +1044,12 @@ AbilityEditor.GetEditorStyles = _editorStyles
 ]]
 local function _sharedWidgetStyles(colors)
     local c = colors or COLORS
+    -- Returns a flat array of DS-specific rule tables suitable for
+    -- ThemeEngine.MergeStyles. Styles.Form (engine legacy form pack
+    -- referenced by SourceReference:Editor) is gui.Style{} userdata
+    -- which MergeStyles cannot process -- callers must include it
+    -- separately at the cascade root.
     return {
-        -- SourceReference:Editor and other shared utilities rely on the base
-        -- Styles.Form class pack. Include it before overriding its descendants.
-        Styles.Form,
         -- Left-anchor Styles.Form descendants (base pack right-aligns them).
         { selectors = {"formPanel"}, width = "auto", halign = "left", priority = 5 },
         { selectors = {"formLabel"}, halign = "left", minWidth = 0, priority = 5 },
@@ -5004,7 +5020,10 @@ function AbilityEditor.GenerateEditor(ability, opts)
     rootPanel = gui.Panel{
         classes = {"nae-root"},
         id = "abilityEditorRoot",
-        styles = _editorStyles(),
+        -- Cascade: Styles.Form (legacy form pack used by SourceReference)
+        -- + theme + DS-specific rules. The engine flattens nested arrays
+        -- at the cascade root.
+        styles = { Styles.Form, ThemeEngine.MergeStyles(_editorStyles()) },
         width = "100%",
         height = "100%",
         halign = "center",

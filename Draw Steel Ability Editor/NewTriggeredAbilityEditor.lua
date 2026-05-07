@@ -120,7 +120,7 @@ local function buildStyles()
     if AE ~= nil and AE.GetEditorStyles ~= nil then
         styles = AE.GetEditorStyles()
     else
-        styles = { Styles.Form }
+        styles = {}
     end
 
     -- Classic-code alignment fixup. The upstream appearancePanel inside
@@ -6308,7 +6308,7 @@ function openTestTriggerPopout(ability, initialState, reopen)
         -- this, the popout's controls fall back to engine-default style
         -- (visibly different from the editor's). `buildStyles()` already
         -- merges Styles.Form + the AbilityEditor themed pack.
-        styles = buildStyles(),
+        styles = { Styles.Form, ThemeEngine.MergeStyles(buildStyles()) },
         -- See block-comment above: don't block map/token clicks for areas
         -- outside the popout's visible body. The popout is a floating
         -- utility, not a screen-blocking modal.
@@ -6838,7 +6838,7 @@ local function generateSectionedEditor(ability, options)
     rootPanel = gui.Panel{
         classes = {"nae-root"},
         id = "triggeredAbilityEditorRoot",
-        styles = buildStyles(),
+        styles = { Styles.Form, ThemeEngine.MergeStyles(buildStyles()) },
         width = "100%",
         height = "100%",
         halign = "center",
