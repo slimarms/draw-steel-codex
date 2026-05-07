@@ -569,45 +569,59 @@ local function _filterTriggers(query, entries)
     return results
 end
 
-local function _makeTriggerCard(entry, onSelect, COLORS)
+-- Picker-specific style extras spliced into the modal's cascade root via
+-- ThemeEngine.MergeStyles. Keeps the picker's "dark fill + accent border"
+-- card look but routes the colors through @-tokens so the cards re-color
+-- with the active scheme.
+local function _pickerStyles()
+    return {
+        {
+            selectors = {"picker-card"},
+            bgimage = "panels/square.png",
+            bgcolor = "@bgAlt",
+            borderWidth = 1,
+            borderColor = "@accent",
+            cornerRadius = 3,
+            borderBox = true,
+        },
+        {
+            selectors = {"picker-card", "hover"},
+            borderColor = "@accentHover",
+        },
+    }
+end
+
+local function _makeTriggerCard(entry, onSelect)
     return gui.Panel{
+        classes = {"picker-card"},
         width = "100%",
         height = "auto",
         flow = "vertical",
         hpad = 10,
         vpad = 6,
         bmargin = 4,
-        bgimage = "panels/square.png",
-        bgcolor = COLORS.PANEL_BG,
-        borderWidth = 1,
-        borderColor = COLORS.GOLD,
-        cornerRadius = 3,
-        borderBox = true,
         press = function()
             onSelect(entry.id)
         end,
         gui.Label{
+            classes = {"sizeS", "bold"},
             width = "100%",
             height = "auto",
-            fontSize = 14,
-            bold = true,
-            color = COLORS.CREAM_BRIGHT,
             textAlignment = "left",
             text = entry.label,
         },
         gui.Label{
+            classes = {"sizeXs"},
             width = "100%",
             height = "auto",
-            fontSize = 12,
             italics = true,
-            color = COLORS.GRAY,
             textAlignment = "left",
             text = entry.description or "",
         },
     }
 end
 
-local function _buildTriggerGroupPanel(groupDef, entries, onSelect, COLORS)
+local function _buildTriggerGroupPanel(groupDef, entries, onSelect)
     if groupDef.id == "common" then
         table.sort(entries, function(a, b)
             local sa = a.sortOrder or 99
@@ -621,7 +635,7 @@ local function _buildTriggerGroupPanel(groupDef, entries, onSelect, COLORS)
 
     local cards = {}
     for _, entry in ipairs(entries) do
-        cards[#cards + 1] = _makeTriggerCard(entry, onSelect, COLORS)
+        cards[#cards + 1] = _makeTriggerCard(entry, onSelect)
     end
 
     return gui.Panel{
@@ -634,11 +648,9 @@ local function _buildTriggerGroupPanel(groupDef, entries, onSelect, COLORS)
         bgcolor = "clear",
         children = {
             gui.Label{
+                classes = {"sizeM", "bold"},
                 width = "100%",
                 height = "auto",
-                fontSize = 16,
-                bold = true,
-                color = COLORS.GOLD_DIM,
                 textAlignment = "left",
                 bmargin = 4,
                 text = groupDef.label,
@@ -655,8 +667,6 @@ local function _buildTriggerGroupPanel(groupDef, entries, onSelect, COLORS)
 end
 
 local function openTriggerEventPicker(currentId, onChosen)
-    local COLORS = getColors()
-
     -- Build the filtered entry list from the live trigger registry. Skip
     -- excluded ids, items whose hide() predicate returns true, and
     -- unrecognised entries (they would end up with no description and no
@@ -688,22 +698,12 @@ local function openTriggerEventPicker(currentId, onChosen)
     local searchInput
     local resultsPanel
 
-    searchInput = gui.Input{
+    searchInput = gui.SearchInput{
         width = "100%",
         height = 30,
-        placeholderText = "Search trigger events...",
-        bgimage = "panels/square.png",
-        bgcolor = COLORS.PANEL_BG,
-        borderWidth = 1,
-        borderColor = COLORS.GOLD,
-        cornerRadius = 3,
-        hpad = 8,
-        vpad = 4,
         borderBox = true,
-        fontSize = 14,
-        color = COLORS.CREAM_BRIGHT,
+        placeholderText = "Search trigger events...",
         bmargin = 8,
-        textAlignment = "left",
         editlag = 0.15,
         edit = function(element)
             resultsPanel:FireEvent("updateResults")
@@ -742,17 +742,16 @@ local function openTriggerEventPicker(currentId, onChosen)
                     end
                 end
                 if #groupEntries > 0 then
-                    children[#children + 1] = _buildTriggerGroupPanel(groupDef, groupEntries, onSelect, COLORS)
+                    children[#children + 1] = _buildTriggerGroupPanel(groupDef, groupEntries, onSelect)
                 end
             end
 
             if #filtered == 0 and query ~= nil then
                 children[#children + 1] = gui.Label{
+                    classes = {"sizeS"},
                     width = "100%",
                     height = "auto",
-                    fontSize = 14,
                     italics = true,
-                    color = COLORS.GRAY,
                     textAlignment = "center",
                     vmargin = 24,
                     text = "No trigger events match \"" .. rawQuery .. "\"",
@@ -765,7 +764,7 @@ local function openTriggerEventPicker(currentId, onChosen)
 
     local dialogPanel = gui.Panel{
         classes = {"framedPanel"},
-        styles = {Styles.Default, Styles.Panel},
+        styles = ThemeEngine.MergeStyles(_pickerStyles()),
         width = 600,
         height = 600,
         flow = "vertical",
@@ -773,31 +772,17 @@ local function openTriggerEventPicker(currentId, onChosen)
         borderBox = true,
         halign = "center",
         valign = "center",
-        fontFace = "Berling",
         children = {
-            gui.Panel{
-                width = "100%",
-                height = "auto",
-                flow = "horizontal",
+            gui.Label{
+                classes = {"sizeXl", "bold"},
                 halign = "left",
-                valign = "center",
                 bmargin = 8,
-                bgcolor = "clear",
-                children = {
-                    gui.Label{
-                        width = "auto",
-                        height = "auto",
-                        fontSize = 20,
-                        bold = true,
-                        color = COLORS.GOLD_BRIGHT,
-                        textAlignment = "left",
-                        text = "Select Trigger Event",
-                    },
-                },
+                text = "Select Trigger Event",
             },
             searchInput,
             resultsPanel,
-            gui.CloseButton{
+            gui.Button{
+                classes = {"closeButton"},
                 halign = "right",
                 valign = "top",
                 floating = true,
