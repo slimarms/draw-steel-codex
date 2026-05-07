@@ -24,6 +24,11 @@ local function _pickerStyles()
             borderColor = "@accent",
             cornerRadius = 3,
             borderBox = true,
+            -- Defeat the vertical-flow distribution quirk: without this,
+            -- DMHub's layout shrinks/auto-fits cards when there are many
+            -- siblings, especially under a vscroll container. valign="top"
+            -- pins each card to its row instead.
+            valign = "top",
         },
         {
             selectors = {"picker-card", "hover"},
@@ -39,6 +44,7 @@ local function _pickerStyles()
             borderColor = "@accent",
             cornerRadius = 4,
             borderBox = true,
+            valign = "top",
         },
         {
             selectors = {"picker-path-button", "hover"},
@@ -758,13 +764,16 @@ end
 
 -- Shared back-link button. A real gui.Button rather than a styled label so
 -- the back action picks up the theme's button chrome (visible border, hover
--- state, click feedback) and reads as obviously clickable.
+-- state, click feedback) and reads as obviously clickable. width=auto so
+-- the button hugs the "< Back" text, with inline hpad so the text isn't
+-- butting against the border.
 local function _makeBackLabel(text, onClick)
     return gui.Button{
         classes = {"sizeS"},
         width = "auto",
-        height = "auto",
         halign = "left",
+        valign = "top",
+        hpad = 12,
         bmargin = 8,
         text = "< " .. text,
         click = onClick,
@@ -911,7 +920,7 @@ local function _makeAbilityCard(entry, ability, rootPanel, rebuildEditor)
             text = e.name,
         },
         gui.Label{
-            classes = {"sizeXxs"},
+            classes = {"sizeXs"},
             width = "100%",
             height = "auto",
             textAlignment = "left",
@@ -924,26 +933,21 @@ end
 
 local function _buildDuplicateListView(ability, rootPanel, onComplete, rebuildEditor)
     -- The contentPanel whose children are swapped between browse levels.
-    -- All show* functions use setContent() instead of setting children
-    -- directly so items always stack at the top (auto-height wrapper
-    -- prevents the scroll container from distributing children vertically).
+    -- Children are set directly on contentPanel (which is a vscroll
+    -- container with valign="top"). An earlier inner-wrapper indirection
+    -- was being uiscale-shrunk under heavy item counts; matching the
+    -- modifier picker's flat pattern keeps cards readable regardless of
+    -- list length.
     local contentPanel = nil
 
     local function setContent(children)
-        contentPanel.children = {
-            gui.Panel{
-                width = "100%",
-                height = "auto",
-                flow = "vertical",
-                halign = "left",
-                valign = "top",
-                bgcolor = "clear",
-                children = children,
-            },
-        }
+        contentPanel.children = children
     end
 
     -- Shared helper: a clickable row with a name and a count badge.
+    -- Title sized at sizeS bold to match the other picker cards (categories,
+    -- ability cards) -- earlier sizeXs made source rows visibly smaller and
+    -- read as "scaling" when drilling into a dense list.
     local function _makeSourceRow(label, count, onClick)
         return gui.Panel{
             classes = {"picker-card"},
@@ -956,14 +960,14 @@ local function _buildDuplicateListView(ability, rootPanel, onComplete, rebuildEd
             press = onClick,
 
             gui.Label{
-                classes = {"sizeXs", "bold"},
+                classes = {"sizeS", "bold"},
                 width = "100%-30",
                 height = "auto",
                 textAlignment = "left",
                 text = label,
             },
             gui.Label{
-                classes = {"sizeXxs"},
+                classes = {"sizeXs"},
                 width = 30,
                 height = "auto",
                 textAlignment = "right",
@@ -981,6 +985,7 @@ local function _buildDuplicateListView(ability, rootPanel, onComplete, rebuildEd
             classes = {"sizeS", "bold"},
             width = "100%",
             height = "auto",
+            valign = "top",
             textAlignment = "left",
             bmargin = 4,
             text = heading,
@@ -1024,6 +1029,7 @@ local function _buildDuplicateListView(ability, rootPanel, onComplete, rebuildEd
             classes = {"sizeS", "bold"},
             width = "100%",
             height = "auto",
+            valign = "top",
             textAlignment = "left",
             bmargin = 4,
             text = groupName,
@@ -1090,6 +1096,7 @@ local function _buildDuplicateListView(ability, rootPanel, onComplete, rebuildEd
                 classes = {"sizeS", "bold"},
                 width = "100%",
                 height = "auto",
+                valign = "top",
                 textAlignment = "left",
                 tmargin = 6,
                 bmargin = 2,
@@ -1112,6 +1119,7 @@ local function _buildDuplicateListView(ability, rootPanel, onComplete, rebuildEd
                 classes = {"sizeS"},
                 width = "100%",
                 height = "auto",
+                valign = "top",
                 italics = true,
                 textAlignment = "center",
                 vmargin = 24,
@@ -1161,6 +1169,7 @@ local function _buildDuplicateListView(ability, rootPanel, onComplete, rebuildEd
                 classes = {"sizeS"},
                 width = "100%",
                 height = "auto",
+                valign = "top",
                 italics = true,
                 textAlignment = "center",
                 vmargin = 24,
@@ -1277,6 +1286,7 @@ local function _buildDuplicateListView(ability, rootPanel, onComplete, rebuildEd
                     classes = {"sizeM", "bold"},
                     width = "100%",
                     height = "auto",
+                    valign = "top",
                     textAlignment = "left",
                     bmargin = 4,
                     tmargin = 4,
@@ -1293,6 +1303,7 @@ local function _buildDuplicateListView(ability, rootPanel, onComplete, rebuildEd
                     classes = {"sizeS"},
                     width = "100%",
                     height = "auto",
+                    valign = "top",
                     italics = true,
                     textAlignment = "center",
                     vmargin = 24,
