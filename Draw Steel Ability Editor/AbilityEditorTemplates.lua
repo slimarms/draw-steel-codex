@@ -46,15 +46,6 @@ local function _pickerStyles()
             brightness = 1.2,
             transitionTime = 0.15,
         },
-        -- Back-link label (top of each sub-view).
-        {
-            selectors = {"picker-back-label"},
-            color = "@accent",
-        },
-        {
-            selectors = {"picker-back-label", "hover"},
-            color = "@accentHover",
-        },
     }
 end
 
@@ -765,16 +756,18 @@ local function _makePathButton(title, description, onClick)
     }
 end
 
--- Shared back-link label.
+-- Shared back-link button. A real gui.Button rather than a styled label so
+-- the back action picks up the theme's button chrome (visible border, hover
+-- state, click feedback) and reads as obviously clickable.
 local function _makeBackLabel(text, onClick)
-    return gui.Label{
-        classes = {"sizeXs", "picker-back-label"},
+    return gui.Button{
+        classes = {"sizeS"},
         width = "auto",
         height = "auto",
-        textAlignment = "left",
-        bmargin = 4,
+        halign = "left",
+        bmargin = 8,
         text = "< " .. text,
-        press = onClick,
+        click = onClick,
     }
 end
 
