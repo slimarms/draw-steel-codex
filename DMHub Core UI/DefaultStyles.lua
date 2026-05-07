@@ -1983,6 +1983,71 @@ ThemeEngine.RegisterTheme{
     },
 }
 
+if devmode() then
+-- =============================================================================
+-- My Little Pony color scheme
+--
+-- A magic-purple night-sky surface palette with pastel rainbow accents drawn
+-- from the mane-six. Selectable from the standard color scheme picker.
+-- =============================================================================
+
+ThemeEngine.RegisterColorScheme{
+    id          = "my-little-pony",
+    name        = "My Little Pony",
+    description = "Twilight's night-sky purple with pastel mane-six accents.",
+    colors = {
+        -- Surfaces
+        bg            = "#2D1843",
+        bgAlt         = "#3D2257",
+        bgInverse     = "#FFE5F1",
+
+        -- Foreground / text
+        fg            = "#F8C8E0",
+        fgStrong      = "#FFE8F5",
+        fgMuted       = "#A892C4",
+        fgPending     = "#8478A8",
+        fgInverse     = "#2D1843",
+
+        -- Borders
+        border        = "#FF6FAE",
+        borderInverse = "#5A3878",
+
+        -- Accent + interactive
+        accent        = "#56C4E6",
+        accentHover   = "#A0E0F4",
+
+        -- Status (Applejack green, Fluttershy yellow, Applejack orange, Big Mac red)
+        success       = "#88D67A",
+        info          = "#FFE066",
+        warning       = "#FFA864",
+        danger        = "#FF5577",
+
+        -- Disabled
+        disabled      = "#5D4D6E",
+    },
+    gradients = {
+        surfaceLinear = {
+            point_a = {x = 0, y = 0},
+            point_b = {x = 1, y = 1},
+            stops = {
+                {position = 0, color = "#2D1843"},
+                {position = 1, color = "#5C2868"},
+            },
+        },
+        barTrack = {
+            point_a = {x = -0.02, y = 0},
+            point_b = {x = 1.02, y = 0},
+            stops = {
+                {position = 0, color = "#3D1B5C"},
+                {position = 1, color = "#6B2D9C"},
+                -- {position = 1, color = "#A347D9"},
+            },
+        },
+    },
+}
+
+end
+
 -- After schemes and themes are registered, restore the user's
 -- saved selections (defaults to "default" / "default" if they
 -- haven't picked anything yet).
