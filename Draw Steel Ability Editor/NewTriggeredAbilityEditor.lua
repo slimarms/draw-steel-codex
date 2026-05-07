@@ -6229,8 +6229,12 @@ function openTestTriggerPopout(ability, initialState, reopen)
         halign = "left",
         valign = "top",
         bgimage = "panels/square.png",
+        -- Muted "danger" surface -- darker than the bright @danger tone so
+        -- the banner reads as recoverable error rather than fatal alarm.
+        -- Border picks up the scheme's danger color so the banner re-themes
+        -- under the active scheme.
         bgcolor = "#3a1414",
-        borderColor = "#a14b3a",
+        borderColor = "@danger",
         borderWidth = 1,
         bmargin = 6,
         hpad = 8,
@@ -6241,7 +6245,7 @@ function openTestTriggerPopout(ability, initialState, reopen)
             element.children = {
                 gui.Label{
                     text = msg,
-                    color = "#dfcfc0",
+                    color = "@fg",
                     fontSize = 12,
                     width = "100%-24",
                     height = "auto",
