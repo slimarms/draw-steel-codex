@@ -446,6 +446,7 @@ function AbilityEditor.OpenModifierPicker(feature, onAdd)
     searchInput = gui.SearchInput{
         width = "100%",
         height = 30,
+        borderBox = true,
         placeholderText = "Search modifiers...",
         bmargin = 8,
         editlag = 0.15,
@@ -592,23 +593,11 @@ function AbilityEditor.OpenModifierPicker(feature, onAdd)
         valign = "center",
 
         children = {
-            gui.Panel{
-                width = "100%",
-                height = "auto",
-                flow = "horizontal",
+            gui.Label{
+                classes = {"sizeXl", "bold"},
                 halign = "left",
-                valign = "center",
                 bmargin = 8,
-                bgcolor = "clear",
-                children = {
-                    gui.Label{
-                        classes = {"sizeXl", "bold"},
-                        width = "auto",
-                        height = "auto",
-                        textAlignment = "left",
-                        text = "Add Modifier",
-                    },
-                },
+                text = "Add Modifier",
             },
 
             searchInput,
