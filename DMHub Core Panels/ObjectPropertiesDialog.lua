@@ -280,7 +280,7 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 		}
 	elseif fieldInfo.type == 'imageswap' then
 		editorPanel = gui.Panel{
-			classes = {'accept-objects'},
+			classes = {"accept-objects", "bordered"},
 			width = 64,
 			height = 64,
 			halign = "right",
@@ -289,24 +289,7 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 			dragTargetPriority = 0,
 			flow = "none",
 
-			bgimage = "panels/square.png",
-			styles = {
-
-				{
-					selectors = {"accept-objects"},
-					bgcolor = "black",
-					borderWidth = 2,
-					borderColor = "black",
-				},
-				{
-					selectors = {"accept-objects", "drag-target"},
-					borderColor = "white",
-				},
-				{
-					selectors = {"accept-objects", "drag-target-hover"},
-					borderColor = "yellow",
-				},
-			},
+			bgimage = true,
 
 			dragObject = function(element, nodeid)
 				dmhub.Debug(string.format("DRAG ONTO: %s", nodeid))
@@ -336,7 +319,6 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 							halign = "center",
 							valign = "center",
 							fontSize = 12,
-							color = 'white',
 							width = "100%",
 							height = "auto",
 							text = "Drag Object Here",
@@ -480,8 +462,7 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 					},
 					gui.Label{
 						fontSize = 14,
-						color = "white",
-						width = "auto",
+							width = "auto",
 						height = "auto",
 						halign = "center",
 						valign = "center",
@@ -549,8 +530,7 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 						rotate = 270,
 						halign = "center",
 						valign = "center",
-						color = "white",
-						width = "auto",
+							width = "auto",
 						height = "100% width",
 						text = displayInfo.ylabel,
 						refreshObjects = function(element)
@@ -565,7 +545,6 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 			gui.Panel{
 				classes = {"curveSettings"},
 				gui.Label{
-					color = "white",
 					text = "Period:",
 					fontSize = 12,
 					width = "auto",
@@ -599,7 +578,6 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 				classes = {"curveSettings"},
 
 				gui.Label{
-					color = "white",
 					text = "Range:",
 					fontSize = 12,
 					width = "auto",
@@ -628,7 +606,6 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 
 				},
 				gui.Label{
-					color = "white",
 					text = " to ",
 					fontSize = 12,
 					width = "auto",
@@ -661,7 +638,6 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 				classes = {"curveSettings"},
 
 				gui.Label{
-					color = "white",
 					text = "Value:",
 					fontSize = 12,
 					width = "auto",
@@ -689,7 +665,6 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 				},
 
 				gui.Label{
-					color = "white",
 					text = " to ",
 					fontSize = 12,
 					width = "auto",
@@ -720,22 +695,14 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 		}
 	elseif fieldInfo.type == 'path' then
 		editorPanel = gui.Panel{
-			halign = "right",
 			valign = "center",
-			width = 100,
+			width = "auto",
 			height = "auto",
 			flow = "vertical",
 			styles = {
 				{
 					wrap = false,
 				},
-				{
-					selectors = {"button"},
-					fontSize = 11,
-					width = 50,
-					height = 20,
-					cornerRadius = 0,
-				}
 			},
 
 			create = function(element)
@@ -750,28 +717,31 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 				end
 				element.children = {
 					gui.Button{
+						classes = {"sizeM"},
 						text = "Set Path",
 						click = function(button)
 							element:FireEvent("setpath")
 						end,
 					},
 					gui.Button{
+						classes = {"sizeM"},
 						text = "Edit Path",
 						click = function(button)
 							element:FireEvent("editpath")
 						end,
 					},
-                    gui.Button{
-                        text = "Clear Path",
-                        click = function(button)
+					gui.Button{
+						classes = {"sizeM"},
+						text = "Clear Path",
+						click = function(button)
 							element:FireEvent("clearpath")
-                        end,
-                    },
+						end,
+					},
 
 					gui.Label{
+						classes = {"sizeM"},
 						text = text,
 						hmargin = 4,
-						fontSize = 12,
 						width = "auto",
 						height = "auto",
 					},
@@ -792,9 +762,8 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 			setpath = function(element)
 				element.children = {
 					gui.Label{
+						classes = {"sizeS"},
 						halign = "left",
-						fontSize = 10,
-						color = "white",
 						width = "auto",
 						height = "auto",
 						text = "Draw path...",
@@ -828,12 +797,12 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 					gui.Panel{
 						width = "auto",
 						height = "auto",
-						flow = "horizontal",
+						flow = "vertical",
 						gui.Label{
-							fontSize = 10,
+							classes = {"sizeS"},
 							width = "auto",
 							height = "auto",
-							valign = "center",
+							halign = "left",
 							text = "Smooth:",
 						},
 						gui.Slider{
@@ -841,7 +810,7 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 							value = 2,
 							minValue = 0,
 							maxValue = 5,
-							sliderWidth = 60,
+							sliderWidth = 180,
 							labelWidth = 20,
 							labelFormat = "%d",
 							styles = {
@@ -885,8 +854,7 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 					gui.Label{
 						halign = "left",
 						fontSize = 10,
-						color = "white",
-						width = "auto",
+							width = "auto",
 						height = "auto",
 						text = "Edit path...",
 
@@ -1200,13 +1168,12 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 		local multiline = fieldInfo.fieldList[1].arguments[1] or false
 		editorPanel = gui.Input{
 			text = tostring(fieldInfo.fieldList[1]:GetValue(valueIndex)),
-			halign = 'right',
+			halign = "left",
 			multiline = multiline,
 			hmargin = 4,
 			height = cond(multiline, "auto", 24),
 			minHeight = 24,
-			width = 110,
-			cornerRadius = 2,
+			width = 130,
 			events = {
 				change = function(element)
 					local groupid = dmhub.GenerateGuid()
@@ -1356,7 +1323,9 @@ local CreateFieldEditor = function(fieldInfo, options)
 
 	if fieldInfo.array then
 		editorPanel = gui.Panel{
-			width = "auto",
+			classes = {"bordered"},
+			pad = 8,
+			width = "100%",
 			height = "auto",
 			halign = "left",
 			flow = "vertical",
@@ -1370,16 +1339,17 @@ local CreateFieldEditor = function(fieldInfo, options)
 						flow = "horizontal",
 
 						--TODO: work out why 'auto' causes jumping problems with these.
-						width = 160,
+						width = "100%",
 						height = "auto",
 						wrap = false,
 
 						CreateEditorPanel(fieldInfo, displayInfo, options, i, resultOptions),
-						gui.CloseButton{
-							width = 16,
-							height = 16,
-							valign = "center",
-							cornerRadius = 0,
+						gui.Button{
+							classes = {"closeButton"},
+							floating = true,
+							halign = "right",
+							valign = "top",
+							-- margin = 8,
 							escapeActivates = false,
 							click = function(element)
 								local groupid = dmhub.GenerateGuid()
@@ -1398,7 +1368,7 @@ local CreateFieldEditor = function(fieldInfo, options)
                 local emptyLabel = nil
                 if fieldInfo.fieldList[1].count == 0 then
                     emptyLabel = gui.Label{
-                        fontSize = 10,
+                        classes = {"sizeS"},
                         valign = "center",
                         hmargin = 4,
                         text = string.format("%s empty", fieldInfo.prettyName),
@@ -1412,8 +1382,8 @@ local CreateFieldEditor = function(fieldInfo, options)
                     flow = "horizontal",
                     width = "auto",
                     height = "auto",
-                    gui.AddButton{
-                        cornerRadius = 0,
+                    gui.Button{
+                        classes = {"addButton"},
                         click = function(element)
                             local groupid = dmhub.GenerateGuid()
                             for i,fieldInstance in ipairs(fieldInfo.fieldList) do
@@ -1424,7 +1394,7 @@ local CreateFieldEditor = function(fieldInfo, options)
                             end
 
                             element:FireEventOnParents("refreshObjects")
-                        end
+                        end,
                     },
                     emptyLabel,
                 }
@@ -1512,16 +1482,16 @@ local CreateArtistAndKeywordsPanel = function(nodes, options)
 	if (dmhub.isAdminAccount and options.blueprint) then
 
 		local fieldPanel = gui.Dropdown{
-			id = 'artist-dropdown',
+			id = "artist-dropdown",
+			classes = {"formStacked"},
 			options = artistOptions,
 			idChosen = artistProperty,
-			style = {
-				valign = "center",
-				fontSize = '30%',
-				width = '50%',
-				height = 34,
-				cornerRadius = 0,
-			},
+			thinkTime = 0.2,
+			think = function(element)
+				element.thinkTime = nil
+				element.options = element.options
+				element:FireEventTree("refreshDropdown")
+			end,
 			events = {
 				change = function(element)
 					for i,n in ipairs(nodes) do
@@ -1532,20 +1502,13 @@ local CreateArtistAndKeywordsPanel = function(nodes, options)
 		}
 
 		artistPanel = gui.Panel{
-			selfStyle = {
-				width = "100%",
-				height = "auto",
-				flow = "horizontal",
-				hmargin = 0,
-				vmargin = 0,
-			},
+			classes = {"formStackedRow"},
 			children = {
 				gui.Label{
-					classes = {'property-label'},
-					text = 'Artist:',
+					classes = {"formStacked"},
+					text = "Artist:",
 				},
 				fieldPanel,
-
 			},
 		}
 	end
@@ -1774,61 +1737,11 @@ local CreateObjectEditor = function(nodes, options)
 	local editorPanel
 
 	leftPanel = gui.Panel{
-		bgimage = 'panels/square.png',
-		classes = {'left-panel'},
+		bgimage = true,
+		classes = {"left-panel", cond(options.objectInstances, "objectInstances"), cond(options.blueprint, "big")},
 		vscroll = true,
 		selfStyle = {
 			cornerRadius = 8,
-			bgcolor = '#33333399',
-		},
-		styles = {
-			{
-				flow = 'vertical',
-				valign = 'top',
-				hmargin = 8,
-				vmargin = 8,
-				borderWidth = 0,
-			},
-			{
-				selectors = {'component-header'},
-				bgcolor = '#444444',
-				color = '#dddddd',
-				fontSize = 14,
-				width = '90%',
-				height = 30,
-				valign = 'top',
-				halign = cond(options.objectInstances, 'left', 'center'),
-				textAlignment = 'center',
-				borderWidth = 1,
-				borderColor = '#bbbbbb',
-				cornerRadius = 4,
-			},
-			{
-				--style to use when only some objects have this component.
-				selectors = {'component-header','incomplete'},
-				color = '#aaaaaa',
-			},
-			{
-				selectors = {'component-header','hover'},
-				color = '#ffffff',
-				borderColor = '#ffffff',
-				fontSize = 18,
-			},
-			{
-				selectors = {'component-header','press'},
-				bgcolor = '#555555',
-				borderColor = '#dddddd',
-			},
-			{
-				selectors = {'component-header','selected'},
-				borderColor = '#ffffff',
-				borderWidth = 2,
-			},
-			{
-				selectors = {'component-header','disabled'},
-				brightness = 0.4,
-				italics = true,
-			},
 		},
 		children = {
 			propertiesLabel,
@@ -1841,9 +1754,9 @@ local CreateObjectEditor = function(nodes, options)
 					local componentName = k
 					local completeClass = cond(#componentInfo.componentsList == #nodes, 'complete', 'incomplete')
 					componentInfo.panel = componentInfo.panel or gui.Label{
-						bgimage = 'panels/square.png',
+						bgimage = true,
 						text = componentInfo.name,
-						classes = {'component-header', cond(componentInfo.componentsList[1].component.disabled, "disabled"), completeClass},
+						classes = {"component-header", "bordered", cond(componentInfo.componentsList[1].component.disabled, "disabled"), completeClass},
 						data = {
 							ord = componentInfo.componentsList[1].component.displayPriority,
 						},
@@ -2072,15 +1985,17 @@ local CreateObjectEditor = function(nodes, options)
 		},
 	}
 
-	local fieldsPanel = gui.Panel{
+	local fieldsPanel
+	fieldsPanel = gui.Panel{
+		classes = {"fieldsPanel", cond(options.blueprint, "big")},
 		vscroll = true,
 		thinkTime = 0.1,
 		styles = {
 			{
-				flow = 'horizontal',
-				valign = 'top',
-				width = cond(options.objectInstances, '100%', '90%'),
-				height = "100% available", --cond(options.objectInstances, cond(dmhub.GetSettingValue("dev"), '80%', '90%'), '50%'),
+				flow = "horizontal",
+				valign = "top",
+				width = "100%",
+				height = "100% available",
 				borderWidth = 0,
 				wrap = true,
 			}
@@ -2132,6 +2047,9 @@ local CreateObjectEditor = function(nodes, options)
 
 				local groupedPanels = {}
 				local groupedPanelsChildren = {}
+				local ungroupedPanel
+				local ungroupedInner
+				local ungroupedChildren = {}
 
 				for _,fieldName in ipairs(fieldKeysOrdered) do
 					local fieldEntry = fieldInfo[fieldName]
@@ -2150,12 +2068,10 @@ local CreateObjectEditor = function(nodes, options)
 								vpad = 5,
 							}
 							group = gui.Panel{
-								width = "95%",
+								classes = {"sectionPanel", "bordered", cond(options.blueprint, "big")},
+								bgimage = true,
 								height = "auto",
 								flow = "vertical",
-								bgimage = 'panels/square.png',
-								bgcolor = "#222222ff",
-								cornerRadius = 12,
 								vmargin = 4,
 
 								styles = {
@@ -2172,19 +2088,18 @@ local CreateObjectEditor = function(nodes, options)
                                     hpad = 2,
 									vpad = 0,
                                     tmargin = 4,
-									gui.Panel{
-                                        classes = {"expanded"},
-										bgimage = 'panels/triangle.png',
-										styles = gui.TriangleStyles,
+									gui.ExpandoArrow{
+										classes = {"expanded"},
 										press = function(element)
 											element:SetClass("expanded", not element:HasClass("expanded"))
 											childrenPanel:SetClass("collapsed", not element:HasClass("expanded"))
 										end,
 									},
 									gui.Label{
-										fontSize = 14,
+										classes = {"sizeL"},
 										width = "auto",
 										height = "auto",
+										halign = "left",
 										text = fieldOptions.group,
 									},
 								},
@@ -2199,7 +2114,32 @@ local CreateObjectEditor = function(nodes, options)
 						local childList = groupedPanelsChildren[fieldOptions.group]
 						childList[#childList+1] = editor
 					else
-						children[#children+1] = editor
+						if ungroupedPanel == nil then
+							ungroupedInner = gui.Panel{
+								classes = {"groupingPanel"},
+								flow = "vertical",
+								width = "100%",
+								height = "auto",
+								vpad = 5,
+							}
+							ungroupedPanel = gui.Panel{
+								classes = {"sectionPanel", "bordered", cond(options.blueprint, "big")},
+								bgimage = true,
+								height = "auto",
+								flow = "vertical",
+								vmargin = 4,
+
+								styles = {
+									{
+										wrap = false,
+									},
+								},
+
+								ungroupedInner,
+							}
+							children[#children+1] = ungroupedPanel
+						end
+						ungroupedChildren[#ungroupedChildren+1] = editor
 					end
 				end
 
@@ -2207,6 +2147,10 @@ local CreateObjectEditor = function(nodes, options)
 				for k,v in pairs(groupedPanels) do
 					local panelChildren = groupedPanelsChildren[k]
 					v.children[2].children = panelChildren
+				end
+
+				if ungroupedInner ~= nil then
+					ungroupedInner.children = ungroupedChildren
 				end
 
                 local customEditor
@@ -2228,8 +2172,8 @@ local CreateObjectEditor = function(nodes, options)
 				if customEditor ~= nil then
 
 					local containerPanel = gui.Panel{
-						bgimage = 'panels/square.png',
-						classes = {'field-editor-panel'},
+						classes = {"field-editor-panel", "sectionPanel", "bordered", cond(options.blueprint, "big")},
+						bgimage = true,
 						refreshObjects = function(element)
 						end,
 
@@ -2243,44 +2187,34 @@ local CreateObjectEditor = function(nodes, options)
 
 
 				--add command buttons.
-                local commandsAdded = {}
+				local commandsAdded = {}
+				local cmdButtonClass = cond(options.objectInstances, "sizeS", "sizeM")
 				for i,componentInfo in ipairs(componentInfo.componentsAndPreviews) do
 					for j,cmd in ipairs(componentInfo.component.commands) do
 						children[#children+1] = gui.Button{
+							classes = {cmdButtonClass, "cmdButton"},
 							text = cmd,
-							fontSize = 12,
-							width = 120,
-							height = 20,
-							vmargin = 8,
-							halign = "right",
-							hmargin = 40,
-							cornerRadius = 0,
 							click = function(element)
-                                local commands = commandsAdded[cmd]
-                                for _,fn in ipairs(commands) do
-                                    fn()
-                                end
+								local commands = commandsAdded[cmd]
+								for _,fn in ipairs(commands) do
+									fn()
+								end
+								fieldsPanel:FireEvent("refresh")
 							end,
 						}
 
-                        commandsAdded[cmd] = commandsAdded[cmd] or {}
-                        commandsAdded[cmd][#commandsAdded[cmd]+1] = function()
-                            componentInfo.component:Execute(cmd)
-                        end
+						commandsAdded[cmd] = commandsAdded[cmd] or {}
+						commandsAdded[cmd][#commandsAdded[cmd]+1] = function()
+							componentInfo.component:Execute(cmd)
+						end
 					end
 				end
 
 				if selectedComponentName == "Core" and options.objectInstances then
 
 					children[#children+1] = gui.Button{
+						classes = {cmdButtonClass, "cmdButton"},
 						text = "Save to Blueprint",
-						fontSize = 12,
-						width = 140,
-						height = 20,
-						vmargin = 8,
-						halign = "right",
-						hmargin = 40,
-						cornerRadius = 0,
 						click = function(element)
 
 							for i,componentInfo in ipairs(componentInfo.componentsAndPreviews) do
@@ -2290,14 +2224,8 @@ local CreateObjectEditor = function(nodes, options)
 					}
 
 					children[#children+1] = gui.Button{
+						classes = {cmdButtonClass, "cmdButton"},
 						text = "Save to New Blueprint",
-						fontSize = 12,
-						width = 140,
-						height = 20,
-						vmargin = 8,
-						halign = "right",
-						hmargin = 40,
-						cornerRadius = 0,
 						click = function(element)
 							for i,componentInfo in ipairs(componentInfo.componentsAndPreviews) do
 								componentInfo.component:UpdateBlueprint(true)
@@ -2316,18 +2244,19 @@ local CreateObjectEditor = function(nodes, options)
 
 	if options.objectInstances then
 		lockIcon = gui.Panel{
+			classes = {"lockIcon", cond(objectLocked, "locked", "unlocked")},
 			bgimage = cond(objectLocked, "icons/icon_tool/icon_tool_30.png", "icons/icon_tool/icon_tool_30_unlocked.png"),
-			bgcolor = cond(objectLocked, "white", "grey"),
 			width = 16,
 			height = 16,
 			halign = "right",
 			valign = "right",
 			vmargin = 12,
-            hmargin = 8,
+			hmargin = 8,
 			press = function(element)
 				objectLocked = not objectLocked
 				element.bgimage = cond(objectLocked, "icons/icon_tool/icon_tool_30.png", "icons/icon_tool/icon_tool_30_unlocked.png")
-				element.selfStyle.bgcolor = cond(objectLocked, "white", "grey")
+				element:SetClass("locked", objectLocked)
+				element:SetClass("unlocked", not objectLocked)
 				local groupid = dmhub.GenerateGuid()
 				for i,currentNode in ipairs(nodes) do
 					currentNode.locked = objectLocked
@@ -2343,21 +2272,14 @@ local CreateObjectEditor = function(nodes, options)
 
 	if dmhub.GetSettingValue("dev") then
 		idPanel = gui.Panel{
-			bgimage = "panels/square.png",
-
-			selfStyle = {
-				vmargin = 8,
-			},
+			classes = {"sectionPanel", "bordered", cond(options.blueprint, "big")},
+			bgimage = true,
 
 			styles = {
 				{
-					cornerRadius = 8,
-					width = '90%',
-					height = '40',
-					bgcolor = '#33333399',
-					flow = 'none',
-					borderWidth = 0,
-					valign = 'top',
+					height = 40,
+					flow = "none",
+					valign = "top",
 				}
 			},
 
@@ -2367,12 +2289,12 @@ local CreateObjectEditor = function(nodes, options)
 			end,
 
 			gui.Label{
-				classes = {'field-description-label', 'field-name-label'},
-				bgimage = 'panels/square.png',
+				classes = {"field-description-label", "field-name-label", cond(options.objectInstances, "sizeS", "sizeM")},
 				selfStyle = {
-					halign = 'center',
-					valign = 'center',
-					textAlignment = 'center',
+					halign = "center",
+					valign = "center",
+					textAlignment = "center",
+					width = cond(options.objectInstances, nil, "96%"),
 				},
 
 				text = nodes[1].id,
@@ -2394,19 +2316,15 @@ local CreateObjectEditor = function(nodes, options)
 				end
 			end
 			childObjectsPanel = gui.Panel{
-				bgimage = 'panels/square.png',
-				vmargin = 8,
-				cornerRadius = 8,
-				width = '90%',
+				classes = {"sectionPanel", "bordered", cond(options.blueprint, "big")},
+				-- bgimage = "panels/square.png",
 				height = 40,
-				bgcolor = '#33333399',
-				flow = 'horizontal',
-				borderWidth = 0,
-				valign = 'top',
+				flow = "horizontal",
+				valign = "top",
 
 				gui.Label{
 					text = string.format("Child Objects: %d", #childids),
-					classes = {'field-description-label', 'field-name-label'},
+					classes = {"field-description-label", "field-name-label", "sizeXl"},
 					halign = "left",
 					valign = "center",
 				},
@@ -2492,7 +2410,6 @@ local CreateObjectEditor = function(nodes, options)
 					cornerRadius = 3,
 					pad = 2,
 					fontSize = 10,
-					color = "white",
 					width = "auto",
 					height = "auto",
 
@@ -2531,17 +2448,13 @@ local CreateObjectEditor = function(nodes, options)
 		end
 
 		multiselectPanel = gui.Panel{
-			bgimage = 'panels/square.png',
+			classes = {"sectionPanel", "bordered", cond(options.blueprint, "big")},
+			bgimage = true,
 
-			vmargin = 8,
-			cornerRadius = 8,
-			width = '90%',
 			height = "auto",
-			bgcolor = '#33333399',
-			flow = 'horizontal',
+			flow = "horizontal",
 			wrap = true,
-			borderWidth = 0,
-			valign = 'top',
+			valign = "top",
 
 			styles = {
 				{
@@ -2566,64 +2479,56 @@ local CreateObjectEditor = function(nodes, options)
 
 
 	local namePanel = gui.Panel{
-		bgimage = 'panels/square.png',
-
-		selfStyle = {
-			vmargin = 8,
-		},
+		classes = {"sectionPanel", "bordered", cond(options.blueprint, "big")},
+		bgimage = true,
 
 		styles = {
 			{
-				cornerRadius = 8,
-				width = '90%',
-				height = '40',
-				bgcolor = '#33333399',
-				flow = 'none',
-				borderWidth = 0,
-				valign = 'top',
+				height = 40,
+				flow = "none",
+				valign = "top",
 			}
 		},
 
 		children = {
-            gui.Panel{
-                flow = "vertical",
-                width = "auto",
-                height = "auto",
-                halign = "left",
-                valign = "center",
-                gui.Label{
-                    text = 'Name:',
-                    classes = {'field-description-label'},
-                    styles = {
-                        {
-                            hmargin = 4,
-                            halign = 'left',
-                            valign = 'center',
-                        }
-                    }
-                },
+			gui.Panel{
+				flow = "vertical",
+				width = "auto",
+				height = "auto",
+				halign = "left",
+				valign = "center",
+				gui.Label{
+					text = "Name:",
+					classes = {"field-description-label", "sizeS"},
+					styles = {
+						{
+							hmargin = 4,
+							halign = "left",
+							valign = "center",
+						}
+					}
+				},
 
-                gui.Label{
-                    text = nodes[1].description,
-                    editable = not options.objectInstances,
-                    classes = {'field-description-label', 'field-name-label'},
-                    bgimage = 'panels/square.png',
-                    selfStyle = {
-                        halign = 'left',
-                        valign = 'center',
-                        hmargin = 4,
-                        fontSize = 14,
-                        bold = true,
-                    },
-                    events = {
-                        change = function(element)
-                            for i,node in ipairs(nodes) do
-                                node.description = element.text
-                            end
-                        end,
-                    },
-                },
-            },
+				gui.Label{
+					text = nodes[1].description,
+					editable = not options.objectInstances,
+					classes = {"field-description-label", "field-name-label"},
+					selfStyle = {
+						halign = "left",
+						valign = "center",
+						hmargin = 4,
+						fontSize = 14,
+						bold = true,
+					},
+					events = {
+						change = function(element)
+							for i,node in ipairs(nodes) do
+								node.description = element.text
+							end
+						end,
+					},
+				},
+			},
 
 			lockIcon,
 		}
@@ -2633,31 +2538,25 @@ local CreateObjectEditor = function(nodes, options)
 	
 	if not options.objectInstances then
 		keywordsPanel = gui.Panel{
-			bgimage = 'panels/square.png',
-			selfStyle = {
-				vmargin = 8,
-			},
+			classes = {"sectionPanel", "bordered", cond(options.blueprint, "big")},
+			bgimage = true,
 
 			styles = {
 				{
-					cornerRadius = 8,
-					width = '90%',
-					height = '40',
-					bgcolor = '#33333399',
-					flow = 'none',
-					borderWidth = 0,
-					valign = 'top',
+					height = 40,
+					flow = "none",
+					valign = "top",
 				}
 			},
 			children = {
 				gui.Label{
-					text = 'Keywords:',
-					classes = {'field-description-label'},
+					text = "Keywords:",
+					classes = {"field-description-label", "sizeXl"},
 					styles = {
 						{
 							hmargin = 4,
-							halign = 'left',
-							valign = 'center',
+							halign = "left",
+							valign = "center",
 						}
 					}
 				},
@@ -2884,6 +2783,196 @@ local function CreateObjectEditorPanel()
 	if dmhub.GetSettingValue("dev") then
 		DialogHeight = DialogHeight + 60
 	end
+
+	local extras = {
+		{
+			width = DialogWidth,
+			height = DialogHeight,
+			flow = "vertical",
+			halign = "left",
+			valign = "top",
+		},
+		{
+			selectors = {"framedPanel", "hasBanner"},
+			height = DialogHeight + DialogWidth/4 + 8,
+		},
+		{
+			selectors = {"framedPanel"},
+			collapsed = 1,
+			opacity = 0,
+			uiscale = {x = 0.01, y = 0.01},
+		},
+		{
+			selectors = {"framedPanel", "show"},
+			collapsed = 0,
+			opacity = 1,
+			uiscale = {x = 1, y = 1},
+		},
+		{
+			selectors = {"framedPanel", "show", "left"},
+			x = -400,
+		},
+		{
+			selectors = {"framedPanel", "show", "right"},
+			x = 400,
+		},
+		{
+			selectors = {"framedPanel", "show", "above"},
+			y = -250,
+		},
+		{
+			selectors = {"framedPanel", "show", "below"},
+			y = 250,
+		},
+		{
+			selectors = {"#MainObjectPropertiesPanel"},
+			flow = "horizontal",
+			height = "100% available",
+		},
+		{
+			selectors = {"editor-panel"},
+			priority = 5,
+			flow = "vertical",
+			width = "70%-20",
+			height = "100%-20",
+		},
+		{
+			selectors = {"add-property-dropdown"},
+			width = "90%",
+			halign = "center",
+		},
+		{
+			selectors = {"dropdown-option"},
+			priority = 10,
+			width = "200%",
+		},
+		{
+			selectors = {"left-panel"},
+			priority = 5,
+			width = "30%",
+			height = "100%-20",
+		},
+		{
+			selectors = {"label-text"},
+			priority = 4,
+			width = "auto",
+			height = "auto",
+		},
+		{
+			selectors = {"field-editor-panel"},
+			bgcolor = "clear",
+			width = "90%",
+			minHeight = 40,
+			height = "auto",
+			priority = 4,
+			pad = 4,
+			margin = 4,
+			flow = "vertical",
+		},
+		{
+			selectors = {"field-editor-panel", "parent:groupingPanel"},
+			width = "100%",
+		},
+		{
+			selectors = {"field-description-label"},
+			priority = 4,
+			textWrap = false,
+			width = 80,
+			height = "auto",
+			halign = "left",
+			valign = "center",
+		},
+		{
+			selectors = {"field-name-label"},
+			priority = 5,
+			maxWidth = 240,
+		},
+		{
+			selectors = {"property-label"},
+			priority = 5,
+			width = "auto",
+			height = "auto",
+			margin = 8,
+			halign = "right",
+		},
+		{
+			selectors = {"#ArtistsAndKeywords"},
+			priority = 5,
+			hmargin = 0,
+			valign = "bottom",
+			width = "100%",
+			height = "auto",
+			flow = "vertical",
+		},
+		{
+			selectors = {"sectionPanel"},
+			bgcolor = "@bgAlt",
+			vmargin = 12,
+			halign = "center",
+			hpad = 12,
+			width = "100%-48",
+		},
+		{
+			selectors = {"button", "cmdButton"},
+			priority = 10,
+			width = "70%",
+			halign = "right",
+		},
+		{
+			selectors = {"left-panel"},
+			-- bgcolor = "@bgAlt",
+			flow = "vertical",
+			valign = "top",
+			hmargin = 8,
+			vmargin = 8,
+			borderWidth = 0,
+		},
+		{
+			selectors = {"component-header"},
+			bgcolor = "@bgAlt",
+			color = "@fg",
+			width = "90%",
+			height = 30,
+			valign = "top",
+			halign = "center",
+			textAlignment = "center",
+			vmargin = 12,
+		},
+		{
+			selectors = {"component-header", "incomplete"},
+			color = "@fgMuted",
+		},
+		{
+			selectors = {"component-header", "hover"},
+			color = "@fgInverse",
+			bgcolor = "@bgInverse",
+			borderColor = "@border",
+		},
+		{
+			selectors = {"component-header", "press"},
+			bgcolor = "@accentHover",
+			borderColor = "@border",
+		},
+		{
+			selectors = {"component-header", "selected"},
+			borderColor = "@accent",
+			borderWidth = 2,
+		},
+		{
+			selectors = {"component-header", "disabled"},
+			brightness = 0.4,
+			italics = true,
+		},
+		{
+			selectors = {"lockIcon", "locked"},
+			bgcolor = "@fg",
+		},
+		{
+			selectors = {"lockIcon", "unlocked"},
+			bgcolor = "@fgMuted",
+		},
+	}
+
 	local resultPanel
 	resultPanel = gui.Panel{
 		classes = {"framedPanel"},
@@ -2903,146 +2992,13 @@ local function CreateObjectEditorPanel()
 			element.y = element.y + element.dragDelta.y
 		end,
 
-		styles = {
-			Styles.Panel,
+		width = DialogWidth,
+		height = DialogHeight,
+		flow = "vertical",
+		halign = "left",
+		valign = "top",
 
-			{
-				width = DialogWidth,
-				height = DialogHeight,
-				flow = 'vertical',
-				halign = "left",
-				valign = "top",
-			},
-			{
-				selectors = {"framedPanel", "hasBanner"},
-				height = DialogHeight + DialogWidth/4 + 8,
-			},
-			{
-				selectors = {"framedPanel"},
-				collapsed = 1,
-				opacity = 0,
-				uiscale = {x = 0.01, y = 0.01},
-			},
-			{
-				selectors = {"framedPanel", "show"},
-				collapsed = 0,
-				opacity = 1,
-				transitionTime = 0.0,
-				uiscale = {x = 1, y = 1},
-			},
-			{
-				selectors = {"framedPanel", "show", "left"},
-				x = -400,
-				transitionTime = 0.0,
-			},
-			{
-				selectors = {"framedPanel", "show", "right"},
-				x = 400,
-				transitionTime = 0.0,
-			},
-			{
-				selectors = {"framedPanel", "show", "above"},
-				y = -250,
-				transitionTime = 0.0,
-			},
-			{
-				selectors = {"framedPanel", "show", "below"},
-				y = 250,
-				transitionTime = 0.0,
-			},
-			{
-				selectors = {'#MainObjectPropertiesPanel'},
-				flow = 'horizontal',
-				height = '100% available',
-			},
-			{
-				selectors = {'editor-panel'},
-				priority = 5,
-				flow = 'vertical',
-				width = '70%-20',
-				height = '100%-20',
-			},
-			{
-				selectors = {'add-property-dropdown'},
-				priority = 5,
-				cornerRadius = 0,
-				width = '90%',
-				height = 30,
-			},
-			{
-				selectors = {'dropdown-option'},
-				priority = 10,
-				cornerRadius = 0,
-				width = '200%',
-				height = 30,
-				fontSize = 12,
-			},
-			{
-				selectors = {'left-panel'},
-				priority = 5,
-				width = '30%',
-				height = '100%-20',
-			},
-			{
-				selectors = {"label-text"},
-				priority = 4,
-				fontSize = 14,
-				width = "auto",
-				height = "auto",
-			},
-			{
-				selectors = {"field-editor-panel"},
-				bgcolor = '#222222ff',
-				width = "90%",
-				minHeight = 40,
-				height = "auto",
-				priority = 4,
-				cornerRadius = 8,
-				borderWidth = 0,
-				pad = 4,
-				margin = 4,
-				flow = 'vertical',
-			},
-            {
-                selectors = {"field-editor-panel", "parent:groupingPanel"},
-                width = "100%",
-            },
-			{
-				selectors = {"field-description-label"},
-				priority = 4,
-				fontSize = 12,
-				minFontSize = 10,
-				textWrap = false,
-
-				width = 80,
-				height = "auto",
-				halign = 'left',
-				valign = 'center',
-			},
-			{
-				selectors = {"field-name-label"},
-				priority = 5,
-				maxWidth = 240,
-			},
-			{
-				selectors = {'property-label'},
-				priority = 5,
-				width = 'auto',
-				height = 'auto',
-				fontSize = 12,
-				margin = 8,
-				halign = 'right',
-			},
-			{
-				selectors = {"#ArtistsAndKeywords"},
-				priority = 5,
-				hmargin = 0,
-				valign = "bottom",
-				width = "100%",
-				height = "auto",
-				flow = "vertical",
-			},
-		},
+		styles = ThemeEngine.MergeStyles(extras),
 		
 		data = {
 			objectsShown = {},
@@ -3100,8 +3056,9 @@ local function CreateObjectEditorPanel()
 				local createEditorFunction
 				createEditorFunction = function()
 					return CreateObjectEditor(objects, {
-						sliderWidth = 220,
+						sliderWidth = 180,
 						labelWidth = 30,
+						vmargin = 8,
 						addPropertyText = 'Add...', --the text to use to add properties. This is the short version for a smaller area.
 						objectInstances = true, --this signals that we are editing actual object instances, not blueprints.
 						recreate = function(element, newObjects)
@@ -3180,6 +3137,12 @@ local function CreateObjectEditorPanel()
 		},
 	}
 
+	ThemeEngine.OnThemeChanged(mod, function()
+		if resultPanel ~= nil and resultPanel.valid then
+			resultPanel.styles = ThemeEngine.MergeStyles(extras)
+		end
+	end)
+
 	return resultPanel
 end
 
@@ -3214,29 +3177,21 @@ mod.shared.EditObjectDialog = function(nodeids)
 	}
 
 	local buttonPanel = gui.Panel{
-		id = 'BottomButtons',
-		style = {
-			width = '90%',
-			height = 80,
-			margin = 8,
-			bgcolor = 'white',
-			valign = 'bottom',
-			halign = 'center',
-			flow = 'horizontal',
-		},
+		id = "BottomButtons",
+		width = "90%",
+		height = 80,
+		margin = 8,
+		valign = "bottom",
+		halign = "center",
+		flow = "horizontal",
 
 		children = {
 
-			gui.PrettyButton{
-				text = 'Confirm',
-				style = {
-					margin = 0,
-					width = 200,
-					height = 60,
-					halign = 'center',
-					valign = 'center',
-				},
-
+			gui.Button{
+				classes = {"sizeXxl"},
+				text = "Confirm",
+				halign = "center",
+				valign = "center",
 				events = {
 					click = function(element)
 						gui.CloseModal()
@@ -3248,21 +3203,15 @@ mod.shared.EditObjectDialog = function(nodeids)
 								currentNode:UpdateObjectInstances()
 							end
 						end
-
 					end,
 				}
 			},
 
-			gui.PrettyButton{
-				text = 'Cancel',
-				style = {
-					margin = 0,
-					width = 200,
-					height = 60,
-					halign = 'center',
-					valign = 'center',
-				},
-
+			gui.Button{
+				classes = {"sizeXxl"},
+				text = "Cancel",
+				halign = "center",
+				valign = "center",
 				events = {
 					click = function(element)
 						for i,node in ipairs(nodes) do
@@ -3279,104 +3228,186 @@ mod.shared.EditObjectDialog = function(nodeids)
 	local DialogWidth = 1200
 	local DialogHeight = 1000
 
+	local extras = {
+		{
+			width = DialogWidth,
+			height = DialogHeight,
+			flow = "vertical",
+		},
+		{
+			selectors = {"#MainObjectPropertiesPanel"},
+			flow = "horizontal",
+			height = "100%-140",
+		},
+		{
+			selectors = {"editor-panel"},
+			priority = 5,
+			flow = "vertical",
+			width = "80%",
+			height = "100%",
+		},
+		{
+			selectors = {"dropdown-option"},
+			priority = 10,
+			cornerRadius = 0,
+			width = "200%",
+			height = "100%",
+			fontSize = 12,
+		},
+		{
+			selectors = {"add-property-dropdown"},
+			priority = 5,
+			width = "90%",
+			height = 40,
+			halign = "center",
+		},
+		{
+			selectors = {"left-panel"},
+			priority = 5,
+			width = "20%",
+			height = "100%",
+		},
+		{
+			selectors = {"label-text"},
+			priority = 4,
+			fontSize = 18,
+			width = "auto",
+			height = "auto",
+		},
+		{
+			selectors = {"field-editor-panel"},
+			bgcolor = "clear",
+			width = "40%",
+			minHeight = 40,
+			height = "auto",
+			priority = 4,
+			cornerRadius = 8,
+			borderWidth = 0,
+			pad = 4,
+			margin = 4,
+			flow = "none",
+		},
+		{
+			selectors = {"field-description-label"},
+			priority = 4,
+			width = "auto",
+			height = "auto",
+			halign = "left",
+			valign = "center",
+		},
+		{
+			selectors = {"#ArtistsAndKeywords"},
+			priority = 5,
+			valign = "top",
+			width = "100%",
+			height = "auto",
+			flow = "vertical",
+		},
+		{
+			selectors = {"property-label"},
+			priority = 5,
+			width = "auto",
+			height = "auto",
+			fontSize = 12,
+			margin = 8,
+			halign = "right",
+		},
+		{
+			selectors = {"property-pane"},
+			width = "auto",
+			height = "auto",
+			priority = 5,
+			flow = "horizontal",
+		},
+		{
+			selectors = {"sectionPanel"},
+			bgcolor = "@bgAlt",
+			cornerRadius = 8,
+			vmargin = 4,
+			halign = "center",
+			hpad = 12,
+			width = "100%-48",
+		},
+		{
+			selectors = {"sectionPanel", "big"},
+			width = "100%-80",
+			priority = 5,
+		},
+		{
+			selectors = {"fieldsPanel", "big"},
+			width = "100%-34",
+			priority = 5,
+		},
+		{
+			selectors = {"left-panel", "big"},
+			height = "auto",
+			priority = 6,
+		},
+		{
+			selectors = {"left-panel"},
+			bgcolor = "@bgAlt",
+			flow = "vertical",
+			valign = "top",
+			hmargin = 8,
+			vmargin = 8,
+			borderWidth = 0,
+		},
+		{
+			selectors = {"component-header"},
+			bgcolor = "@bgAlt",
+			color = "@fg",
+			fontSize = 18,
+			width = "90%",
+			height = 44,
+			valign = "top",
+			halign = "center",
+			textAlignment = "center",
+			vmargin = 8,
+		},
+		{
+			selectors = {"component-header", "parent:objectInstances"},
+			halign = "left",
+		},
+		{
+			selectors = {"component-header", "incomplete"},
+			color = "@fgMuted",
+		},
+		{
+			selectors = {"component-header", "hover"},
+			color = "@fgInverse",
+			bgcolor = "@bgInverse",
+			borderColor = "@border",
+		},
+		{
+			selectors = {"component-header", "press"},
+			bgcolor = "@accentHover",
+			borderColor = "@border",
+		},
+		{
+			selectors = {"component-header", "selected"},
+			borderColor = "@accent",
+			borderWidth = 2,
+		},
+		{
+			selectors = {"component-header", "disabled"},
+			brightness = 0.4,
+			italics = true,
+		},
+		{
+			selectors = {"lockIcon", "locked"},
+			bgcolor = "@fg",
+		},
+		{
+			selectors = {"lockIcon", "unlocked"},
+			bgcolor = "@fgMuted",
+		},
+	}
+
 	local dialogPanel = gui.Panel{
-		id = 'EditObjectDialog',
+		id = "EditObjectDialog",
 		classes = {"framedPanel"},
 
-		styles = {
-			Styles.Panel,
-			{
-				width = DialogWidth,
-				height = DialogHeight,
-				flow = 'vertical',
-			},
-			{
-				selectors = {'#MainObjectPropertiesPanel'},
-				flow = 'horizontal',
-				height = '100%-140',
-			},
-			{
-				selectors = {'editor-panel'},
-				priority = 5,
-				flow = 'vertical',
-				width = '80%',
-				height = '100%',
-			},
-			{
-				selectors = {'dropdown-option'},
-				priority = 10,
-				cornerRadius = 0,
-				width = '200%',
-				height = "100%",
-				fontSize = 12,
-			},
-			{
-				selectors = {'add-property-dropdown'},
-				priority = 5,
-				cornerRadius = 0,
-				width = '90%',
-				height = 40,
-			},
-			{
-				selectors = {'left-panel'},
-				priority = 5,
-				width = '20%',
-				height = '100%',
-			},
-			{
-				selectors = {"label-text"},
-				priority = 4,
-				fontSize = 18,
-				width = "auto",
-				height = "auto",
-			},
-			{
-				selectors = {"field-editor-panel"},
-				bgcolor = '#33333399',
-				width = "40%",
-				minHeight = 40,
-				height = "auto",
-				priority = 4,
-				cornerRadius = 8,
-				borderWidth = 0,
-				pad = 4,
-				margin = 4,
-				flow = 'none',
-			},
-			{
-				selectors = {"field-description-label"},
-				priority = 4,
-				fontSize = 18,
-				width = "auto",
-				height = "auto",
-				halign = 'left',
-				valign = 'center',
-			},
-			{
-				selectors = {"#ArtistsAndKeywords"},
-				priority = 5,
-				valign = "bottom",
-				width = "100%",
-				height = "auto",
-				flow = "vertical",
-			},
-			{
-				selectors = {'property-label'},
-				priority = 5,
-				width = 'auto',
-				height = 'auto',
-				fontSize = 12,
-				margin = 8,
-				halign = 'right',
-			},
-			{
-				selectors = {'property-pane'},
-				width = "auto",
-				height = "auto",
-				priority = 5,
-				flow = 'horizontal',
-			},
-		},
+		styles = ThemeEngine.MergeStyles(extras),
 
 		children = {
 			mainPanel,
@@ -3384,6 +3415,12 @@ mod.shared.EditObjectDialog = function(nodeids)
 			buttonPanel,
 		}
 	}
+
+	ThemeEngine.OnThemeChanged(mod, function()
+		if dialogPanel ~= nil and dialogPanel.valid then
+			dialogPanel.styles = ThemeEngine.MergeStyles(extras)
+		end
+	end)
 
 	gui.ShowModal(dialogPanel)
 end

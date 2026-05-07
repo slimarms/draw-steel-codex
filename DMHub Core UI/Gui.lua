@@ -1226,8 +1226,10 @@ function gui.Check(args)
 	end
 
 	-- TODO: THEME_PATCH
-	if options.styles == nil then options.styles = {} end
-	options.styles = ThemeEngine.MergeStyles(options.styles)
+	if ThemeEngine.ForceSafety() then
+		if options.styles == nil then options.styles = {} end
+		options.styles = ThemeEngine.MergeStyles(options.styles)
+	end
 	resultPanel = gui.Panel(options)
 	return resultPanel
 end
