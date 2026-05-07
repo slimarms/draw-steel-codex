@@ -146,6 +146,7 @@ mod.shared.ShowCreateMapDialog = function()
                             end
                         end,
 
+                        -- THEME_EXAMPLE: Bordered, selectable icon buttons
                         gui.Button{
                             classes = {"sizeXl", "bordered", "selected"},
                             data = {id = "squares"},
