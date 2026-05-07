@@ -975,15 +975,6 @@ ThemeEngine.RegisterTheme{
         -- buttonIcon panel owns the bgimage and tint, so the icon can be
         -- inset (e.g. 90% under `bordered`) without resizing the button.
         --
-        -- hudIconButton: larger HUD-bar button with selected/disabled
-        -- states and a child hudIconButtonIcon that scales on hover.
-        -- Outer chrome rules. These also paint direct-panel callsites that
-        -- use `classes = {"iconButton"}` with an inline bgimage (e.g.
-        -- gui.SimpleIconButton, gui.CopyButton, gui.EnhIconButton) -- those
-        -- don't have a buttonIcon child, so bgcolor/brightness must apply
-        -- to the iconButton panel itself. gui.Button overrides bgcolor to
-        -- clear at construction so its outer chrome doesn't bleed into the
-        -- 90% bordered-icon margin.
         {
             selectors = {"iconButton"},
             bgcolor = "@fg",

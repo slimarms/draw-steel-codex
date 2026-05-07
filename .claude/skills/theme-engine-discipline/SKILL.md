@@ -13,7 +13,11 @@ The core rule: **the default theme provides the vocabulary; inline styling only 
 
 ## Canonical reference
 
-For the API and intended usage of ThemeEngine itself (`GetStyles` / `MergeStyles` / `MergeTokens`, `@token` syntax, `requireConfirm` on delete buttons, deprecated-controls table), read `draw-steel-codex/ThemeEngine.md`. This skill assumes that doc and adds the project-specific discipline on top.
+For the API and intended usage of ThemeEngine itself (`GetStyles` / `MergeStyles` / `MergeTokens`, `@token` syntax, `requireConfirm` on delete buttons, deprecated-controls table), read `draw-steel-codex/ThemeEngine.md`.
+
+For the catalog of color tokens, gradient tokens, and the class vocabulary registered by `DefaultStyles.lua` — including prescriptive "which token / class do I reach for?" guidance for every widget family — read `draw-steel-codex/DefaultStyles.md`. Consult it before authoring a custom style block: usually a class already exists.
+
+This skill assumes both docs and adds the project-specific discipline on top.
 
 ## Files that own the vocabulary
 
