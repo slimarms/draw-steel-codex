@@ -2889,23 +2889,21 @@ end
 -- triggered ability), followed by a divider and the secondary group.
 -- onSelect is invoked with the chosen token's id and the modal closes.
 local function openTokenPicker(title, preferred, secondary, currentId, onSelect)
-    local COLORS = getColors()
-
-    -- Matches _makeTriggerCard in the Trigger Event picker: PANEL_BG fill,
-    -- gold border, press-handler (not click), cornerRadius 3. Selected row
-    -- gets a brighter border so the current choice is obvious.
+    -- Themed: row chrome and text colors come from the cascade rules below
+    -- so the modal follows the active scheme. press-handler (not click),
+    -- cornerRadius stays inline because the cascade rule doesn't declare it.
+    -- Selected row picks up the {tokenPickerRow, selected} cascade variant
+    -- for a brighter border so the current choice is obvious.
     local function buildTokenRow(tok)
         local selected = tok.id == currentId
         return gui.Panel{
+            classes = selected and {"tokenPickerRow", "selected"} or {"tokenPickerRow"},
             width = "100%",
             height = "auto",
             flow = "horizontal",
             halign = "left",
             valign = "center",
             bgimage = "panels/square.png",
-            bgcolor = COLORS.PANEL_BG,
-            borderWidth = 1,
-            borderColor = selected and COLORS.GOLD_BRIGHT or COLORS.GOLD,
             cornerRadius = 3,
             hpad = 10,
             vpad = 6,
@@ -2923,8 +2921,8 @@ local function openTokenPicker(title, preferred, secondary, currentId, onSelect)
                     valign = "center",
                 }),
                 gui.Label{
+                    classes = {"tokenPickerRowName"},
                     text = tokenDisplayName(tok),
-                    color = COLORS.CREAM_BRIGHT,
                     fontSize = 16,
                     bold = selected,
                     width = "100%-54",
@@ -2940,8 +2938,8 @@ local function openTokenPicker(title, preferred, secondary, currentId, onSelect)
 
     local function buildGroupHeader(text)
         return gui.Label{
+            classes = {"tokenPickerGroupHeader"},
             text = text,
-            color = COLORS.GOLD_DIM,
             bold = true,
             fontSize = 14,
             width = "100%",
@@ -2963,8 +2961,8 @@ local function openTokenPicker(title, preferred, secondary, currentId, onSelect)
     end
     if #rows == 0 then
         rows[#rows + 1] = gui.Label{
+            classes = {"tokenPickerEmpty"},
             text = "No tokens on this map.",
-            color = COLORS.GRAY,
             italics = true,
             fontSize = 14,
             width = "100%",
@@ -2973,9 +2971,79 @@ local function openTokenPicker(title, preferred, secondary, currentId, onSelect)
         }
     end
 
+    -- Flat white gradient: the engine multiplies bgcolor by the gradient
+    -- color per pixel. The base Styles.Panel framedPanel rule sets a
+    -- near-black gradient, which would multiply our themed @bg to near
+    -- black. A flat white gradient lets bgcolor paint as-is. Mirrors the
+    -- pattern at AbilityEditor.lua:1401-1413.
+    local flatGradient = gui.Gradient{
+        point_a = {x = 0, y = 0},
+        point_b = {x = 1, y = 1},
+        stops = {
+            {position = 0, color = "#ffffff"},
+            {position = 1, color = "#ffffff"},
+        },
+    }
+
+    -- Themed cascade rules for the token picker. @-tokens are resolved
+    -- up front via MergeTokens because the modal's styles list is consumed
+    -- without a second MergeStyles pass (matches the outer dialog title
+    -- pattern at ActivatedAbilityEditor.lua:4940-4948). Spliced alongside
+    -- Styles.Default + Styles.Panel as siblings -- those are gui.Style
+    -- userdata which MergeTokens cannot process.
+    local stylesList = {Styles.Default, Styles.Panel}
+    for _, rule in ipairs(ThemeEngine.MergeTokens({
+        -- Override the base framedPanel rule so the modal frame paints
+        -- the active scheme's @bg surface and @accent border instead of
+        -- the legacy near-black default. priority=3 beats the default rule.
+        {
+            selectors = {"framedPanel"},
+            priority = 3,
+            bgimage = "panels/square.png",
+            bgcolor = "@bg",
+            borderColor = "@accent",
+            borderWidth = 2,
+            gradient = flatGradient,
+        },
+        {
+            selectors = {"label", "compendiumDialogTitle"},
+            color = "@fgStrong",
+            priority = 4,
+        },
+        {
+            selectors = {"label", "tokenPickerGroupHeader"},
+            color = "@fgMuted",
+            priority = 4,
+        },
+        {
+            selectors = {"label", "tokenPickerEmpty"},
+            color = "@fgMuted",
+            priority = 4,
+        },
+        {
+            selectors = {"label", "tokenPickerRowName"},
+            color = "@fg",
+            priority = 4,
+        },
+        {
+            selectors = {"panel", "tokenPickerRow"},
+            bgcolor = "@bgAlt",
+            borderColor = "@accent",
+            borderWidth = 1,
+            priority = 4,
+        },
+        {
+            selectors = {"panel", "tokenPickerRow", "selected"},
+            borderColor = "@accentHover",
+            priority = 5,
+        },
+    })) do
+        stylesList[#stylesList+1] = rule
+    end
+
     local dialogPanel = gui.Panel{
         classes = {"framedPanel"},
-        styles = {Styles.Default, Styles.Panel},
+        styles = stylesList,
         width = 480,
         height = 560,
         flow = "vertical",
@@ -2986,10 +3054,10 @@ local function openTokenPicker(title, preferred, secondary, currentId, onSelect)
         fontFace = "Berling",
         children = {
             gui.Label{
+                classes = {"compendiumDialogTitle"},
                 text = title,
                 fontSize = 20,
                 bold = true,
-                color = COLORS.GOLD_BRIGHT,
                 width = "auto",
                 height = "auto",
                 halign = "left",
@@ -3018,7 +3086,9 @@ local function openTokenPicker(title, preferred, secondary, currentId, onSelect)
                     },
                 },
             },
-            gui.CloseButton{
+            gui.Button{
+                classes = {"closeButton", "sizeM"},
+                icon = "ui-icons/close.png",
                 halign = "right",
                 valign = "top",
                 floating = true,

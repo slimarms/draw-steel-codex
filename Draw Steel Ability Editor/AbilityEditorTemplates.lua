@@ -134,7 +134,7 @@ local function CreateAbilityTemplateEditor(tableName)
 
             gui.Label{
                 width = 90, height = "auto", fontSize = 14,
-                color = "#cccccc", textAlignment = "left",
+                color = "@fgMuted", textAlignment = "left",
                 valign = "center", text = "Name",
             },
             gui.Input{
@@ -164,7 +164,7 @@ local function CreateAbilityTemplateEditor(tableName)
 
             gui.Label{
                 width = 90, height = "auto", fontSize = 14,
-                color = "#cccccc", textAlignment = "left",
+                color = "@fgMuted", textAlignment = "left",
                 valign = "center", text = "Description",
             },
             gui.Input{
@@ -196,7 +196,7 @@ local function CreateAbilityTemplateEditor(tableName)
 
             gui.Label{
                 width = 90, height = "auto", fontSize = 14,
-                color = "#cccccc", textAlignment = "left",
+                color = "@fgMuted", textAlignment = "left",
                 valign = "center", text = "Category",
             },
             gui.Dropdown{
@@ -224,7 +224,8 @@ local function CreateAbilityTemplateEditor(tableName)
         },
 
         -- Edit Ability button
-        gui.PrettyButton{
+        gui.Button{
+            classes = {"sizeM"},
             text = "Edit Ability",
             width = 160,
             height = 36,
@@ -306,7 +307,10 @@ local function ShowAbilityTemplatesPanel(parentPanel)
         },
 
         itemsListPanel,
-        Compendium.AddButton{
+        gui.Button{
+            classes = {"addButton", "sizeL"},
+            halign = "right",
+            valign = "top",
             click = function(element)
                 local newData = AbilityTemplate.CreateNew()
                 dmhub.SetAndUploadTableItem(tableName, newData)

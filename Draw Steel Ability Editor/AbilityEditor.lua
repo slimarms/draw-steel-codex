@@ -918,7 +918,7 @@ local function _editorStyles()
         {
             selectors = {"nae-pill-label", "selected", "disabled"},
             priority = 3,
-            bgcolor = "#ff4444",
+            bgcolor = "@danger",
         },
         {
             selectors = {"nae-pill-label", "hover"},
@@ -937,7 +937,7 @@ local function _editorStyles()
         {
             selectors = {"delete-item-button", "hover"},
             priority = 11,
-            bgcolor = "#ff4444",
+            bgcolor = "@danger",
         },
 
         -- ================================================================
@@ -1227,7 +1227,7 @@ local function _sharedWidgetStyles(colors)
         { selectors = {"check-mark"}, priority = 3, bgcolor = "@fgStrong" },
         -- delete-item-button uses priority 10 internal styles, so beat at 11.
         { selectors = {"delete-item-button"}, priority = 11, bgcolor = "@fgMuted" },
-        { selectors = {"delete-item-button", "hover"}, priority = 11, bgcolor = "#ff4444" },
+        { selectors = {"delete-item-button", "hover"}, priority = 11, bgcolor = "@danger" },
         -- Slider label.
         {
             selectors = {"sliderLabel"},
@@ -4236,6 +4236,9 @@ local function _buildPresentationSection(ability, fireChange)
 
     iconEditor = gui.IconEditor{
         library = "abilities",
+        -- Image tint: engine multiplies bgcolor by the icon image. White =
+        -- untinted (passes the icon's natural colors through unchanged).
+        -- This is icon-tint state, not a theme surface; don't theme-token it.
         bgcolor = ability.display["bgcolor"] or "#ffffffff",
         width = 64,
         height = 64,
@@ -4257,6 +4260,7 @@ local function _buildPresentationSection(ability, fireChange)
     }
 
     local iconColorPicker = gui.ColorPicker{
+        -- Image tint default (white = untinted). See iconEditor above.
         value = ability.display["bgcolor"] or "#ffffffff",
         width = 24,
         height = 24,

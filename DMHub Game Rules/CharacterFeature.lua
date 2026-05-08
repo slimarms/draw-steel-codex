@@ -264,13 +264,13 @@ CharacterFeature.ModifierStyles = {
 	gui.Style{
 		selectors = {'modifierEditorPanel'},
 		bgimage = 'panels/square.png',
-		bgcolor = '#00000055',
+		bgcolor = '@bgAlt',
 		hmargin = 4,
 		vmargin = 4,
 		halign = 'left',
 		pad = 8,
-		borderWidth = 2,
-		borderColor = '#ffffff88',
+		borderWidth = 1,
+		borderColor = '@accent',
 
 		width = "90%",
 		height = "auto",
@@ -1182,7 +1182,8 @@ function CharacterFeature:PopupEditor()
 			flow = "horizontal",
 			halign = "center",
 
-			gui.PrettyButton{
+			gui.Button{
+				classes = {"sizeM"},
 				width = 160,
 				height = 50,
 				halign = "center",
@@ -1195,7 +1196,8 @@ function CharacterFeature:PopupEditor()
 				end,
 			},
 
-			gui.PrettyButton{
+			gui.Button{
+				classes = {"sizeM"},
 				width = 160,
 				height = 50,
 				halign = "center",

@@ -4279,7 +4279,7 @@ local g_modalPanelStyles = {
     },
     gui.Style{
         selectors = {"label", "selected", "disabled"},
-        bgcolor = "#ff4444",
+        bgcolor = "@danger",
     },
     gui.Style{
         selectors = {"label", "hover"},
@@ -4831,18 +4831,17 @@ function ActivatedAbility:ShowEditActivatedAbilityDialog(options)
 	local deleteButton = nil
 	if options.delete ~= nil then
 		--we have a delete handler so show a delete button.
-		deleteButton = gui.PrettyButton{
-			floating = true,
+		deleteButton = gui.Button{
+			classes = {"sizeL"},
 			styles = {
 				{
-					selectors = {"pretty-button-label"},
+					selectors = {"label"},
 					color = "red",
 				},
 			},
 			text = "DELETE",
 			halign = "right",
-			valign = "bottom",
-			vmargin = 60,
+			valign = "center",
 			click = function(element)
 				resultPanel:FireEvent("delete")
 				resultPanel.data.close()
@@ -4864,7 +4863,8 @@ function ActivatedAbility:ShowEditActivatedAbilityDialog(options)
 
 	if options.add ~= nil then
 
-		closePanel:AddChild(gui.PrettyButton{
+		closePanel:AddChild(gui.Button{
+			classes = {"sizeL"},
 			text = 'Create',
 			events = {
 				click = function(element)
@@ -4874,7 +4874,8 @@ function ActivatedAbility:ShowEditActivatedAbilityDialog(options)
 			},
 		})
 
-		closePanel:AddChild(gui.PrettyButton{
+		closePanel:AddChild(gui.Button{
+			classes = {"sizeL"},
 			text = 'Cancel',
 			events = {
 				click = function(element)
@@ -4886,7 +4887,8 @@ function ActivatedAbility:ShowEditActivatedAbilityDialog(options)
 
 	else
 
-		closePanel:AddChild(gui.PrettyButton{
+		closePanel:AddChild(gui.Button{
+			classes = {"sizeL"},
 			text = 'Close',
 			events = {
 				click = function(element)
