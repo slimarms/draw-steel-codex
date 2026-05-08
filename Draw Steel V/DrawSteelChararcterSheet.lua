@@ -608,12 +608,8 @@ local function CreateAbilityListPanel()
         return actionid
     end
 
-    resultPanel = gui.Panel {
-        m_mainActionsLabel,
-        m_maneuversLabel,
-        m_triggersLabel,
-        m_otherActionsLabel,
-        styles = ThemeEngine.MergeTokens{
+    local function buildActionMenuStyles()
+        return ThemeEngine.MergeTokens{
             Styles.ActionMenu,
 
             { selectors = {"submenuHeading"},
@@ -629,7 +625,15 @@ local function CreateAbilityListPanel()
 
             { selectors = {"abilityTitle"},     color = "@fgStrong" },
             { selectors = {"abilityInfoLabel"}, color = "@fgMuted" },
-        },
+        }
+    end
+
+    resultPanel = gui.Panel {
+        m_mainActionsLabel,
+        m_maneuversLabel,
+        m_triggersLabel,
+        m_otherActionsLabel,
+        styles = buildActionMenuStyles(),
         width = "100%-12",
         height = "auto",
         bgimage = true,
@@ -746,6 +750,12 @@ local function CreateAbilityListPanel()
             element.children = children
         end,
     }
+
+    ThemeEngine.OnThemeChanged(mod, function()
+        if resultPanel ~= nil and resultPanel.valid then
+            resultPanel.styles = buildActionMenuStyles()
+        end
+    end)
 
     return resultPanel
 end
@@ -3487,6 +3497,27 @@ local function DSCharSheet()
                                             priority = 10,
                                         },
                                     },
+
+                                    create = function(element)
+                                        local function rebuild()
+                                            return ThemeEngine.MergeTokens{
+                                                { selectors = {"notch"}, width = string.format("%f%%", 100 / 15), height = "100%",
+                                                  borderColor = "@border", bgcolor = "@bg", cornerRadius = 0, priority = 5 },
+                                                { selectors = {"notch", "left"}, beveledcorners = true,
+                                                  cornerRadius = { x1 = 8, y1 = 0, x2 = 0, y2 = 8 }, priority = 10 },
+                                                { selectors = {"notch", "right"}, beveledcorners = true,
+                                                  cornerRadius = { x1 = 0, y1 = 8, x2 = 8, y2 = 0 }, priority = 10 },
+                                                { selectors = {"notch", "filled"}, bgcolor = "@accent", priority = 10 },
+                                                { selectors = {"notch", "hover"}, bgcolor = "@fgMuted", priority = 10 },
+                                                { selectors = {"notch", "hover", "filled"}, bgcolor = "@accentHover", priority = 10 },
+                                            }
+                                        end
+                                        ThemeEngine.OnThemeChanged(mod, function()
+                                            if element ~= nil and element.valid then
+                                                element.styles = rebuild()
+                                            end
+                                        end)
+                                    end,
 
                                     refreshToken = function(element, info)
                                         if element.data.init == nil then
