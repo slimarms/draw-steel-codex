@@ -448,8 +448,10 @@ ThemeEngine.RegisterTheme{
         },
         {
             selectors = {"label", "button", "selected"},
+            bgimage = true,
             color = "@fgInverse",
             bgcolor = "@bgInverse",
+            borderColor = "@borderInverse",
             textAlignment = "center",
             fontWeight = "bold",
         },
@@ -968,20 +970,17 @@ ThemeEngine.RegisterTheme{
         -- class to recolor the hover state.
         --
         -- gui.Button{ icon = ... } (no `text`) returns a panel with this
-        -- class automatically; see Gui.lua's gui.Button.
+        -- class automatically; see Gui.lua's gui.Button. The button is the
+        -- chrome (size, border, hit-target, selected/hover state); a child
+        -- buttonIcon panel owns the bgimage and tint, so the icon can be
+        -- inset (e.g. 90% under `bordered`) without resizing the button.
         --
-        -- hudIconButton: larger HUD-bar button with selected/disabled
-        -- states and a child hudIconButtonIcon that scales on hover.
         {
             selectors = {"iconButton"},
             bgcolor = "@fg",
             width = 24,
             height = 24,
             valign = "center",
-        },
-        {
-            selectors = {"iconButton", "flipped"},
-	        scale = {x = -1, y = 1},
         },
         {
             selectors = {"iconButton", "hover"},
@@ -1009,32 +1008,101 @@ ThemeEngine.RegisterTheme{
             selectors = {"iconButton", "withDanger", "hover"},
             bgcolor = "@danger",
         },
-        -- Kind variants. Each registered kind class (see gui.iconButtonClasses
-        -- in Gui.lua) supplies its own bgimage here; size/tint/hover/press
-        -- continue to inherit from the {iconButton} family above.
+        -- Inner buttonIcon parent: rules for gui.Button-routed iconButtons,
+        -- whose icon lives in a child buttonIcon panel. Mirrors the chrome
+        -- rules above so the icon visual reacts to parent state.
         {
-            selectors = {"iconButton", "addButton"},
+            selectors = {"panel", "buttonIcon", "parent:flipped"},
+            scale = {x = -1, y = 1},
+        },
+        {
+            selectors = {"panel", "buttonIcon", "parent:hover"},
+            brightness = 1.5,
+            transitionTime = 0.1,
+        },
+        {
+            selectors = {"panel", "buttonIcon", "parent:press"},
+            brightness = 0.7,
+            transitionTime = 0.1,
+        },
+        {
+            selectors = {"panel", "buttonIcon", "parent:withSuccess", "parent:hover"},
+            bgcolor = "@success",
+        },
+        {
+            selectors = {"panel", "buttonIcon", "parent:withInfo", "parent:hover"},
+            bgcolor = "@info",
+        },
+        {
+            selectors = {"panel", "buttonIcon", "parent:withWarning", "parent:hover"},
+            bgcolor = "@warning",
+        },
+        {
+            selectors = {"panel", "buttonIcon", "parent:withDanger", "parent:hover"},
+            bgcolor = "@danger",
+        },
+        -- Kind variants. Each registered kind class (see gui.iconButtonClasses
+        -- in Gui.lua) supplies its own bgimage on the inner buttonIcon panel
+        -- via parent: selectors; size/tint/hover/press continue to inherit
+        -- from the {iconButton} chrome and {panel, buttonIcon} icon families.
+        {
+            selectors = {"panel", "buttonIcon", "parent:addButton"},
             bgimage = "ui-icons/Plus.png",
         },
         {
-            selectors = {"iconButton", "closeButton"},
+            selectors = {"panel", "buttonIcon", "parent:closeButton"},
             bgimage = "ui-icons/close.png",
         },
         {
-            selectors = {"iconButton", "copyButton"},
+            selectors = {"panel", "buttonIcon", "parent:copyButton"},
             bgimage = "icons/icon_app/icon_app_108.png",
         },
         {
-            selectors = {"iconButton", "deleteButton"},
+            selectors = {"panel", "buttonIcon", "parent:deleteButton"},
             bgimage = "icons/icon_tool/icon_tool_44.png",
         },
         {
-            selectors = {"iconButton", "deleteButton", "hover"},
+            selectors = {"panel", "buttonIcon", "parent:deleteButton", "parent:hover"},
             bgcolor = "@danger",
         },
         {
-            selectors = {"iconButton", "settingsButton"},
+            selectors = {"panel", "buttonIcon", "parent:settingsButton"},
             bgimage = "ui-icons/skills/98.png",
+        },
+        -- Inset the icon to be smaler when the button carries the `bordered`
+        -- class, so the glyph doesn't crowd the border. Targets buttonIcon under
+        -- both Button paths (icon-only iconButton and legacy text+icon label).
+        {
+            selectors = {"panel", "buttonIcon", "parent:bordered"},
+            height = "80%",
+            width = "80%",
+            halign = "center",
+            valign = "center",
+            priority = 5,
+        },
+        -- Under `bordered`, the iconButton outer is a paintable surface
+        -- (bgimage = true). Clear its bgcolor so the @fg base tint doesn't
+        -- bleed into the margin around the inset icon. `selected` below
+        -- overrides this with @bgInverse (priority bump) so the inversion
+        -- still works when both classes are present.
+        {
+            selectors = {"iconButton", "bordered"},
+            bgcolor = "clear",
+        },
+        -- Selected state: invert chrome (bg + border) on the outer iconButton
+        -- and flip the icon tint on the inner buttonIcon. The matching rule
+        -- for label/button selected lives in the Button section above.
+        -- priority = 5 so this wins over {"iconButton","bordered"} above
+        -- when both classes apply (cascade specificity is equal otherwise).
+        {
+            selectors = {"iconButton", "selected"},
+            bgcolor = "@border",
+            borderColor = "@borderInverse",
+            priority = 5,
+        },
+        {
+            selectors = {"panel", "buttonIcon", "parent:selected"},
+            bgcolor = "@fgInverse",
         },
 
         --[[
@@ -2034,6 +2102,22 @@ ThemeEngine.RegisterColorScheme{
                 {position = 1, color = "#5C2868"},
             },
         },
+        -- Subtle vignette: bgAlt-ish at center fading to bg at the edge.
+        -- Kept restrained on purpose; MLP is already loud enough without
+        -- a high-contrast radial fighting the rest of the scheme.
+        surfaceRadial = {
+            type = "radial",
+            point_a = {x = 0.5, y = 0.5},
+            point_b = {x = 0.5, y = 1.0},
+            stops = {
+                {position = -0.01, color = "#3D2257"},
+                {position = 0.00,  color = "#3D2257"},
+                {position = 0.25,  color = "#371F50"},
+                {position = 0.50,  color = "#321B4A"},
+                {position = 0.75,  color = "#2F1946"},
+                {position = 1.00,  color = "#2D1843"},
+            },
+        },
         barTrack = {
             point_a = {x = -0.02, y = 0},
             point_b = {x = 1.02, y = 0},
@@ -2041,6 +2125,84 @@ ThemeEngine.RegisterColorScheme{
                 {position = 0, color = "#3D1B5C"},
                 {position = 1, color = "#6B2D9C"},
                 -- {position = 1, color = "#A347D9"},
+            },
+        },
+    },
+}
+
+-- =============================================================================
+-- Darth Maul color scheme
+--
+-- Sith obsidian and saber crimson. Near-black surfaces with deep blood-red
+-- frames and a hot crimson accent. Sith-eye yellow for info; intentionally
+-- dimmed green for success so it doesn't fight the palette.
+-- =============================================================================
+
+ThemeEngine.RegisterColorScheme{
+    id          = "darth-maul",
+    name        = "Darth Maul",
+    description = "Sith obsidian surfaces with saber-red accents and dried-blood frames.",
+    colors = {
+        -- Surfaces
+        bg            = "#0A0506",
+        bgAlt         = "#2C1218",
+        bgInverse     = "#C72035",
+
+        -- Foreground / text
+        fg            = "#D9AAB0",
+        fgStrong      = "#D63040",
+        fgMuted       = "#6B3838",
+        fgPending     = "#4F2828",
+        fgInverse     = "#0A0506",
+
+        -- Borders
+        border        = "#8B1F2D",
+        borderInverse = "#4A0F18",
+
+        -- Accent + interactive
+        accent        = "#E10F23",
+        accentHover   = "#FF3D52",
+
+        -- Status (muted green so it doesn't fight; Sith-eye yellow for info)
+        success       = "#5A8C5A",
+        info          = "#FFC93D",
+        warning       = "#FF8A3D",
+        danger        = "#FF1A35",
+
+        -- Disabled
+        disabled      = "#3A2A2D",
+    },
+    gradients = {
+        surfaceLinear = {
+            point_a = {x = 0, y = 0},
+            point_b = {x = 1, y = 1},
+            stops = {
+                {position = 0, color = "#2A1116"},
+                {position = 1, color = "#050203"},
+            },
+        },
+        -- Subtle saber-glow vignette: a faint red blush at the center fading
+        -- through obsidian to near-black at the edge. Restrained on purpose
+        -- so the crimson accents elsewhere stay the loud part.
+        surfaceRadial = {
+            type = "radial",
+            point_a = {x = 0.5, y = 0.5},
+            point_b = {x = 0.5, y = 1.0},
+            stops = {
+                {position = -0.01, color = "#321820"},
+                {position = 0.00,  color = "#321820"},
+                {position = 0.25,  color = "#221015"},
+                {position = 0.50,  color = "#160A0D"},
+                {position = 0.75,  color = "#0A0506"},
+                {position = 1.00,  color = "#050203"},
+            },
+        },
+        barTrack = {
+            point_a = {x = -0.02, y = 0},
+            point_b = {x = 1.02, y = 0},
+            stops = {
+                {position = 0, color = "#0A0506"},
+                {position = 1, color = "#8B1F2D"},
             },
         },
     },

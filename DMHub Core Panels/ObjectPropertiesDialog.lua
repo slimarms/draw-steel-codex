@@ -283,7 +283,7 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 			classes = {"accept-objects", "bordered"},
 			width = 64,
 			height = 64,
-			halign = "right",
+			halign = "center",
 			valign = "center",
 			dragTarget = true,
 			dragTargetPriority = 0,
@@ -327,8 +327,8 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 				else
 					element.children = {
 						gui.Panel{
+							classes = {"image"},
 							bgimage = val,
-							bgcolor = 'white',
 							halign = 'center',
 							valign = 'center',
 							width = '100%',
@@ -813,16 +813,16 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 							sliderWidth = 180,
 							labelWidth = 20,
 							labelFormat = "%d",
-							styles = {
+							styles = ThemeEngine.MergeTokens({
 								{
 									selectors = {"sliderNotch"},
 									bgimage = true,
-									bgcolor = "#A0A0A0",
+									bgcolor = "@fgMuted",
 									width = "100%",
 									halign = "center",
 									borderWidth = 0,
 								},
-							},
+							}),
 							style = {
 								height = 20,
 								fontSize = 12,
@@ -920,26 +920,26 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 					element.value = fieldInfo.fieldList[1]:GetValue(valueIndex)
 				end,
 			},
-			styles = {
+			styles = ThemeEngine.MergeTokens({
 				{
 					halign = 'right',
 					valign = 'center',
 					height = 24,
 					width = 24,
 					borderWidth = 2,
-					borderColor = '#ffffff77',
+					borderColor = '@border',
 					fontSize = '30%',
 					cornerRadius = 0,
 				},
 				{
 					selectors = 'hover',
-					borderColor = '#ffffffbb',
+					borderColor = '@accent',
 				},
 				{
 					selectors = 'press',
-					borderColor = '#ffffffdd',
+					borderColor = '@accentHover',
 				},
-			},
+			}),
 		}
 	elseif fieldInfo.type == 'float' then
 
@@ -964,22 +964,22 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 			labelWidth = labelWidth,
 			labelFormat = labelFormat,
 			wrap = fieldOptions.rotateControls,
-			styles = {
+			styles = ThemeEngine.MergeTokens({
 				{
 					selectors = {"sliderNotch"},
 					bgimage = true,
-					bgcolor = "#A0A0A0",
+					bgcolor = "@fgMuted",
 					width = "100%",
 					halign = "center",
 					borderWidth = 0,
 				},
-			},
+			}),
 			data = {
 				randomSpread = {},
 
 			},
 			style = {
-				halign = 'right',
+				halign = 'center',
 				valign = 'center',
 				bgcolor = 'white',
 				fontSize = '30%',
@@ -1044,8 +1044,8 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
                     floating = true,
 
 					gui.Panel{
+						classes = {"image"},
 						bgimage = "panels/hud/anticlockwise-rotation.png",
-						bgcolor = "white",
 						width = 16,
 						height = 16,
 						press = function()
@@ -1061,8 +1061,8 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 					},
 
 					gui.Panel{
+						classes = {"image"},
 						bgimage = "panels/hud/clockwise-rotation.png",
-						bgcolor = "white",
 						width = 16,
 						height = 16,
 						press = function()
@@ -1094,9 +1094,6 @@ local CreateEditorPanel = function(fieldInfo, displayInfo, options, valueIndex, 
 				for _,field in ipairs(fields) do
 					children[#children+1] = gui.FloatInput{
 						hmargin = 3,
-						bgimage = "panels/square.png",
-						bgcolor = "black",
-						cornerRadius = 4,
 						opacity = 0.5,
 						width = 40,
 						valign = "center",
@@ -1348,8 +1345,7 @@ local CreateFieldEditor = function(fieldInfo, options)
 							classes = {"closeButton"},
 							floating = true,
 							halign = "right",
-							valign = "top",
-							-- margin = 8,
+							valign = "center",
 							escapeActivates = false,
 							click = function(element)
 								local groupid = dmhub.GenerateGuid()
@@ -1411,7 +1407,7 @@ local CreateFieldEditor = function(fieldInfo, options)
 	end
 
 	local resultPanel = gui.Panel{
-		bgimage = 'panels/square.png',
+		bgimage = true,
 		classes = {'field-editor-panel', cond(displayInfo ~= nil and displayInfo.hidden, 'collapsed')},
         flow = "vertical",
         height = "auto",
@@ -1434,7 +1430,7 @@ local CreateFieldEditor = function(fieldInfo, options)
                 hmargin = 4,
                 width = "auto",
                 height = "auto",
-                halign = "left",
+                halign = "center",
             },
 		},
 	}
@@ -1963,11 +1959,8 @@ local CreateObjectEditor = function(nodes, options)
 	}
 
 	local lockPanel = gui.Panel{
-		classes = {"hidden"},
+		classes = {"lockOverlay", "hidden"},
 		floating = true,
-		bgimage = "panels/square.png",
-		bgcolor = "black",
-		opacity = 0.9,
 		width = "100%",
 		height = "100%-60",
 		valign = "bottom",
@@ -1976,10 +1969,10 @@ local CreateObjectEditor = function(nodes, options)
 		end,
 
 		gui.Panel{
+			classes = {"lockOverlayIcon"},
 			bgimage = "icons/icon_tool/icon_tool_30.png",
 			halign = "center",
 			valign = "center",
-			bgcolor = "white",
 			width = 128,
 			height = 128,
 		},
@@ -2034,14 +2027,16 @@ local CreateObjectEditor = function(nodes, options)
 				local fieldInfo = {}
 				local fieldKeysOrdered = {}
 				for i,component in ipairs(componentInfo.componentsAndPreviews) do
-					local fields = component.component.fields
-					for i,field in ipairs(fields) do
-						if fieldInfo[field.id] == nil then
-							fieldKeysOrdered[#fieldKeysOrdered+1] = field.id
+					if component.component then
+						local fields = component.component.fields
+						for i,field in ipairs(fields) do
+							if fieldInfo[field.id] == nil then
+								fieldKeysOrdered[#fieldKeysOrdered+1] = field.id
+							end
+							fieldInfo[field.id] = fieldInfo[field.id] or { type = field.fieldType, array = field.array, id = field.id, prettyName = field.prettyName, fieldList = {}, object = component.component.objectInstance, component = component.component }
+							local fieldList = fieldInfo[field.id].fieldList
+							fieldList[#fieldList+1] = field
 						end
-						fieldInfo[field.id] = fieldInfo[field.id] or { type = field.fieldType, array = field.array, id = field.id, prettyName = field.prettyName, fieldList = {}, object = component.component.objectInstance, component = component.component }
-						local fieldList = fieldInfo[field.id].fieldList
-						fieldList[#fieldList+1] = field
 					end
 				end
 
@@ -2330,8 +2325,8 @@ local CreateObjectEditor = function(nodes, options)
 				},
 
 				gui.Panel{
+					classes = {"lockIcon", cond(m_childrenLocked, "locked", "unlocked")},
 					bgimage = cond(m_childrenLocked, "icons/icon_tool/icon_tool_30.png", "icons/icon_tool/icon_tool_30_unlocked.png"),
-					bgcolor = cond(m_childrenLocked, "white", "grey"),
 					width = 16,
 					height = 16,
 					halign = "right",
@@ -2340,8 +2335,9 @@ local CreateObjectEditor = function(nodes, options)
 					press = function(element)
 						m_childrenLocked = not m_childrenLocked
 						element.bgimage = cond(m_childrenLocked, "icons/icon_tool/icon_tool_30.png", "icons/icon_tool/icon_tool_30_unlocked.png")
-						element.selfStyle.bgcolor = cond(m_childrenLocked, "white", "grey")
-						
+						element:SetClass("locked", m_childrenLocked)
+						element:SetClass("unlocked", not m_childrenLocked)
+
 						local cmdgroup = dmhub.GenerateGuid()
 
 						for _,childid in ipairs(childids) do
@@ -2391,25 +2387,21 @@ local CreateObjectEditor = function(nodes, options)
 				},
 
 				gui.Panel{
+					classes = {"image"},
 					autosizeimage = true,
 					maxWidth = 32,
 					maxHeight = 32,
 					halign = "center",
 					valign = "center",
-					bgcolor = "white",
 					bgimage = imageid,
 				},
 
 				gui.Label{
+					classes = {"sizeXs", "bordered"},
 					halign = "right",
 					valign = "bottom",
-					bgcolor = "black",
-					bgimage = "panels/square.png",
 					borderFade = true,
-					borderWidth = 2,
-					cornerRadius = 3,
 					pad = 2,
-					fontSize = 10,
 					width = "auto",
 					height = "auto",
 
@@ -2481,6 +2473,7 @@ local CreateObjectEditor = function(nodes, options)
 	local namePanel = gui.Panel{
 		classes = {"sectionPanel", "bordered", cond(options.blueprint, "big")},
 		bgimage = true,
+		tmargin = cond(options.blueprint, 0, 20),
 
 		styles = {
 			{
@@ -2566,7 +2559,7 @@ local CreateObjectEditor = function(nodes, options)
 					placeholderText = "Enter Keywords...",
 					editable = not options.objectInstances,
 					classes = {'field-description-label', 'field-name-label'},
-					bgimage = 'panels/square.png',
+					bgimage = true,
 					selfStyle = {
 						width = 400,
 						halign = 'center',
@@ -2596,13 +2589,11 @@ local CreateObjectEditor = function(nodes, options)
 
 		previewImage = gui.Panel{
 			id = "MapPreviewImage",
+			classes = {"image"},
 			bgimage = "#MapPreview" .. previewFloor.floorid,
-			selfStyle = {
-				bgcolor = "white",
-				halign = 'center',
-				width = 960/2,
-				height = 540/2,
-			},
+			halign = 'center',
+			width = 960/2,
+			height = 540/2,
 
 			destroy = function(element)
 				game.currentMap:DestroyPreviewFloor(previewFloor)
@@ -2791,6 +2782,19 @@ local function CreateObjectEditorPanel()
 			flow = "vertical",
 			halign = "left",
 			valign = "top",
+		},
+		-- Lock overlay: semi-transparent scheme-bg veil with a centered themed
+		-- lock glyph. Replaces the legacy hardcoded black/white look so the
+		-- overlay tracks the active color scheme.
+		{
+			selectors = {"lockOverlay"},
+			bgimage = true,
+			bgcolor = "@bg",
+			opacity = 0.9,
+		},
+		{
+			selectors = {"lockOverlayIcon"},
+			bgcolor = "@fg",
 		},
 		{
 			selectors = {"framedPanel", "hasBanner"},
@@ -3009,7 +3013,8 @@ local function CreateObjectEditorPanel()
 				--resultPanel.selfStyle.width = DialogWidth
 				--resultPanel.selfStyle.height = DialogHeight + DialogWidth/4 + 8
 
-				local closeButton = gui.CloseButton{
+				local closeButton = gui.Button{
+					classes = {"closeButton"},
 					floating = true,
 					halign = "right",
 					valign = "top",
@@ -3027,7 +3032,7 @@ local function CreateObjectEditorPanel()
 					valign = "bottom",
 					width = 32,
 					height = 32,
-					bgimage = "panels/square.png",
+					bgimage = true,
 					bgcolor = "clear",
 					hoverCursor = "diagonal-expand",
 					dragBounds = { x1 = 100, y1 = -1000, x2 = 1000, y2 = -100 },
@@ -3093,13 +3098,13 @@ local function CreateObjectEditorPanel()
 					if artistInfo ~= nil and artistInfo.bannerImage ~= nil and artistInfo.bannerImage ~= "" and dmhub.whiteLabel ~= "mcdm" then
 						resultPanel:SetClass("hasBanner", true)
 						banner = gui.Panel{
+							classes = {"image"},
 							width = "100%-4",
 							height = "25% width",
 							halign = "center",
 							vmargin = 2,
 							cornerRadius = 4,
 							bgimage = artistInfo.bannerImage,
-							bgcolor = "white",
 							hoverCursor = "hand",
 							click = function(element)
 								if dmhub.hasStoreAccess then
