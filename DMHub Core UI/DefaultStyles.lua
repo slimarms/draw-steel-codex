@@ -471,6 +471,7 @@ ThemeEngine.RegisterTheme{
             borderColor = "@border",
             border = 2,
             bold = false,
+            height = 26,
         },
         {
             selectors = {"input", "focus"},
@@ -548,6 +549,8 @@ ThemeEngine.RegisterTheme{
             bgcolor = "@bgAlt",
             borderColor = "@border",
             border = 2,
+            width = 240,
+            height = 26,
         },
         {
             selectors = {"dropdown", "expandedTop"},
@@ -822,6 +825,17 @@ ThemeEngine.RegisterTheme{
             color = "@bg",
             brightness = 1.5,
             transitionTime = 0.2,
+        },
+
+        --[[ MCDM Divider ]]
+        -- gui.MCDMDivider (Gui.lua wrapper) -- a primitive divider widget with
+        -- optional dot/line/peak/v ornaments. The outer panel and the three
+        -- inner panels (left line / icon / right line) all use this class so
+        -- the cascade drives their bgcolor. Callers may still override with
+        -- an explicit bgcolor on the option.
+        {
+            selectors = {"mcdmDivider"},
+            bgcolor = "@border",
         },
 
         --[[ Checkbox ]]

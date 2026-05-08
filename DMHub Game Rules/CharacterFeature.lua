@@ -1267,35 +1267,26 @@ function CharacterFeature.ListEditor(document, fieldName, options)
 	options.createOptions = {}
 
 	local addButton = gui.Button{
-		text = options.addText or 'Add Custom Feature',
-		style = {
-			width = 160,
-			height = 30,
-			bgcolor = 'white',
-			fontSize = 16,
-			halign = 'left',
-		},
-		events = {
-			click = function(element)
-				local items = document:try_get(fieldName, {})
-				items[#items+1] = CharacterFeature.Create(createOptions)
-				document[fieldName] = items
-				resultPanel.children = CalculateChildren()
-				resultPanel:FireEvent("refreshModifier")
-			end,
-		},
+		classes = {"addButton"},
+		halign = "left",
+		linger = function(element)
+			gui.Tooltip(options.addText or "Add Custom Feature")(element)
+		end,
+		click = function(element)
+			local items = document:try_get(fieldName, {})
+			items[#items+1] = CharacterFeature.Create(createOptions)
+			document[fieldName] = items
+			resultPanel.children = CalculateChildren()
+			resultPanel:FireEvent("refreshModifier")
+		end,
 	}
 
 	local pasteButton = gui.Button{
-		text = "Paste Feature",
-		style = {
-			width = 160,
-			height = 30,
-			bgcolor = 'white',
-			fontSize = 16,
-			halign = 'left',
-		},
-
+		classes = {"copyButton"},
+		hmargin = 4,
+		linger = function(element)
+			gui.Tooltip("Paste Feature")(element)
+		end,
 		create = function(element)
 			local clipboardItem = dmhub.GetInternalClipboard()
 			element:SetClass("hidden", clipboardItem == nil or (clipboardItem.typeName ~= "CharacterFeature" and clipboardItem.typeName ~= "ActivatedAbility"))
@@ -1354,58 +1345,38 @@ function CharacterFeature.ListEditor(document, fieldName, options)
 					},
 
 					gui.Button{
-						text = 'Copy',
+						classes = {"sizeS"},
+						text = "Copy",
 						hmargin = 6,
-						style = {
-							width = 60,
-							height = 24,
-							fontSize = 14
-						},
-						events = {
-							click = function(element)
-								dmhub.CopyToInternalClipboard(info)
-                                gui.Tooltip("Copied to clipboard!")(element)
-
-								pasteButton:FireEvent("create")
-							end
-						},
+						click = function(element)
+							dmhub.CopyToInternalClipboard(info)
+							gui.Tooltip("Copied to clipboard!")(element)
+							pasteButton:FireEvent("create")
+						end,
 					},
 
 					gui.Button{
-						text = 'Edit',
+						classes = {"sizeS"},
+						text = "Edit",
 						hmargin = 6,
-						style = {
-							width = 60,
-							height = 24,
-							fontSize = 14
-						},
-						events = {
-							click = function(element)
-								local editor = info:PopupEditor()
-								editor.data.notifyElement = resultPanel
-								dialog:AddChild(editor)
-								--resultPanel.popup = info:PopupEditor()
-							end
-						},
+						click = function(element)
+							local editor = info:PopupEditor()
+							editor.data.notifyElement = resultPanel
+							dialog:AddChild(editor)
+						end,
 					},
 
 					gui.Button{
-						text = 'Delete',
+						classes = {"sizeS"},
+						text = "Delete",
 						hmargin = 4,
-						style = {
-							width = 60,
-							height = 24,
-							fontSize = 14
-						},
-						events = {
-							click = function(element)
-								local items = document:try_get(fieldName, {})
-								table.remove(items, itemIndex)
-								document[fieldName] = items
-								resultPanel.children = CalculateChildren()
-								resultPanel:FireEvent("refreshModifier")
-							end,
-						},
+						click = function(element)
+							local items = document:try_get(fieldName, {})
+							table.remove(items, itemIndex)
+							document[fieldName] = items
+							resultPanel.children = CalculateChildren()
+							resultPanel:FireEvent("refreshModifier")
+						end,
 					},
 				}
 			}

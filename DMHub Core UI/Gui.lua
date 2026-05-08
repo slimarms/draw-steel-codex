@@ -5011,13 +5011,13 @@ function gui.MCDMDivider(options)
 	options.bgimage = nil
 
 	local args = {
+		classes = {"mcdmDivider"},
 		tmargin = 4,
 		bmargin = 0,
 		height = 1,
 		width = "80%",
 		halign = "center",
-		bgimage = "panels/square.png",
-		bgcolor = Styles.textColor,
+		bgimage = true,
 	}
 
 	if layout and mcdmLayouts[layout] then
@@ -5030,20 +5030,24 @@ function gui.MCDMDivider(options)
 		args.bgimage = nil
 		args.gradient = nil
 		args.flow = "horizontal"
-		
-		local lineWidth = "50%-" .. math.floor(args.height/2)
-		local bgcolor = args.bgcolor or Styles.textColor
+
+		-- Inner panels share the cascade rule via the same class.  If the
+		-- caller passed an explicit bgcolor, propagate it inline so it still
+		-- wins over the cascade.
+		local innerBgcolor = options.bgcolor
 		local leftPanel = gui.Panel{
+			classes = {"mcdmDivider"},
 			height = args.height,
-			width = lineWidth,
+			width = "50%-" .. math.floor(args.height/2),
 			halign = "right",
 			valign = "center",
 			pad = 0,
 			margin = 0,
 			bgimage = mod.images.line,
-			bgcolor = bgcolor
+			bgcolor = innerBgcolor,
 		}
 		local midPanel = gui.Panel{
+			classes = {"mcdmDivider"},
 			height = args.height,
 			width = args.height,
 			halign = "center",
@@ -5051,17 +5055,18 @@ function gui.MCDMDivider(options)
 			pad = 0,
 			margin = 0,
 			bgimage = mod.images[layout],
-			bgcolor = bgcolor
+			bgcolor = innerBgcolor,
 		}
 		local rightPanel = gui.Panel{
+			classes = {"mcdmDivider"},
 			height = args.height,
-			width = lineWidth,
+			width = "50%-" .. math.floor(args.height/2),
 			halign = "left",
 			valign = "center",
 			pad = 0,
 			margin = 0,
 			bgimage = mod.images.line,
-			bgcolor = bgcolor
+			bgcolor = innerBgcolor,
 		}
 
 		args.children = {
