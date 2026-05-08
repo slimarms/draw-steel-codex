@@ -2130,6 +2130,84 @@ ThemeEngine.RegisterColorScheme{
     },
 }
 
+-- =============================================================================
+-- Darth Maul color scheme
+--
+-- Sith obsidian and saber crimson. Near-black surfaces with deep blood-red
+-- frames and a hot crimson accent. Sith-eye yellow for info; intentionally
+-- dimmed green for success so it doesn't fight the palette.
+-- =============================================================================
+
+ThemeEngine.RegisterColorScheme{
+    id          = "darth-maul",
+    name        = "Darth Maul",
+    description = "Sith obsidian surfaces with saber-red accents and dried-blood frames.",
+    colors = {
+        -- Surfaces
+        bg            = "#0A0506",
+        bgAlt         = "#2C1218",
+        bgInverse     = "#C72035",
+
+        -- Foreground / text
+        fg            = "#D9AAB0",
+        fgStrong      = "#D63040",
+        fgMuted       = "#6B3838",
+        fgPending     = "#4F2828",
+        fgInverse     = "#0A0506",
+
+        -- Borders
+        border        = "#8B1F2D",
+        borderInverse = "#4A0F18",
+
+        -- Accent + interactive
+        accent        = "#E10F23",
+        accentHover   = "#FF3D52",
+
+        -- Status (muted green so it doesn't fight; Sith-eye yellow for info)
+        success       = "#5A8C5A",
+        info          = "#FFC93D",
+        warning       = "#FF8A3D",
+        danger        = "#FF1A35",
+
+        -- Disabled
+        disabled      = "#3A2A2D",
+    },
+    gradients = {
+        surfaceLinear = {
+            point_a = {x = 0, y = 0},
+            point_b = {x = 1, y = 1},
+            stops = {
+                {position = 0, color = "#2A1116"},
+                {position = 1, color = "#050203"},
+            },
+        },
+        -- Subtle saber-glow vignette: a faint red blush at the center fading
+        -- through obsidian to near-black at the edge. Restrained on purpose
+        -- so the crimson accents elsewhere stay the loud part.
+        surfaceRadial = {
+            type = "radial",
+            point_a = {x = 0.5, y = 0.5},
+            point_b = {x = 0.5, y = 1.0},
+            stops = {
+                {position = -0.01, color = "#321820"},
+                {position = 0.00,  color = "#321820"},
+                {position = 0.25,  color = "#221015"},
+                {position = 0.50,  color = "#160A0D"},
+                {position = 0.75,  color = "#0A0506"},
+                {position = 1.00,  color = "#050203"},
+            },
+        },
+        barTrack = {
+            point_a = {x = -0.02, y = 0},
+            point_b = {x = 1.02, y = 0},
+            stops = {
+                {position = 0, color = "#0A0506"},
+                {position = 1, color = "#8B1F2D"},
+            },
+        },
+    },
+}
+
 end
 
 -- After schemes and themes are registered, restore the user's
