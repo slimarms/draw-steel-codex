@@ -10,10 +10,10 @@ local mod = dmhub.GetModLoading()
     3. Entry modal UI shown on first edit of a new ability
 ]]
 
--- Picker-specific style extras spliced into the entry-modal cascade root via
--- ThemeEngine.MergeStyles. Keeps the modal's "dark fill + accent border"
+-- Picker-specific style extras appended to the entry-modal cascade root via
+-- ThemeEngine.MergeTokens. Keeps the modal's "dark fill + accent border"
 -- card look but routes the colors through @-tokens so the cards re-color
--- with the active scheme.
+-- with the active scheme. Hover state requires cascade rules (cannot inline).
 local function _pickerStyles()
     return {
         {
@@ -1433,7 +1433,7 @@ function AbilityEditor.ShowEntryModal(ability, rootPanel, rebuildEditor)
 
     local dialogPanel = gui.Panel{
         classes = {"framedPanel"},
-        styles = ThemeEngine.MergeStyles(_pickerStyles()),
+        styles = { ThemeEngine.GetStyles(), ThemeEngine.MergeTokens(_pickerStyles()) },
         width = 460,
         height = 500,
         flow = "vertical",

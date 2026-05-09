@@ -359,13 +359,11 @@ function CharacterFeature:EditorPanel(editorPanelOptions)
 
 	editorPanelOptions.collapseDescription = nil
 
-	-- Themed vs. classic path. Gated on the same classicAbilityEditor opt-out
-	-- toggle used by the sectioned Ability Editor so both editors feel
-	-- cohesive. rawget guards against load order where CharacterFeature
-	-- might be touched before AbilityEditor is present.
+	-- Themed path always-on (matches the sectioned Ability Editor).
+	-- rawget guards against load order where CharacterFeature might be
+	-- touched before AbilityEditor is present.
 	local abilityEditor = rawget(_G, "AbilityEditor")
 	local themed = abilityEditor ~= nil
-		and dmhub.GetSettingValue("classicAbilityEditor") ~= true
 	local themeColors = themed and abilityEditor.COLORS or nil
 
 	-- Stacked-label form row helper (label above, control below). In classic
@@ -1078,14 +1076,11 @@ function CharacterFeature:PopupEditor()
 
 	local resultPanel
 
-	-- Match the feature panel's themed/classic split so the outer frame is
-	-- visually cohesive with the inner editor. Gated on the same
-	-- classicAbilityEditor opt-out as the sectioned Ability Editor. All
-	-- chrome colours are sourced from the themed framedPanel cascade rule
+	-- Themed outer frame always-on (matches the sectioned Ability Editor).
+	-- All chrome colours are sourced from the themed framedPanel cascade rule
 	-- (GetThemedDialogStyles), so no DS COLORS palette lookup is needed.
 	local abilityEditor = rawget(_G, "AbilityEditor")
 	local themed = abilityEditor ~= nil
-		and dmhub.GetSettingValue("classicAbilityEditor") ~= true
 
 	local contentPanel = self:EditorPanel{
 		modifierRefreshed = function(element)
@@ -1466,16 +1461,12 @@ end
 
 --- Creates a custom dropdown panel for this feature, or returns nil for the default.
 --- @return nil|Panel
---[==[ DEAD_CODE - overridden by Draw Steel Core Rules\MCDMCharacterBuilder.lua:284
 function CharacterFeature:CreateDropdownPanel()
     return nil
 end
---]==]
 
 --- Returns true if this feature type provides a custom dropdown panel.
 --- @return boolean
---[==[ DEAD_CODE - overridden by Draw Steel Core Rules\MCDMCharacterBuilder.lua:341
 function CharacterFeature:HasCustomDropdownPanel()
     return false
 end
---]==]

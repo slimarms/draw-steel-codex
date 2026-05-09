@@ -1722,9 +1722,9 @@ ThemeEngine.RegisterTheme{
         --     `bg`-/`border`-prefixed variants set the alternate property.
 
         -- Surfaces
-        { selectors = {"bg"},        bgcolor = "@bg" },
-        { selectors = {"bgAlt"},     bgcolor = "@bgAlt" },
-        { selectors = {"bgInverse"}, bgcolor = "@bgInverse" },
+        { selectors = {"bg"},        bgimage = true, bgcolor = "@bg" },
+        { selectors = {"bgAlt"},     bgimage = true, bgcolor = "@bgAlt" },
+        { selectors = {"bgInverse"}, bgimage = true, bgcolor = "@bgInverse" },
 
         -- Foregrounds
         { selectors = {"fg"},        color = "@fg" },
@@ -1734,28 +1734,28 @@ ThemeEngine.RegisterTheme{
         { selectors = {"fgInverse"}, color = "@fgInverse" },
 
         -- Foreground tints applied as bgcolor (image multiply, etc.)
-        { selectors = {"bgFg"},        bgcolor = "@fg" },
-        { selectors = {"bgFgStrong"},  bgcolor = "@fgStrong" },
-        { selectors = {"bgFgMuted"},   bgcolor = "@fgMuted" },
-        { selectors = {"bgFgPending"}, bgcolor = "@fgPending" },
-        { selectors = {"bgFgInverse"}, bgcolor = "@fgInverse" },
+        { selectors = {"bgFg"},        bgimage = true, bgcolor = "@fg" },
+        { selectors = {"bgFgStrong"},  bgimage = true, bgcolor = "@fgStrong" },
+        { selectors = {"bgFgMuted"},   bgimage = true, bgcolor = "@fgMuted" },
+        { selectors = {"bgFgPending"}, bgimage = true, bgcolor = "@fgPending" },
+        { selectors = {"bgFgInverse"}, bgimage = true, bgcolor = "@fgInverse" },
 
         -- Borders
-        { selectors = {"border"},        borderColor = "@border" },
-        { selectors = {"borderInverse"}, borderColor = "@borderInverse" },
+        { selectors = {"border"},        bgimage = true, borderColor = "@border" },
+        { selectors = {"borderInverse"}, bgimage = true, borderColor = "@borderInverse" },
 
         -- Accent + interactive (color default; bg/border variants)
         { selectors = {"accent"},            color       = "@accent" },
         { selectors = {"accentHover"},       color       = "@accentHover" },
-        { selectors = {"bgAccent"},          bgcolor     = "@accent" },
-        { selectors = {"bgAccentHover"},     bgcolor     = "@accentHover" },
-        { selectors = {"borderAccent"},      borderColor = "@accent" },
-        { selectors = {"borderAccentHover"}, borderColor = "@accentHover" },
+        { selectors = {"bgAccent"},          bgimage = true, bgcolor     = "@accent" },
+        { selectors = {"bgAccentHover"},     bgimage = true, bgcolor     = "@accentHover" },
+        { selectors = {"borderAccent"},      bgimage = true, borderColor = "@accent" },
+        { selectors = {"borderAccentHover"}, bgimage = true, borderColor = "@accentHover" },
 
         -- Disabled (the state class lives elsewhere; these are explicit color picks)
         { selectors = {"fgDisabled"},     color       = "@disabled" },
-        { selectors = {"bgDisabled"},     bgcolor     = "@disabled" },
-        { selectors = {"borderDisabled"}, borderColor = "@disabled" },
+        { selectors = {"bgDisabled"},     bgimage = true, bgcolor     = "@disabled" },
+        { selectors = {"borderDisabled"}, bgimage = true, borderColor = "@disabled" },
 
         -- Implementation status (used by ability/feature impl indicators)
         { selectors = {"implStatus0"}, color = "@implStatus0" },
@@ -1786,18 +1786,22 @@ ThemeEngine.RegisterTheme{
         },
         {
             selectors = {"bgSuccess"},
+            bgimage = true,
             bgcolor = "@success",
         },
         {
             selectors = {"bgInfo"},
+            bgimage = true,
             bgcolor = "@info",
         },
         {
             selectors = {"bgWarning"},
+            bgimage = true,
             bgcolor = "@warning",
         },
         {
             selectors = {"bgDanger"},
+            bgimage = true,
             bgcolor = "@danger",
         },
         {

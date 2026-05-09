@@ -1,16 +1,5 @@
 local mod = dmhub.GetModLoading()
 
--- Opt-out toggle. The sectioned Ability Editor is the default; this lets a
--- user fall back to the classic editor if they hit a regression.
-setting{
-    id = "classicAbilityEditor",
-    description = "Use classic ability editor",
-    editor = "check",
-    default = false,
-    storage = "preference",
-    section = "game",
-}
-
 -- Use rawget because the DMHub Lua env errors on reads of uninitialized globals.
 AbilityEditor = rawget(_G, "AbilityEditor") or {}
 AbilityEditor._recentBehaviors = AbilityEditor._recentBehaviors or {}
@@ -1951,9 +1940,8 @@ local function _buildOverviewSection(ability, fireChange)
                                         classes = {"nae-keyword-chip-label"},
                                         text = ActivatedAbility.CanonicalKeyword(k),
                                     },
-                                    gui.DeleteItemButton{
-                                        width = 14,
-                                        height = 14,
+                                    gui.Button{
+                                        classes = {"deleteButton", "sizeXxs"},
                                         halign = "right",
                                         valign = "center",
                                         click = function()
@@ -2267,9 +2255,8 @@ _buildModesBlock = function(ability, fireChange)
                                         fireChange()
                                     end,
                                 },
-                                gui.DeleteItemButton{
-                                    width = 14,
-                                    height = 14,
+                                gui.Button{
+                                    classes = {"deleteButton", "sizeXxs"},
                                     halign = "right",
                                     valign = "center",
                                     lmargin = 6,
@@ -2737,8 +2724,8 @@ local function _buildCostAndActionSection(ability, fireChange)
     -- the cost, mode, and mode-conditional options. The Edit Recast
     -- Ability button (recast_new mode only) opens a nested ability
     -- editor via ShowEditActivatedAbilityDialog -- which re-enters
-    -- ActivatedAbility:GenerateEditor so the nested editor honors the
-    -- same "classicAbilityEditor" setting as the outer one.
+    -- ActivatedAbility:GenerateEditor so the nested editor uses the
+    -- same sectioned editor as the outer one.
     local persistenceSubgroup = gui.Panel{
         classes = {"nae-field-subgroup",
                    cond(persistenceEnabled(), nil, "collapsed-anim")},
@@ -3149,10 +3136,9 @@ local function _buildFilterList(ability, fireChange, fieldName, formulaLabel,
                             end,
                             documentation = documentation,
                         },
-                        gui.DeleteItemButton{
+                        gui.Button{
+                            classes = {"deleteButton", "sizeXxs"},
                             halign = "right",
-                            width = 14,
-                            height = 14,
                             click = function(el)
                                 table.remove(filters, i)
                                 ability[fieldName] = filters
@@ -4104,9 +4090,8 @@ local function _makeBehaviorPanel(ability, behavior, index, totalCount, fireChan
         end,
     }
 
-    local deleteBtn = gui.DeleteItemButton{
-        width = 14,
-        height = 14,
+    local deleteBtn = gui.Button{
+        classes = {"deleteButton", "sizeXxs"},
         valign = "center",
         lmargin = 8,
         click = function()
@@ -5039,10 +5024,10 @@ function AbilityEditor.GenerateEditor(ability, opts)
     rootPanel = gui.Panel{
         classes = {"nae-root"},
         id = "abilityEditorRoot",
-        -- Cascade: Styles.Form (legacy form pack used by SourceReference)
-        -- + theme + DS-specific rules. The engine flattens nested arrays
-        -- at the cascade root.
-        styles = { Styles.Form, ThemeEngine.MergeStyles(_editorStyles()) },
+        -- Cascade: cached ThemeEngine base + DS-specific rules
+        -- (theme tokens resolved via MergeTokens, no recompute on each open).
+        -- The engine flattens nested arrays at the cascade root.
+        styles = { ThemeEngine.GetStyles(), ThemeEngine.MergeTokens(_editorStyles()) },
         width = "100%",
         height = "100%",
         halign = "center",

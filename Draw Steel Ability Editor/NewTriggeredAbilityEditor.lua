@@ -1,21 +1,5 @@
 local mod = dmhub.GetModLoading()
 
--- Opt-out toggle. The sectioned Triggered Ability Editor is the default; this
--- lets a user fall back to the classic editor if they hit a regression.
--- Mirrors the classicAbilityEditor setting pattern in AbilityEditor.lua.
-setting{
-    id = "classicTriggeredAbilityEditor",
-    description = "Use classic triggered ability editor",
-    editor = "check",
-    default = false,
-    storage = "preference",
-    section = "game",
-}
-
--- Preserve a reference to the classic GenerateEditor so we can fall through
--- to it when aura-embed options or the opt-out setting are in effect.
-local classicGenerateEditor = TriggeredAbility.GenerateEditor
-
 -- Nav column width matches the New Ability Editor's layout so the shared
 -- nae-nav-button rule (width = NAV_WIDTH - 24 = 196) fits inside the padded
 -- column. Hpad/vpad also mirror AbilityEditor's LAYOUT.COL_HPAD/VPAD.
@@ -569,10 +553,10 @@ local function _filterTriggers(query, entries)
     return results
 end
 
--- Picker-specific style extras spliced into the modal's cascade root via
--- ThemeEngine.MergeStyles. Keeps the picker's "dark fill + accent border"
+-- Picker-specific style extras appended to the modal's cascade root via
+-- ThemeEngine.MergeTokens. Keeps the picker's "dark fill + accent border"
 -- card look but routes the colors through @-tokens so the cards re-color
--- with the active scheme.
+-- with the active scheme. Hover state requires cascade rules (cannot inline).
 local function _pickerStyles()
     return {
         {
@@ -764,7 +748,7 @@ local function openTriggerEventPicker(currentId, onChosen)
 
     local dialogPanel = gui.Panel{
         classes = {"framedPanel"},
-        styles = ThemeEngine.MergeStyles(_pickerStyles()),
+        styles = { ThemeEngine.GetStyles(), ThemeEngine.MergeTokens(_pickerStyles()) },
         width = 600,
         height = 600,
         flow = "vertical",
@@ -1445,11 +1429,10 @@ local function buildKeywordsPicker(ability, fireChange)
                     height = "auto",
                     rmargin = 4,
                 },
-                gui.DeleteItemButton{
+                gui.Button{
+                    classes = {"deleteButton", "sizeXxs"},
                     halign = "left",
                     valign = "center",
-                    width = 12,
-                    height = 12,
                     click = function(element)
                         local set = ability:get_or_add("displayKeywords", {})
                         set[itemId] = nil
@@ -2514,7 +2497,7 @@ local function buildMechanicalView(ability)
                 local extra = #broken > 1 and string.format(" +%d more", #broken - 1) or ""
                 condChip = {
                     text = string.format('Add quotes: "%s"%s', first.rhs, extra),
-                    color = "#a14b3a",  -- red: this is a runtime bug, not just a typo
+                    class = "bgDanger",  -- red: this is a runtime bug, not just a typo
                 }
             else
                 -- Edit-time canonical-table validation. Catches typos in string
@@ -2531,7 +2514,7 @@ local function buildMechanicalView(ability)
                     local extra = #literals > 1 and string.format(" +%d more", #literals - 1) or ""
                     condChip = {
                         text = string.format('Unknown %s: "%s"%s', first.label, first.literal, extra),
-                        color = "#cca350",
+                        class = "bgWarning",
                     }
                 end
             end
@@ -2580,17 +2563,18 @@ local function buildMechanicalView(ability)
     -- Row renderer. Label left-aligned in a fixed-width column so values
     -- line up across rows; chip pinned to the right.
     -- Chip can be a string (legacy, defaults to amber "issue" color) or
-    -- {text, color} (explicit color). Gold (#cca350) is used for typo-class
-    -- warnings (unknown literals); amber (#c47e2c) for structural errors
-    -- (compile failures, unknown identifiers, never-fires subjects).
+    -- {text, class} (themed class: bgDanger for runtime bugs, bgWarning
+    -- for typo-class issues). String form maps to amber default (#c47e2c)
+    -- for structural errors that pre-date the themed class migration.
     local function buildRow(entry)
-        local chipText, chipColor
+        local chipText, chipColor, chipClass
         if type(entry.chip) == "string" then
             chipText = entry.chip
             chipColor = "#c47e2c"
         elseif type(entry.chip) == "table" then
             chipText = entry.chip.text
-            chipColor = entry.chip.color or "#c47e2c"
+            chipClass = entry.chip.class
+            chipColor = entry.chip.color or (chipClass == nil and "#c47e2c" or nil)
         end
         return gui.Panel{
             width = "100%",
@@ -2625,11 +2609,12 @@ local function buildMechanicalView(ability)
                 -- second line inside the card rather than overflowing
                 -- the right border.
                 chipText ~= nil and gui.Label{
+                    classes = chipClass and {chipClass} or nil,
                     text = chipText,
                     color = "white",
                     fontSize = 11,
                     bold = true,
-                    bgimage = "panels/square.png",
+                    bgimage = true,
                     bgcolor = chipColor,
                     width = 130,
                     height = "auto",
@@ -5694,11 +5679,10 @@ local function buildTestTriggerCard(ability, opts)
                             height = "auto",
                             rmargin = 4,
                         },
-                        gui.DeleteItemButton{
+                        gui.Button{
+                            classes = {"deleteButton", "sizeXxs"},
                             halign = "left",
                             valign = "center",
-                            width = 14,
-                            height = 14,
                             click = function()
                                 local cur = parseChosen(v.raw)
                                 cur[itemId] = nil
@@ -6379,9 +6363,10 @@ function openTestTriggerPopout(ability, initialState, reopen)
         -- gui.Button / gui.Input / gui.Check / gui.Dropdown render with
         -- the gold/cream chrome users see in the in-editor card. Without
         -- this, the popout's controls fall back to engine-default style
-        -- (visibly different from the editor's). `buildStyles()` already
-        -- merges Styles.Form + the AbilityEditor themed pack.
-        styles = { Styles.Form, ThemeEngine.MergeStyles(buildStyles()) },
+        -- (visibly different from the editor's). GetStyles provides the
+        -- cached theme cascade; buildStyles() supplies the AbilityEditor
+        -- themed pack on top via MergeTokens (resolves @-tokens only).
+        styles = { ThemeEngine.GetStyles(), ThemeEngine.MergeTokens(buildStyles()) },
         -- See block-comment above: don't block map/token clicks for areas
         -- outside the popout's visible body. The popout is a floating
         -- utility, not a screen-blocking modal.
@@ -6911,7 +6896,7 @@ local function generateSectionedEditor(ability, options)
     rootPanel = gui.Panel{
         classes = {"nae-root"},
         id = "triggeredAbilityEditorRoot",
-        styles = { Styles.Form, ThemeEngine.MergeStyles(buildStyles()) },
+        styles = { ThemeEngine.GetStyles(), ThemeEngine.MergeTokens(buildStyles()) },
         width = "100%",
         height = "100%",
         halign = "center",
@@ -6942,24 +6927,149 @@ end
     ============================================================================
     Dispatch
     ============================================================================
-    Rules (in order):
-      1. Aura-embed path (options.excludeTriggerCondition or
-         options.excludeAppearance) -> classic editor. Keeps Aura.lua's
-         embedded trigger editor working unchanged.
-      2. User opt-out setting -> classic editor.
-      3. Otherwise -> new sectioned editor.
+    Always renders the new sectioned editor. The aura-embed path uses
+    TriggeredAbility:GenerateEmbeddedEditor (defined below) instead of going
+    through this dispatch.
 ]]
 function TriggeredAbility:GenerateEditor(options)
     options = options or {}
-
-    if options.excludeTriggerCondition or options.excludeAppearance then
-        return classicGenerateEditor(self, options)
-    end
-
-    if dmhub.GetSettingValue("classicTriggeredAbilityEditor") == true then
-        return classicGenerateEditor(self, options)
-    end
-
     return generateSectionedEditor(self, options)
+end
+
+--[[
+    ============================================================================
+    Embedded editor (Aura.lua)
+    ============================================================================
+    Inline editor for an aura-embedded TriggeredAbility. Renders only the
+    fields that survive the legacy excludeTriggerCondition + excludeAppearance
+    + excludeActivationSavingThrows exclusion set:
+
+      Name | Action | Despawned Target | Condition (GoblinScript) | Behaviors
+
+    Returns a single panel suitable for nesting inside another panel
+    (no full-screen modal chrome, no anchored bottom bar). Replaces the
+    legacy `trigger.ability:GenerateEditor{ exclude... }` call from Aura.lua.
+]]
+function TriggeredAbility:GenerateEmbeddedEditor()
+    local resultPanel
+    local Refresh
+
+    Refresh = function()
+        local children = {}
+
+        children[#children+1] = gui.Panel{
+            classes = {"formPanel"},
+            gui.Label{ text = "Name:", classes = {"formLabel"} },
+            gui.Input{
+                classes = "formInput",
+                placeholderText = "Enter Trigger Name...",
+                text = self.name,
+                change = function(element)
+                    self.name = element.text
+                end,
+            },
+        }
+
+        local actionOptions = CharacterResource.GetActionOptions()
+        actionOptions[#actionOptions+1] = { id = "none", text = "None" }
+        children[#children+1] = gui.Panel{
+            classes = {"abilityInfo", "formPanel"},
+            gui.Label{ classes = "formLabel", text = "Action:" },
+            gui.Dropdown{
+                classes = "formDropdown",
+                idChosen = self:ActionResource() or "none",
+                options = actionOptions,
+                change = function(element)
+                    if element.idChosen == "none" then
+                        self.actionResourceId = nil
+                    else
+                        self.actionResourceId = element.idChosen
+                    end
+                end,
+            },
+        }
+
+        children[#children+1] = gui.Panel{
+            classes = {"abilityInfo", "formPanel"},
+            gui.Label{ classes = "formLabel", text = "Despawned Target:" },
+            gui.Dropdown{
+                classes = "formDropdown",
+                idChosen = self.despawnBehavior,
+                options = self.DespawnBehaviors,
+                change = function(element)
+                    self.despawnBehavior = element.idChosen
+                end,
+            },
+        }
+
+        local helpSymbols = {
+            caster = {
+                name = "Caster",
+                type = "creature",
+                desc = "The creature that controls the aura triggering this ability.",
+            },
+            subject = {
+                name = "Subject",
+                type = "creature",
+                desc = "The creature that the event occurred on. This will be the same as Self for triggered abilities that only affect self.",
+            },
+        }
+        local examples = {
+            {
+                script = "hitpoints < 5",
+                text = "The triggered ability only activates when hitpoints are below 5.",
+            },
+        }
+        local triggerInfo = TriggeredAbility.GetTriggerById(self.trigger)
+        if triggerInfo ~= nil then
+            for k,v in pairs(triggerInfo.symbols or {}) do
+                if type(v) == "table" and v.name then
+                    k = string.lower(string.gsub(v.name, "%s+", ""))
+                end
+                helpSymbols[k] = v
+            end
+            for _,example in ipairs(triggerInfo.examples or {}) do
+                examples[#examples+1] = example
+            end
+        end
+
+        children[#children+1] = gui.Panel{
+            classes = {"abilityInfo", "formPanel"},
+            gui.Label{ classes = {"formLabel"}, text = "Condition:" },
+            gui.GoblinScriptInput{
+                value = self.conditionFormula,
+                change = function(element)
+                    self.conditionFormula = element.value
+                end,
+                documentation = {
+                    help = "This GoblinScript is used to determine whether the triggered ability activates.",
+                    output = "boolean",
+                    examples = examples,
+                    subject = creature.helpSymbols,
+                    subjectDescription = "The creature the ability will trigger on",
+                    symbols = helpSymbols,
+                },
+            },
+        }
+
+        children[#children+1] = self:BehaviorEditor()
+
+        resultPanel.children = children
+    end
+
+    resultPanel = gui.Panel{
+        styles = {
+            ThemeEngine.GetStyles(),
+            { classes = {"formPanel"}, width = 340 },
+            { classes = {"formLabel"}, halign = "left", valign = "center" },
+        },
+        height = "auto",
+        width = "100%",
+        flow = "vertical",
+        valign = "top",
+    }
+
+    Refresh()
+    return resultPanel
 end
 

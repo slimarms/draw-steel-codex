@@ -209,9 +209,8 @@ function Aura:GenerateEditor(options)
                             width = "auto",
                             height = "auto",
                         },
-                        gui.DeleteItemButton {
-                            width = 16,
-                            height = 16,
+                        gui.Button {
+                            classes = {"deleteButton", "sizeXxs"},
                             hmargin = 20,
                             halign = "left",
                             valign = "center",
@@ -232,15 +231,11 @@ function Aura:GenerateEditor(options)
                         end,
                     },
 
-                    trigger.ability:GenerateEditor {
-                        --the triggers don't have a trigger condition set because that is implied
-                        --by the way the creature interacts with the aura. They don't have activation
-                        --saving throws either, since that is for 'good' triggers to see if they are activated.
-                        --The normal saving throws are controlled by the behavior which will be added to the trigger.
-                        excludeTriggerCondition = true,
-                        excludeActivationSavingThrows = true,
-                        excludeAppearance = true,
-                    }
+                    --the triggers don't have a trigger condition set because that is implied
+                    --by the way the creature interacts with the aura. They don't have activation
+                    --saving throws either, since that is for 'good' triggers to see if they are activated.
+                    --The normal saving throws are controlled by the behavior which will be added to the trigger.
+                    trigger.ability:GenerateEmbeddedEditor()
                 }
             end
 
