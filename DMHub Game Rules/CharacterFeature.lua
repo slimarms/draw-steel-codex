@@ -570,8 +570,8 @@ function CharacterFeature:EditorPanel(editorPanelOptions)
 					-- Done as a hand-built panel rather than gui.ModalMessage
 					-- so the Cancel button can carry escapeActivates and
 					-- pressing Escape dismisses the prompt cleanly.
-					local deleteBtn = gui.DeleteItemButton{
-						classes = {cond(mod:try_get("deletable") == false, "hidden")},
+					local deleteBtn = gui.Button{
+						classes = {"deleteButton", cond(mod:try_get("deletable") == false, "hidden")},
 						width = 14,
 						height = 14,
 						valign = "center",
@@ -676,8 +676,8 @@ function CharacterFeature:EditorPanel(editorPanelOptions)
 								}
 
 							end,
-							gui.DeleteItemButton{
-								classes = {cond(mod:try_get("deletable") == false, "hidden")},
+							gui.Button{
+								classes = {"deleteButton", cond(mod:try_get("deletable") == false, "hidden")},
 								floating = true,
 								halign = 'right',
 								valign = 'center',
@@ -859,32 +859,21 @@ function CharacterFeature:EditorPanel(editorPanelOptions)
 		-- Shrink the widget to a tighter footprint so the label and
 		-- chevrons sit together. Default is 148 which leaves padding
 		-- inside between the arrows and the center text.
-		width = themed and 120 or nil,
+		width = 120,
 		value = self:try_get("implementation", 1),
 		change = function(element)
 			self.implementation = element.value
 		end,
-		-- Walk the widget's children on create to (a) fix the base
-		-- widget's mismatched arrow heights (left=24, right=32 -- see
-		-- AbilityEditor.lua:1809) and (b) apply themed gold/cream
-		-- coloring to the chevrons and center label so it matches the
-		-- rest of the DS chrome.
-		create = themed and function(element)
-			local tc = themeColors
+		-- Fix the base widget's mismatched arrow heights
+		-- (left=24, right=32). Color comes from the cascade via
+		-- the implStatusN class on the widget's text label.
+		create = function(element)
 			for _, child in ipairs(element.children) do
 				if child.height == 32 then
 					child.height = 24
 				end
-				-- The arrows have bgimage = "panels/InventoryArrow.png"
-				-- and no class; identify them by that bgimage. The text
-				-- label has no bgimage.
-				if child.bgimage == "panels/InventoryArrow.png" then
-					child.bgcolor = tc.GOLD_BRIGHT
-				else
-					child.color = tc.CREAM_BRIGHT
-				end
 			end
-		end or nil,
+		end,
 	}
 
 	local descriptionInput = gui.Input{
