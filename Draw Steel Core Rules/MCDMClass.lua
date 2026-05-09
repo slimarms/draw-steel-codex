@@ -433,13 +433,13 @@ function Class:CustomEditor(UploadFn, children)
         }
     else
         children[#children+1] = gui.Panel{
-            classes = {'formPanel'},
+            classes = {"formStackedRow"},
             gui.Label{
-                text = 'Prerequisite:',
-                valign = 'center',
-                minWidth = 240,
+                classes = {"formStacked"},
+                text = "Prerequisite:",
             },
             gui.GoblinScriptInput{
+                classes = {"formStacked"},
                 value = self:try_get("prerequisite", ""),
                 change = function(element)
                     self.prerequisite = element.value

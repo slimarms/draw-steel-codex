@@ -1017,17 +1017,15 @@ local SetClass = function(tableName, classPanel, classid)
 		end
 
 		children[#children+1] = gui.Panel{
-			classes = {"formPanel"},
+			classes = {"formStackedRow"},
 			gui.Label{
+				classes = {"formStacked"},
 				text = "Primary Class:",
-				valign = "center",
-				minWidth = 160,
 			},
 			gui.Dropdown{
+				classes = {"formStacked"},
 				options = options,
 				idChosen = class.primaryClassId,
-				width = 200,
-				height = 40,
 				change = function(element)
 					class.primaryClassId = element.idChosen
 					class:ForceDomains()
