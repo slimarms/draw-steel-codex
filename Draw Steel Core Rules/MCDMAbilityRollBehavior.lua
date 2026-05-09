@@ -178,7 +178,7 @@ ActivatedAbility.RegisterType
     createBehavior = function()
         return ActivatedAbilityPowerRollBehavior.new{
             tiers = {"", "", ""},
-            roll = "2d10 + Might or Agility",
+            roll = "2d10 + Highest Characteristic",
         }
     end,
 }
@@ -903,9 +903,7 @@ function ActivatedAbilityPowerRollBehavior:Cast(ability, casterToken, targets, o
     --modifier list so CalculateMultitargets can evaluate them per-target.
     local attackerModifierInfo = nil
     if rollType == "ability_power_roll"
-        and caster.minion
-        and ability.categorization == "Signature Ability"
-        and caster:has_key("_tmp_minionSquad")
+        and ability:UsesSquadCoordination(casterToken)
         and options.symbols ~= nil
         and options.symbols.targetPairs ~= nil then
         attackerModifierInfo = {}
@@ -1073,9 +1071,9 @@ function ActivatedAbilityPowerRollBehavior:Cast(ability, casterToken, targets, o
                 end
             end
 
-            --if we are attacking as part of a minion squad signature, any excess targeting
-            --gets to do free strikes against the targets.
-            if options.symbols.targetPairs ~= nil and ability.categorization == "Signature Ability" and casterToken.properties.minion then
+            --if we are attacking as part of a minion squad strike (signature ability or
+            --free strike), any excess targeting gets to do free strikes against the targets.
+            if options.symbols.targetPairs ~= nil and ability:UsesSquadStrike(casterToken) then
                 local numAttackers = 0
 
                 for i,pair in ipairs(options.symbols.targetPairs) do
@@ -1097,7 +1095,7 @@ function ActivatedAbilityPowerRollBehavior:Cast(ability, casterToken, targets, o
                         description = string.format("There %s %d extra minion attacker%s, each of which does free strike against the target.", cond(numAttackers-1 == 1, "is", "are"), numAttackers-1, cond(numAttackers-1 > 1, "s", "")),
                         damageModifier = casterToken.properties:OpportunityAttack()*(numAttackers-1),
                     }
-                    
+
                     candidateModifiers[#candidateModifiers+1] = {
                         modifier = mod,
                         hint = mod:HintModifyPowerRolls(mod, caster, "ability_power_roll", {
@@ -1109,7 +1107,44 @@ function ActivatedAbilityPowerRollBehavior:Cast(ability, casterToken, targets, o
                 end
             end
 
+            --Squad maneuvers: replace the power roll with the rule's deterministic
+            --formula. Result = 8 + caster's highest characteristic + the number of
+            --squad members within range of the target (counting the caster).
+            if ability:UsesSquadManeuver(casterToken) then
+                local maneuverRange = ability:GetRange(casterToken.properties) or 1
+                local squad = casterToken.properties._tmp_minionSquad
+                local inRangeCount = 0
+                for _,tok in ipairs(squad.tokens or {}) do
+                    if tok ~= nil and tok.valid and (not tok.properties:IsDead())
+                        and tok:Distance(target.token) <= maneuverRange then
+                        inRangeCount = inRangeCount + 1
+                    end
+                end
+                if inRangeCount < 1 then inRangeCount = 1 end
 
+                local highest = casterToken.properties:HighestCharacteristic()
+                local maneuverResult = 8 + highest + inRangeCount
+
+                local mod = CharacterModifier.new{
+                    behavior = "power",
+                    rollType = "ability_power_roll",
+                    activationCondition = true,
+                    keywords = {},
+                    modtype = "replaceroll",
+                    replaceText = tostring(maneuverResult),
+                    guid = dmhub.GenerateGuid(),
+                    name = "Squad Maneuver",
+                    description = string.format("Squad maneuver: 8 + %d (highest characteristic) + %d (in-range squad member%s) = %d", highest, inRangeCount, cond(inRangeCount == 1, "", "s"), maneuverResult),
+                }
+
+                candidateModifiers[#candidateModifiers+1] = {
+                    modifier = mod,
+                    hint = mod:HintModifyPowerRolls(mod, caster, "ability_power_roll", {
+                        ability = ability,
+                        target = targetCreature,
+                    })
+                }
+            end
 
             local candidateRoll = roll
             for _,mod in ipairs(candidateModifiers) do

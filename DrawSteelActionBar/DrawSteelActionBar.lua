@@ -5306,7 +5306,17 @@ local function CalculateSpellTargetFocusing(symbols)
                 end
 
                 if canTarget and targetToken.properties:HasNamedCondition("Hidden") and g_currentAbility:HasKeyword("Strike") then
-                    failReason = "Cannot target a hidden creature with a strike"
+                    local ignoreRange = g_token.properties:CalculateNamedCustomAttribute("Ignore Hidden at Range") or 0
+                    local bypass = false
+                    if ignoreRange > 0 then
+                        local dist = g_token:Distance(targetToken)
+                        if dist <= ignoreRange + dmhub.unitsPerSquare then
+                            bypass = true
+                        end
+                    end
+                    if not bypass then
+                        failReason = "Cannot target a hidden creature with a strike"
+                    end
                 end
 
                 if targetToken.properties:CalculateNamedCustomAttribute("Untargetable") > 0 then

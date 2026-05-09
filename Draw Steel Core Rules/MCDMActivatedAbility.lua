@@ -2240,12 +2240,56 @@ function ActivatedAbility:IsForcedMovement()
     return true
 end
 
+--Returns true if this ability, when cast by a minion in a squad, should be coordinated across the squad
+function ActivatedAbility:UsesSquadCoordination(casterToken)
+    if casterToken == nil or not casterToken.properties.minion then
+        return false
+    end
+    if not casterToken.properties:has_key("_tmp_minionSquad") then
+        return false
+    end
+
+    local cat = self.categorization
+    if cat == "Signature Ability" then
+        return true
+    end
+
+    --Free strikes
+    if self.name == "Melee Free Strike" or self.name == "Ranged Free Strike" then
+        return true
+    end
+
+    --Any other strike-keyworded ability counts as a squad strike.
+    if self:HasKeyword("Strike") then
+        return true
+    end
+
+    --Maneuvers used as a squad action (single-target collapsed to one shared roll).
+    if self:IsManeuver() then
+        return true
+    end
+
+    return false
+end
+
+--True for squad-coordinated strikes (signature abilities and free strikes). Excludes
+--maneuvers because their target-stacking and target-multiplicity differs.
+function ActivatedAbility:UsesSquadStrike(casterToken)
+    return self:UsesSquadCoordination(casterToken) and not self:IsManeuver()
+end
+
+--True for squad-coordinated maneuvers. The squad uses one maneuver as a unit and the
+--power roll is replaced with `8 + highest characteristic + in-range squad members`.
+function ActivatedAbility:UsesSquadManeuver(casterToken)
+    return self:UsesSquadCoordination(casterToken) and self:IsManeuver()
+end
+
 function ActivatedAbility:CanTargetAdditionalTimes(casterToken, symbols, targets, targetToken)
     if self.repeatTargets then
         return true
     end
 
-    if casterToken.properties.minion and self.categorization == "Signature Ability" and casterToken.properties:has_key("_tmp_minionSquad") then
+    if self:UsesSquadStrike(casterToken) then
         --signature abilities can 'stack' targeting up to three times.
         local currentTimes = 0
         for _, target in ipairs(targets) do
@@ -2354,7 +2398,7 @@ local g_prevTargetingRays = nil
 ---@param targets table<{target: CharacterToken}>[] The targets of the ability.
 ---@return table<{a: CharacterToken, b: CharacterToken}>[]|nil The possible targeting combinations of minions to targets.
 function ActivatedAbility:GetTargetingRays(casterToken, range, symbols, targets)
-    if casterToken.properties.minion and self.categorization == "Signature Ability" and casterToken.properties:has_key("_tmp_minionSquad") then
+    if self:UsesSquadCoordination(casterToken) then
         local locations = {}
         local squad = casterToken.properties._tmp_minionSquad
         local squadTokens = table.shallow_copy(squad.tokens)
@@ -2489,7 +2533,7 @@ function ActivatedAbility:GetTargetingRays(casterToken, range, symbols, targets)
 end
 
 function ActivatedAbility:PrepareTargets(casterToken, symbols, targets)
-    if casterToken.properties.minion and self.categorization == "Signature Ability" and casterToken.properties:has_key("_tmp_minionSquad") then
+    if self:UsesSquadStrike(casterToken) then
         --minion squad signature abilities will combine multiple instances
         --if the same target into one target with a multiple 'addedStacks' count.
         local result = {}
@@ -2518,7 +2562,7 @@ end
 local g_customTargetShapeFunction = ActivatedAbility.CustomTargetShape
 
 function ActivatedAbility:CustomTargetShape(casterToken, range, symbols, targets)
-    if (not mod.unloaded) and casterToken.properties.minion and self.categorization == "Signature Ability" and casterToken.properties:has_key("_tmp_minionSquad") then
+    if (not mod.unloaded) and self:UsesSquadCoordination(casterToken) then
         local locations = {}
         local squad = casterToken.properties._tmp_minionSquad
         local squadTokens = table.shallow_copy(squad.tokens)
@@ -2619,7 +2663,7 @@ local g_numTargetsFunction = ActivatedAbility.GetNumTargets
 function ActivatedAbility:GetNumTargets(casterToken, symbols)
     local result = g_numTargetsFunction(self, casterToken, symbols)
 
-    if (not mod.unloaded) and casterToken ~= nil and casterToken.properties.minion and self.categorization == "Signature Ability" and result == 1 and casterToken.properties:has_key("_tmp_minionSquad") then
+    if (not mod.unloaded) and casterToken ~= nil and result == 1 and self:UsesSquadStrike(casterToken) then
         --minion signature abilities can target one target for each active (non-skipped) member.
         return casterToken.properties._tmp_minionSquad.activeMinions
             or casterToken.properties._tmp_minionSquad.liveMinions
@@ -2632,7 +2676,7 @@ local g_moreTargetsFunction = ActivatedAbility.CanSelectMoreTargets
 
 function ActivatedAbility:CanSelectMoreTargets(casterToken, targets, symbols)
     if not mod.unloaded then
-        if casterToken.properties.minion and self.categorization == "Signature Ability" then
+        if self:UsesSquadStrike(casterToken) then
 
         end
     end
