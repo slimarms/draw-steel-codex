@@ -2534,21 +2534,23 @@ end
 
 function ActivatedAbility:PrepareTargets(casterToken, symbols, targets)
     if self:UsesSquadStrike(casterToken) then
-        --minion squad signature abilities will combine multiple instances
-        --if the same target into one target with a multiple 'addedStacks' count.
+        --minion squad signature abilities collapse multiple strikes against the
+        --same target into a single target entry, tracking how many minions hit
+        --it via 'numAttackers' (1 for a solo strike, N for N minions).
         local result = {}
 
         for _, target in ipairs(targets) do
             local found = false
             for _, existing in ipairs(result) do
                 if target.token ~= nil and existing.token ~= nil and target.token.id == existing.token.id then
-                    existing.addedStacks = (existing.addedStacks or 0) + 1
+                    existing.numAttackers = (existing.numAttackers or 1) + 1
                     found = true
                     break
                 end
             end
 
             if not found then
+                target.numAttackers = target.numAttackers or 1
                 result[#result + 1] = target
             end
         end
