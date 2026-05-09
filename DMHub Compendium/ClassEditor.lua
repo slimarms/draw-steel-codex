@@ -682,7 +682,6 @@ function ClassLevel:CreateEditor(classOrRace, levelNum, params)
 		flow = "vertical",
 
 		styles = {
-			Styles.ImplementationIcon,
             {
                 selectors = {"imported"},
                 color = "#999999",

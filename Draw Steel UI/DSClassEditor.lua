@@ -32,7 +32,6 @@ local CreateFeatureSummary = function(feature, featuresList, index, parentPanel,
 		pointsCostPanel = gui.Input{
 			width = 60,
 			height = 20,
-			fontSize = 16,
 			characterLimit = 3,
 			placeholderText = "Points...",
 			text = tostring(feature:try_get("pointsCost", "")),
@@ -55,10 +54,8 @@ local CreateFeatureSummary = function(feature, featuresList, index, parentPanel,
     local importedLabel = nil
     if feature:try_get("imported", false) then
         importedLabel = gui.Label{
-            classes = {cond(feature:try_get("importOverride", false), "override", "imported")},
+            classes = {cond(feature:try_get("importOverride", false), "accent", ""), "sizeM", "bold"},
             text = cond(feature:try_get("importOverride", false), "Overwrite", "Imported"),
-            bold = true,
-            fontSize = 16,
             halign = "right",
             valign = "center",
             width = 100,
@@ -97,13 +94,12 @@ local CreateFeatureSummary = function(feature, featuresList, index, parentPanel,
 			refreshFeatures = function(element)
 				element.text = DescribeFeature(feature)
 			end,
-            classes = {cond(feature:try_get("imported", false), cond(feature:try_get("importOverride", false), "override", "imported"))},
-			fontSize = 20,
-			valign = 'center',
-			halign = 'left',
+            classes = {cond(feature:try_get("imported", false), cond(feature:try_get("importOverride", false), "accent", "")), "sizeL"},
+			valign = "center",
+			halign = "left",
 			width = 340,
 			textWrap = true,
-			height = 'auto',
+			height = "auto",
 
             create = function(element)
             end,
@@ -220,12 +216,11 @@ local CreateFeatureSummary = function(feature, featuresList, index, parentPanel,
 			end,
 		},
 
-		gui.DeleteItemButton{
+		gui.Button{
+			classes = {"deleteButton", "sizeXs"},
 			halign = "right",
 			valign = "center",
-			width = 16,
-			height = 16,
-            requireConfirm = true,
+			requireConfirm = true,
 			click = function(element)
 				table.remove(featuresList, index)
 				parentPanel:FireEvent("change")
@@ -249,7 +244,6 @@ local CreateChoiceEditor = function(feature, featuresList, index, parentPanel, c
 		pointsCostPanel = gui.Input{
 			width = 60,
 			height = 20,
-			fontSize = 16,
 			characterLimit = 3,
 			placeholderText = "Points...",
 			text = tostring(feature:try_get("pointsCost", "")),
@@ -297,9 +291,7 @@ local CreateChoiceEditor = function(feature, featuresList, index, parentPanel, c
 	local body
 
 	local nameLabel = gui.Label{
-            classes = {cond(feature:try_get("imported", false), cond(feature:try_get("importOverride", false), "override", "imported"))},
-			fontSize = 18,
-			bold = true,
+            classes = {cond(feature:try_get("imported", false), cond(feature:try_get("importOverride", false), "accent", "")), "sizeL", "bold"},
 			width = 320,
 			lmargin = 20,
 			height = "auto",
@@ -313,10 +305,8 @@ local CreateChoiceEditor = function(feature, featuresList, index, parentPanel, c
     local importedLabel = nil
     if feature:try_get("imported", false) then
         importedLabel = gui.Label{
-            classes = {cond(feature:try_get("importOverride", false), "override", "imported")},
+            classes = {cond(feature:try_get("importOverride", false), "accent", ""), "sizeM", "bold"},
             text = cond(feature:try_get("importOverride", false), "Overwrite", "Imported"),
-            bold = true,
-            fontSize = 16,
             halign = "right",
             valign = "center",
             width = 100,
@@ -331,12 +321,11 @@ local CreateChoiceEditor = function(feature, featuresList, index, parentPanel, c
         pointsCostPanel,
         importedLabel,
 
-		gui.DeleteItemButton{
+		gui.Button{
+			classes = {"deleteButton", "sizeXs"},
 			halign = "right",
 			valign = "center",
 			hmargin = 8,
-			width = 16,
-			height = 16,
             requireConfirm = true,
 			click = function(element)
 				resultPanel:FireEvent("delete")
@@ -548,11 +537,10 @@ local CreateChoiceEditor = function(feature, featuresList, index, parentPanel, c
 		local dropdown = gui.Dropdown{
 			height = 30,
 			width = 220,
-			fontSize = 14,
 			halign = "left",
 
 			idChosen = "none",
-			options = CharacterPrerequisite.options, 
+			options = CharacterPrerequisite.options,
 			change = function(element)
 				if element.idChosen ~= 'none' then
 					feature:get_or_add("prerequisites", {})
@@ -744,31 +732,7 @@ function ClassLevel:CreateEditor(classOrRace, levelNum, params)
 		height = "auto",
 		flow = "vertical",
 
-		styles = ThemeEngine.MergeTokens({
-			Styles.ImplementationIcon,
-            {
-                selectors = {"imported"},
-                color = "@fgMuted",
-            },
-            {
-                selectors = {"imported", "hover"},
-                color = "@fg",
-            },
-            {
-                selectors = {"override"},
-                color = "@success",
-            },
-            -- Header strip on each level row (folded in from the local
-            -- inline `styles =` that used to live on the header panel).
-            {
-                selectors = {"header"},
-                bgcolor = "@bg",
-            },
-            {
-                selectors = {"header", "hover"},
-                bgcolor = "@bgAlt",
-            },
-		}),
+		styles = ThemeEngine.GetStyles(),
 
 		paste = function(element, item, index)
 			item = DeepCopy(item)
@@ -867,13 +831,12 @@ function ClassLevel:CreateEditor(classOrRace, levelNum, params)
 
 			children[#children+1] = gui.Dropdown{
 
-				idChosen = 'none',
+				idChosen = "none",
 				options = featureOptions,
 
 				width = 340,
 				height = 30,
-				fontSize = 16,
-				
+
 				change = function(element)
                     if g_registeredCharacterChoices[element.idChosen] ~= nil then
                         local t = g_registeredCharacterChoices[element.idChosen].type
@@ -996,11 +959,11 @@ local SetClass = function(tableName, classPanel, classid)
 		},
 
 		gui.Label{
+			classes = {"sizeXs"},
 			text = "1000x1500 image",
 			width = "auto",
 			height = "auto",
 			halign = "center",
-			fontSize = 12,
 		},
 	}
 
@@ -1036,7 +999,6 @@ local SetClass = function(tableName, classPanel, classid)
 				idChosen = tostring(class.hit_die),
 				width = 200,
 				height = 40,
-				fontSize = 20,
 				change = function(element)
 					class.hit_die = tonumber(element.idChosen)
 					UploadClass()
@@ -1079,7 +1041,6 @@ local SetClass = function(tableName, classPanel, classid)
 				idChosen = class.primaryClassId,
 				width = 200,
 				height = 40,
-				fontSize = 20,
 				change = function(element)
 					class.primaryClassId = element.idChosen
 					class:ForceDomains()
@@ -1116,10 +1077,9 @@ local SetClass = function(tableName, classPanel, classid)
 	class:CustomEditor(UploadClass, children)
 
     children[#children+1] = gui.Label{
-        fontSize = 22,
+        classes = {"sizeXl", "bold"},
         width = "auto",
         height = "auto",
-        bold = true,
         text = "Tutorial",
     }
 
@@ -1127,10 +1087,9 @@ local SetClass = function(tableName, classPanel, classid)
 
 
     children[#children+1] = gui.Label{
-        fontSize = 22,
+        classes = {"sizeXl", "bold"},
         width = "auto",
         height = "auto",
-        bold = true,
         text = "Levels",
     }
 
@@ -1156,28 +1115,40 @@ function Class.CreateLevelEditor(children, class, UploadClass, startLevel, finis
 
 		local tri = gui.Panel{
 			classes = {"triangle"},
-			height = "30%",
-			width = "100% height",
+			floating = true,
+			halign = "left",
+			valign = "center",
+			x = 2,
+			styles = {
+				{
+					selectors = {"triangle"},
+					rotate = 90,
+					transitionTime = 0.2,
+				},
+				{
+					selectors = {"triangle", "expanded"},
+					rotate = 0,
+					transitionTime = 0.2,
+				},
+			},
 		}
 
 		local classLevel = class:GetLevel(i, subkey)
 
 		local summaryLabel = gui.Label{
-			fontSize = 20,
-			color = "white",
+			classes = {"sizeL"},
 			halign = "left",
 			valign = "center",
 			width = "auto",
 			height = "auto",
-			text = cond(#classLevel.features > 0, string.format("(%d %s)", #classLevel.features, cond(#classLevel.features > 1, "features", "feature")), ''),
+			text = cond(#classLevel.features > 0, string.format("(%d %s)", #classLevel.features, cond(#classLevel.features > 1, "features", "feature")), ""),
 			update = function(element)
-				element.text = cond(#classLevel.features > 0, string.format("(%d %s)", #classLevel.features, cond(#classLevel.features > 1, "features", "feature")), '')
+				element.text = cond(#classLevel.features > 0, string.format("(%d %s)", #classLevel.features, cond(#classLevel.features > 1, "features", "feature")), "")
 			end,
 		}
 
 		local editorPanel = classLevel:CreateEditor(class, i, {
-			classes = {"collapsed-anim"},
-			hmargin = 40,
+			classes = {"featureCardBody", "collapsed-anim"},
 			change = function(element)
 				class:ForceDomains()
 				UploadClass()
@@ -1186,16 +1157,12 @@ function Class.CreateLevelEditor(children, class, UploadClass, startLevel, finis
 		})
 
 		local header = gui.Panel{
-			classes = {"header"},
-			height = 30,
-			width = "100%",
-			flow = "horizontal",
-			bgimage = "panels/square.png",
+			classes = {"featureCardHeader"},
 			tri,
 			gui.Label{
-                classes = {"searchableLabel"},
+				classes = {"searchableLabel", "sizeL", "bold"},
+				lmargin = 20,
 				hmargin = 8,
-				fontSize = 20,
 				halign = "left",
 				valign = "center",
 				width = "auto",
@@ -1208,29 +1175,29 @@ function Class.CreateLevelEditor(children, class, UploadClass, startLevel, finis
 			click = function(element)
 				editorPanel:SetClass("collapsed-anim", not editorPanel:HasClass("collapsed-anim"))
 				tri:SetClass("expanded", not editorPanel:HasClass("collapsed-anim"))
+				element:SetClass("expanded", tri:HasClass("expanded"))
 			end,
 
-            searchCompendium = function(element, text)
-                if text == "" then
-                    element:SetClassTree("searching", false)
-                    element:SetClassTree("matchSearch", false)
-                    return
-                end
+			searchCompendium = function(element, text)
+				if text == "" then
+					element:SetClassTree("searching", false)
+					element:SetClassTree("matchSearch", false)
+					return
+				end
 
-                element:SetClassTree("searching", true)
-                if MatchesSearchRecursive(classLevel, text) then
-                    element:SetClassTree("matchSearch", true)
-                else
-                    element:SetClassTree("matchSearch", false)
-                end
-            end,
-
+				element:SetClassTree("searching", true)
+				if MatchesSearchRecursive(classLevel, text) then
+					element:SetClassTree("matchSearch", true)
+				else
+					element:SetClassTree("matchSearch", false)
+				end
+			end,
 		}
 
 		local panel = gui.Panel{
-			height = 'auto',
+			classes = {"featureCard"},
+			height = "auto",
 			width = 1100,
-			flow = 'vertical',
 			halign = "left",
 
 			header,
@@ -1275,15 +1242,14 @@ function Class.CreateEditor()
 		classes = 'class-panel',
 		styles = {
 			{
-				classes = {'class-panel'},
+				classes = {"class-panel"},
 				width = "100%-160",
-				height = '90%',
+				height = "90%",
 				maxWidth = 1200,
-				halign = 'left',
-				flow = 'vertical',
+				halign = "left",
+				flow = "vertical",
 				pad = 20,
 			},
-			Styles.ImplementationIcon,
 		},
 	}
 
@@ -1393,13 +1359,13 @@ function CharacterFeatureChoice:CreateEditor(classOrRace, params)
                     local label = nil
                     if resolved == nil then
                         label = gui.Label{
+                            classes = {"danger"},
                             text = "Inheriting choices from an invalid reference.",
-                            color = "#ff5555",
                         }
                     else
                         label = gui.Label{
+                            classes = {"success"},
                             text = string.format("Inheriting choices from: %s", resolved.name),
-                            color = "#55ff55",
                         }
                     end
 
@@ -1408,20 +1374,19 @@ function CharacterFeatureChoice:CreateEditor(classOrRace, params)
                         width = "auto",
                         height = "auto",
                         label,
-                        gui.DeleteItemButton{
+                        gui.Button{
+                            classes = {"deleteButton", "sizeXs"},
                             floating = true,
                             halign = "right",
                             valign = "center",
                             x = 16,
-                            width = 12,
-                            height = 12,
                             requireConfirm = true,
                             click = function(element)
                                 table.remove(self.inheritChoice, i)
-                                resultPanel:FireEvent('create')
-                                resultPanel:FireEvent('change')
+                                resultPanel:FireEvent("create")
+                                resultPanel:FireEvent("change")
                             end,
-                        }
+                        },
                     }
                 end
             end
@@ -1622,18 +1587,19 @@ function CharacterSubclassChoice:CreateEditor(class, params)
 			local subclassesTable = dmhub.GetTable("subclasses") or {}
 			for k,subclass in pairs(subclassesTable) do
 				if subclass.primaryClassId == self.classid and subclass:try_get("hidden", false) == false then
+					local rowClass = (#children % 2 == 0) and "evenRow" or "oddRow"
 					children[#children+1] = gui.Panel{
-						width = '100%',
+						classes = {"row", rowClass},
+						width = "100%",
 						height = 20,
 
 						gui.Label{
+							classes = {"sizeM"},
 							text = subclass.name,
-							height = 'auto',
-							width = 'auto',
+							height = "auto",
+							width = "auto",
 							minWidth = 200,
-							fontSize = 16,
-							color = 'white',
-							valign = 'center',
+							valign = "center",
 						},
 					}
 				end
@@ -1793,22 +1759,19 @@ mod.shared.StartingEquipmentEditor = function(options)
 
 			local entryChildren = {
 				gui.Label{
-					fontSize = 22,
-					underline = true,
+					classes = {"sizeXl", "bold", "underline"},
 					text = string.format(tr("Starting Equipment %d"), i),
-					bold = true,
 					halign = "left",
 					width = "auto",
 					height = "auto",
 
-					gui.DeleteItemButton{
+					gui.Button{
+						classes = {"deleteButton", "sizeXs"},
 						floating = true,
 						x = 32,
-						width = 16,
-						height = 16,
 						valign = "top",
 						halign = "right",
-                        requireConfirm = true,
+						requireConfirm = true,
 						click = function(element)
 							table.remove(startingEquipment, i)
 							Change()
@@ -1820,20 +1783,19 @@ mod.shared.StartingEquipmentEditor = function(options)
 			for j,option in ipairs(equipmentEntry.options) do
 				if #equipmentEntry.options > 1 then
 					entryChildren[#entryChildren+1] = gui.Label{
-						fontSize = 18,
+						classes = {"sizeL"},
 						text = string.format(tr("Option %d"), j),
 						halign = "left",
 						width = "auto",
 						height = "auto",
 
-						gui.DeleteItemButton{
+						gui.Button{
+							classes = {"deleteButton", "sizeXs"},
 							floating = true,
 							x = 16,
-							width = 16,
-							height = 16,
 							valign = "top",
 							halign = "right",
-                            requireConfirm = true,
+							requireConfirm = true,
 							click = function(element)
 								table.remove(equipmentEntry.options, j)
 								Change()
@@ -1849,7 +1811,7 @@ mod.shared.StartingEquipmentEditor = function(options)
 						width = "100%",
 						height = 32,
 						gui.Label{
-							fontSize = 16,
+							classes = {"sizeM"},
 							halign = "left",
 							valign = "center",
 							width = 200,
@@ -1857,7 +1819,6 @@ mod.shared.StartingEquipmentEditor = function(options)
 							text = (inventoryTable[itemEntry.itemid] or equipmentCategoriesTable[itemEntry.itemid] or currencyTable[itemEntry.itemid]).name,
 						},
 						gui.Input{
-							fontSize = 16,
 							width = 60,
 							height = 20,
 							valign = "center",
@@ -1873,11 +1834,11 @@ mod.shared.StartingEquipmentEditor = function(options)
 								end
 								Change()
 							end,
-						}
+						},
 					}
 				end
 
-				
+
 				entryChildren[#entryChildren+1] = gui.Dropdown{
 					options = itemOptions,
 					idChosen = "add",
@@ -1900,7 +1861,7 @@ mod.shared.StartingEquipmentEditor = function(options)
 			end
 
 			entryChildren[#entryChildren+1] = gui.Button{
-				fontSize = 18,
+				classes = {"sizeS"},
 				vmargin = 8,
 				text = "Add Option",
 				click = function(element)
@@ -1925,7 +1886,7 @@ mod.shared.StartingEquipmentEditor = function(options)
 		end
 
 		children[#children+1] = gui.Button{
-			fontSize = 18,
+			classes = {"sizeS"},
 			text = "Add Equipment",
 			click = function(element)
 				startingEquipment[#startingEquipment+1] = {

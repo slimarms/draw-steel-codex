@@ -135,9 +135,10 @@ function BackgroundCharacteristic.EmbedEditor(parentFeature, children, onchange)
 					classes = {"featureCardHeader"},
 					tri,
 					gui.Label{
-						fontSize = 18,
-						bold = true,
-						width = 320,
+						classes = {"sizeL", "bold"},
+						-- fontSize = 18,
+						-- bold = true,
+						width = "auto",
 						lmargin = 20,
 						height = "auto",
 						halign = "left",
@@ -163,6 +164,7 @@ function BackgroundCharacteristic.EmbedEditor(parentFeature, children, onchange)
 					click = function(element)
 						body:SetClass("collapsed-anim", not body:HasClass("collapsed-anim"))
 						tri:SetClass("expanded", not tri:HasClass("expanded"))
+						element:SetClass("expanded", tri:HasClass("expanded"))
 						m_expandedCharacteristics[index] = tri:HasClass("expanded")
 					end,
 					rightClick = function(element)

@@ -1093,7 +1093,7 @@ local function buildTriggerModeControl(ability, refreshSection)
                     classes = selected and {"bordered", "bgAccent"} or {"bordered"},
                     width = 14,
                     height = 14,
-                    cornerRadius = 7,
+                    cornerRadius = 7, -- half height/width to ensure circular
                     rmargin = 8,
                     halign = "left",
                     valign = "center",
