@@ -4063,6 +4063,7 @@ function gui.ImplementationStatusPanel(options)
 
 
 	resultPanel = {
+		styles = ThemeEngine.ForceSafety() and ThemeEngine.GetStyles() or nil,
 		width = 148,
 		height = 32,
 		flow = "horizontal",
