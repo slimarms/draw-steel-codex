@@ -4725,11 +4725,13 @@ function ActivatedAbilityCastSpellBehavior:EditorItems(parentPanel)
 	return result
 end
 
+--[==[ DEAD_CODE - overridden by Draw Steel Core Rules\DSAugmentAbilities.lua:159
 function ActivatedAbilityAugmentedAbilityBehavior:EditorItems(parentPanel)
 	local result = {}
 	self:AbilityModifierEditor(parentPanel, result)
 	return result
 end
+--]==]
 
 function ActivatedAbilityAuraBehavior:EditorItems(parentPanel)
 	local result = {}

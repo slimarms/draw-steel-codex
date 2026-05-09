@@ -1466,12 +1466,16 @@ end
 
 --- Creates a custom dropdown panel for this feature, or returns nil for the default.
 --- @return nil|Panel
+--[==[ DEAD_CODE - overridden by Draw Steel Core Rules\MCDMCharacterBuilder.lua:284
 function CharacterFeature:CreateDropdownPanel()
     return nil
 end
+--]==]
 
 --- Returns true if this feature type provides a custom dropdown panel.
 --- @return boolean
+--[==[ DEAD_CODE - overridden by Draw Steel Core Rules\MCDMCharacterBuilder.lua:341
 function CharacterFeature:HasCustomDropdownPanel()
     return false
 end
+--]==]

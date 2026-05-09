@@ -948,8 +948,10 @@ function ClassLevel:CreateEditor(classOrRace, levelNum, params)
 	return resultPanel
 end
 
+--[==[ DEAD_CODE - overridden by Draw Steel Core Rules\MCDMClass.lua:312
 function Class:CustomEditor(UploadFn, panels)
 end
+--]==]
 
 local SetClass = function(tableName, classPanel, classid)
 	local classTable = dmhub.GetTable(tableName) or {}
