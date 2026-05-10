@@ -132,6 +132,18 @@ Compose `{dropdown, expandedTop}` / `{dropdown, expandedBottom}` to adjust the b
 - `{panel, multiselectChipRemove}` — small X button, hidden until parent chip is hovered. Carries a `@danger` border (no fill) to signal the destructive action.
 - `{label, multiselectChipRemove}` — the X glyph itself. Color is `@fg` (not `@danger`) — the parent's red border carries the warning, the X just needs to be readable.
 
+**Reusable as a compact delete affordance.** `multiselectChipRemove` is not Multiselect-specific — reach for it anywhere you need a small (14x14) inline dismiss/delete control (list rows, tag pills, summary lines, etc.). Compose it as a panel with an "X" label child:
+
+```lua
+gui.Panel{
+    classes = {"multiselectChipRemove"},
+    press = onRemove,
+    gui.Label{ classes = {"multiselectChipRemove"}, text = "X" },
+}
+```
+
+The `parent:hover` rule keeps it hidden until the enclosing hover-host is hovered. If you want it always visible, override `hidden = 0` inline at the call site (or don't nest it under a hover-host).
+
 #### Slider
 
 Two distinct widgets share this section:
@@ -300,9 +312,11 @@ Use to highlight a single label or panel without authoring a rule.
 #### Shape / weight
 
 - `{bordered}` — adds a 1px `@border` frame and `bgimage = true` so the border renders. Compose with anything that needs a quick frame.
+- '{noBorder}` - removes any border from the control.
 - `{bold}` / `{noBold}` — flip weight. Both carry `priority = 5` so they beat the base rule.
 - `{underline}` — typographic underline. Same `priority = 5` shape as `{bold}`. Compose with size classes when you want emphasis on a heading without authoring a one-off rule.
 - `{monospace}` — fixed-width font for code/script display (Lua editor body, expression-tree nodes, formula source text). Picks up the active theme's `@mono` font token (default `"Courier"`). Compose with size classes for the right text size.
+- `{transparent}` — clears `bgcolor` (`bgcolor = "clear"`) at `priority = 5` so it overrides the base rule. Compose anywhere you've inherited a fill you don't want — e.g. a row inside a card that should let the card's surface paint through, or a button whose cascade gave it a `@bg` it shouldn't have. Affects fill only; borders, text color, and `bgimage` are untouched.
 
 #### Token image
 

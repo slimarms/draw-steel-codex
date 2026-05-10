@@ -198,6 +198,7 @@ gui.iconButtonClasses = {
 			actionText = "Delete",
 		},
 	},
+	pagingArrow = {},
 	settingsButton = {},
 }
 

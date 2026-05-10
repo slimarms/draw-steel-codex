@@ -37,129 +37,7 @@ local g_tabbedViewer = nil
 -- Tab system sizes
 local TAB_HEIGHT = 18
 local TAB_MAX_WIDTH = 200
-local TAB_FONT_SIZE = 12
-local TAB_CLOSE_SIZE = 16
-local TAB_CLOSE_FONT = 10
 local TAB_BAR_HEIGHT = TAB_HEIGHT + 6
-local TAB_ARROW_WIDTH = 20
-
--- Tab system styles. Built fresh per call so @-token references resolve
--- against the active scheme. Returns a styles array suitable for spreading
--- into a panel's `styles` arg.
-local function BuildJournalTabStyles()
-    return ThemeEngine.MergeTokens({
-        {
-            selectors = {"panel", "journalTabBarOuter"},
-            bgimage = true,
-            bgcolor = "@bg",
-            height = TAB_BAR_HEIGHT,
-            width = "100%",
-            flow = "horizontal",
-            borderColor = "@accent",
-            border = { x1 = 0, y1 = 1, x2 = 0, y2 = 0 },
-        },
-        {
-            selectors = {"panel", "journalTabBar"},
-            bgimage = true,
-            bgcolor = "@bg",
-            height = TAB_BAR_HEIGHT,
-            width = "100%-70",
-            flow = "horizontal",
-            halign = "left",
-            valign = "top",
-            borderColor = "@accent",
-            border = { x1 = 0, y1 = 1, x2 = 0, y2 = 0 },
-        },
-        {
-            selectors = {"panel", "journalTab"},
-            bgimage = true,
-            bgcolor = "@bg",
-            height = TAB_HEIGHT,
-            width = "auto",
-            maxWidth = TAB_MAX_WIDTH,
-            flow = "horizontal",
-            halign = "left",
-            valign = "bottom",
-            hpad = 8,
-            vpad = 4,
-            cornerRadius = { x1 = 4, y1 = 4, x2 = 0, y2 = 0 },
-            border = { x1 = 0, y1 = 1, x2 = 0, y2 = 0 },
-            borderColor = "@accent",
-        },
-        {
-            selectors = {"panel", "journalTab", "hover"},
-            brightness = 1.3,
-            transitionTime = 0.15,
-        },
-        {
-            selectors = {"panel", "journalTab", "selected"},
-            bgcolor = "@bgAlt",
-            brightness = 1,
-            border = { x1 = 1, y1 = 0, x2 = 1, y2 = 1 },
-            borderColor = "@accent",
-        },
-        {
-            selectors = {"label", "journalTabBubbleIcon"},
-            width = TAB_HEIGHT - 4,
-            height = TAB_HEIGHT - 4,
-            bgimage = "panels/square.png",
-            bgcolor = "@bg",
-            borderWidth = 1,
-            borderColor = "@fgStrong",
-            cornerRadius = "50% height",
-            textAlignment = "center",
-            fontSize = TAB_FONT_SIZE - 2,
-            color = "@fgStrong",
-            valign = "center",
-            rmargin = 4,
-        },
-        {
-            selectors = {"label", "journalTabLabel"},
-            width = "auto",
-            height = "auto",
-            fontSize = TAB_FONT_SIZE,
-            color = "@fgStrong",
-            valign = "center",
-            textWrap = false,
-            textOverflow = "ellipsis",
-            maxWidth = TAB_MAX_WIDTH - 40,
-            rmargin = 6,
-        },
-        {
-            selectors = {"panel", "journalTabClose"},
-            width = TAB_CLOSE_SIZE,
-            height = TAB_CLOSE_SIZE,
-            halign = "right",
-            valign = "center",
-            bgimage = true,
-            bgcolor = "@bgAlt",
-            border = 1,
-            borderColor = "@danger",
-            cornerRadius = 2,
-        },
-        {
-            selectors = {"panel", "journalTabClose", "hover"},
-            brightness = 1.5,
-        },
-        {
-            selectors = {"label", "journalTabCloseLabel"},
-            width = "100%",
-            height = "100%",
-            halign = "center",
-            valign = "center",
-            textAlignment = "center",
-            fontSize = TAB_CLOSE_FONT,
-            color = "@danger",
-        },
-        -- Tab scroll arrows
-        {
-            selectors = {"journalTabArrow"},
-            height = TAB_BAR_HEIGHT,
-            width = TAB_ARROW_WIDTH,
-            valign = "center",
-        },
-    })
-end
 
 function CustomDocument.Register(args)
     CustomDocument.documentTypes[args.id] = args
@@ -654,24 +532,12 @@ function CustomDocument:CreateInterface(args)
     local m_bubbleIconInput = nil
     if args.bubbleIcon then
         m_bubbleIconInput = gui.Input {
-            classes = {"bubbleIconInput"},
-            styles = ThemeEngine.MergeTokens({
-                {
-                    selectors = {"bubbleIconInput"},
-                    bgcolor = "@bg",
-                    color = "@fgStrong",
-                    borderColor = "@fgStrong",
-                },
-            }),
             text = args.bubbleIcon,
-            bgimage = "panels/square.png",
             cornerRadius = "50% height",
-            borderWidth = 1,
             width = 25,
             height = 25,
             hpad = 0,
             vpad = 0,
-            fontSize = 13,
             valign = "center",
             textAlignment = "center",
             characterLimit = 3,
@@ -782,6 +648,7 @@ function CustomDocument:CreateInterface(args)
     if dmhub.isDM then --and not args.presentationMode then
     -- Present to Players
         m_presentButton = gui.Button {
+            classes = {"sizeS"},
             icon = "icons/icon_app/icon_app_34.png",
             escapeActivates = false,
             halign = "left",
@@ -790,13 +657,13 @@ function CustomDocument:CreateInterface(args)
             think = function(element)
                 local presentedDialog = GameHud.instance.GetCurrentlyPresentedDialog()
                 if presentedDialog ~= nil and presentedDialog.dialog == "document" and presentedDialog.args.docid == self.id then
-                    element:SetClass("active", true)
+                    element:SetClass("selected", true)
                 else
-                    element:SetClass("active", false)
+                    element:SetClass("selected", false)
                 end
             end,
             press = function(element)
-                if element:HasClass("active") then
+                if element:HasClass("selected") then
                     GameHud.HidePresentedDialog()
                 else
                     --make it so just closing out of present mode doesn't close the dialog for us.
@@ -806,7 +673,7 @@ function CustomDocument:CreateInterface(args)
             end,
             destroy = function(element)
                 --make sure when we close this dialog we stop it being presented.
-                if element:HasClass("active") then
+                if element:HasClass("selected") then
                     GameHud.HidePresentedDialog()
                 end
             end,
@@ -816,24 +683,23 @@ function CustomDocument:CreateInterface(args)
         }
     end
 
-
-
     if self:HaveEditPermissions() and not args.presentationMode then
         -- Preview as player
         m_playerPreviewButton = gui.Button {
+            classes = {"sizeS"},
             icon = "icons/icon_game/icon_game_193.png",
             escapeActivates = false,
             halign = "left",
             hmargin = 4,
             press = function(element)
-                if m_editingButton ~= nil and m_editingButton:HasClass("active") then
+                if m_editingButton ~= nil and m_editingButton:HasClass("selected") then
                     --if we are editing, stop editing.
                     m_editingButton:FireEvent("press")
                 end
                 resultPanel:SetClass("playerPreview", not resultPanel:HasClass("playerPreview"))
                 element:SetClass("playerPreview", resultPanel:HasClass("playerPreview"))
-                resultPanel:SetClass("active", not resultPanel:HasClass("active"))
-                element:SetClass("active", resultPanel:HasClass("active"))
+                resultPanel:SetClass("selected", not resultPanel:HasClass("selected"))
+                element:SetClass("selected", resultPanel:HasClass("selected"))
                 resultPanel:FireEventTree("refreshDocument")
             end,
             hover = function(element)
@@ -843,6 +709,7 @@ function CustomDocument:CreateInterface(args)
 
         --editing button.
         m_editingButton = gui.Button {
+            classes = {"sizeS"},
             icon = "icons/icon_tool/icon_tool_79.png",
             escapeActivates = false,
             halign = "left",
@@ -858,10 +725,10 @@ function CustomDocument:CreateInterface(args)
                 end
                 writePanel:SetClass("collapsed", not writePanel:HasClass("collapsed"))
                 readPanel:SetClass("collapsed", not readPanel:HasClass("collapsed"))
-                element:SetClass("active", not writePanel:HasClass("collapsed"))
+                element:SetClass("selected", not writePanel:HasClass("collapsed"))
                 m_titlePanel:SetClass("collapsed", writePanel:HasClass("collapsed"))
 
-                element.thinkTime = cond(element:HasClass("active"), 1)
+                element.thinkTime = cond(element:HasClass("selected"), 1)
             end,
 
             think = function(element)
@@ -883,6 +750,7 @@ function CustomDocument:CreateInterface(args)
 
     -- Back button
     m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.Button {
+        classes = {"sizeS"},
         icon = "icons/icon_arrow/icon_arrow_28.png",
         escapeActivates = false,
         halign = "left",
@@ -909,6 +777,7 @@ function CustomDocument:CreateInterface(args)
 
     -- Forward button
     m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.Button {
+        classes = {"sizeS"},
         icon = "icons/icon_arrow/icon_arrow_28.png",
         escapeActivates = false,
         halign = "left",
@@ -934,6 +803,7 @@ function CustomDocument:CreateInterface(args)
 
     -- Zoom out
     m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.Button {
+        classes = {"sizeS"},
         icon = "icons/icon_tool/icon_tool_41.png",
         escapeActivates = false,
         halign = "left",
@@ -951,6 +821,7 @@ function CustomDocument:CreateInterface(args)
 
     -- Zoom in
     m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.Button {
+        classes = {"sizeS"},
         icon = "icons/icon_tool/icon_tool_40.png",
         escapeActivates = false,
         halign = "left",
@@ -976,6 +847,7 @@ function CustomDocument:CreateInterface(args)
         if self:HaveEditPermissions() then
             -- Edit external
             m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.Button {
+                classes = {"sizeS"},
                 icon = "ui-icons/icon-scale.png",
                 escapeActivates = false,
                 halign = "left",
@@ -984,7 +856,7 @@ function CustomDocument:CreateInterface(args)
                     if resultPanel.data.watcher ~= nil then
                         resultPanel.data.watcher:Destroy()
                         resultPanel.data.watcher = nil
-                        element:SetClass("active", resultPanel.data.watcher ~= nil)
+                        element:SetClass("selected", resultPanel.data.watcher ~= nil)
                         return
                     end
                     resultPanel.data.watcherContent = self:GetTextContent()
@@ -1007,7 +879,7 @@ function CustomDocument:CreateInterface(args)
                             resultPanel:FireEventTree("refreshDocument")
                             self:Upload(original)
                         end)
-                    element:SetClass("active", resultPanel.data.watcher ~= nil)
+                    element:SetClass("selected", resultPanel.data.watcher ~= nil)
                 end,
                 hover = function(element)
                     gui.Tooltip("Edit in External Editor")(element)
@@ -1039,21 +911,17 @@ function CustomDocument:CreateInterface(args)
     }
 
     local m_breadcrumb = gui.Label {
+        classes = {"fgMuted"},
         text = buildBreadcrumbText(self),
         halign = "left",
         valign = "center",
         width = "auto",
         maxWidth = "60%",
         height = "auto",
-        fontSize = 16,
         markdown = true,
         lmargin = 8,
         textOverflow = "ellipsis",
         textWrap = false,
-        styles = ThemeEngine.MergeTokens({
-            { color = "@fgMuted" },
-            { selectors = {"hover"}, color = "@fgStrong" },
-        }),
         press = function(element)
             if element.popup then
                 element.popup = nil
@@ -1080,13 +948,12 @@ function CustomDocument:CreateInterface(args)
     }
 
     local m_searchInput = gui.SearchInput {
+        classes = {"sizeXs", "noBorder"},
         width = 200,
         height = 16,
         halign = "right",
         valign = "center",
-        fontSize = 12,
         rmargin = 4,
-        border = 0,
         bgcolor = "clear",
         placeholderText = "Search journal...",
         popupPositioning = "panel",
@@ -1170,13 +1037,12 @@ function CustomDocument:CreateInterface(args)
     }
 
     local m_topBar = gui.Panel {
-        classes = {"bg"},
+        classes = {"surfaceLinear"},
         width = "100%",
         height = "auto",
         halign = "center",
         valign = "top",
         flow = "vertical",
-        cornerRadius = { x1 = 4, y1 = 4, x2 = 0, y2 = 0 },
 
         -- Row 1: breadcrumb + search + close
         gui.Panel {
@@ -1207,21 +1073,8 @@ function CustomDocument:CreateInterface(args)
         monitorGame = "/assets/objectTables/documents/table/" .. self.id
     end
 
-    local documentPanelStyles = ThemeEngine.GetStyles()
-    for _, rule in ipairs(ThemeEngine.MergeTokens({
-        {
-            selectors = { "iconButton", "active" },
-            brightness = 2,
-            priority = 20,
-            bgcolor = "@accent",
-        },
-    })) do
-        documentPanelStyles[#documentPanelStyles + 1] = rule
-    end
-
     resultPanel = gui.Panel {
         classes = {"documentPanel"},
-        styles = documentPanelStyles,
         monitorGame = monitorGame,
         width = "100%",
         height = "100%",
@@ -1499,11 +1352,24 @@ local function CreateTabButton(doc, tabbedViewer, tabId, bubbleIcon)
     local tabButton
     local children = {}
 
+    local tabLabelStyles = {
+        {
+            selectors = {"label"},
+            width = "auto",
+            height = "auto",
+            valign = "center",
+            textWrap = false,
+            textOverflow = "ellipsis",
+            maxWidth = TAB_MAX_WIDTH - 40,
+            rmargin = 2,
+        },
+    }
+
     if bubbleIcon then
         children[#children + 1] = gui.Label {
-            classes = {"label", "journalTabLabel"},
+            styles = tabLabelStyles,
+            classes = {"sizeXs", "fgStrong"},
             text = "(" .. bubbleIcon .. ")",
-            rmargin = 2,
             refreshTabBubbleIcon = function(element, docId, newIcon)
                 if docId == tabButton.data.docId then
                     element.text = "(" .. newIcon .. ")"
@@ -1513,7 +1379,8 @@ local function CreateTabButton(doc, tabbedViewer, tabId, bubbleIcon)
     end
 
     children[#children + 1] = gui.Label {
-        classes = {"label", "journalTabLabel"},
+        styles = tabLabelStyles,
+        classes = {"sizeXs", "fgStrong"},
         text = doc.description or "Untitled",
         refreshTabTitle = function(element, docId, newTitle)
             if docId == tabButton.data.docId then
@@ -1523,18 +1390,27 @@ local function CreateTabButton(doc, tabbedViewer, tabId, bubbleIcon)
     }
 
     children[#children + 1] = gui.Panel {
-        classes = {"panel", "journalTabClose"},
+        classes = {"multiselectChipRemove"},
+        hidden = 0,
         press = function(element)
             tabbedViewer:FireEvent("closeTab", tabButton.data.tabId)
         end,
         gui.Label {
-            classes = {"label", "journalTabCloseLabel"},
+            classes = {"multiselectChipRemove"},
             text = "X",
         },
     }
 
     tabButton = gui.Panel {
-        classes = {"panel", "journalTab"},
+        classes = {"panel", "tab", "journalTab"},
+        height = TAB_HEIGHT,
+        width = "auto",
+        maxWidth = TAB_MAX_WIDTH,
+        flow = "horizontal",
+        halign = "left",
+        valign = "bottom",
+        hpad = 8,
+        vpad = 4,
         data = { tabId = tabId, docId = doc.id },
         press = function(element)
             tabbedViewer:FireEvent("switchToTab", element.data.tabId)
@@ -1560,18 +1436,10 @@ function CustomDocument.GetOrCreateTabbedViewer()
 
     local refreshTabVisibility
 
-    local tabArrowDisabledStyle = gui.Style {
-        classes = {"tabArrowDisabled"},
-        opacity = 0.3,
-        -- interactable = false,
-    }
-
-    local tabScrollLeft = gui.PagingArrow {
-        facing = -1,
+    local tabScrollLeft = gui.Button {
+        classes = {"pagingArrow", "left"},
         height = TAB_BAR_HEIGHT / 2,
         valign = "center",
-        halign = "right",
-        styles = {tabArrowDisabledStyle},
         press = function(element)
             local v = element:FindParentWithClass("journalTabbedViewer")
             local tabs = v.data.tabs
@@ -1584,13 +1452,11 @@ function CustomDocument.GetOrCreateTabbedViewer()
         end,
     }
 
-    local tabScrollRight = gui.PagingArrow {
-        facing = 1,
+    local tabScrollRight = gui.Button {
+        classes = {"pagingArrow", "right"},
         height = TAB_BAR_HEIGHT / 2,
         valign = "center",
-        halign = "right",
-        hmargin = 8,
-        styles = {tabArrowDisabledStyle},
+        lmargin = 4,
         press = function(element)
             local v = element:FindParentWithClass("journalTabbedViewer")
             local tabs = v.data.tabs
@@ -1607,7 +1473,7 @@ function CustomDocument.GetOrCreateTabbedViewer()
         classes = {"closeButton", "sizeXs"},
         valign = "center",
         halign = "right",
-        rmargin = 16,
+        hmargin = -4,
         escapePriority = EscapePriority.EXIT_MODAL_DIALOG,
         click = function(element)
             local v = element:FindParentWithClass("journalTabbedViewer")
@@ -1619,15 +1485,18 @@ function CustomDocument.GetOrCreateTabbedViewer()
     }
 
     local tabButtonsPanel = gui.Panel {
-        classes = {"panel", "journalTabBar"},
         valign = "bottom",
-        clip = false,
+        height = TAB_BAR_HEIGHT,
+        width = "auto",
+        flow = "horizontal",
+        halign = "left",
     }
 
     local tabArrowsPanel = gui.Panel {
-        width = 85,
+        width = "auto",
         height = TAB_BAR_HEIGHT,
         halign = "right",
+        rmargin = 8,
         flow = "horizontal",
         tabScrollLeft,
         tabScrollRight,
@@ -1635,8 +1504,10 @@ function CustomDocument.GetOrCreateTabbedViewer()
     }
 
     local tabBar = gui.Panel {
-        classes = {"panel", "journalTabBarOuter"},
+        classes = {"tabContainer"},
         height = "auto",
+        width = "100%",
+        flow = "horizontal",
         tabButtonsPanel,
         tabArrowsPanel,
     }
@@ -1699,9 +1570,9 @@ function CustomDocument.GetOrCreateTabbedViewer()
             tab.tabButton:SetClass("collapsed", i - 1 < offset or i - 1 >= offset + visibleCount)
         end
 
-        tabScrollLeft:SetClass("tabArrowDisabled", activeIdx <= 1)
+        tabScrollLeft:SetClass("disabled", activeIdx <= 1)
         tabScrollLeft.interactable = activeIdx > 1
-        tabScrollRight:SetClass("tabArrowDisabled", activeIdx >= #tabs or #tabs <= 1)
+        tabScrollRight:SetClass("disabled", activeIdx >= #tabs or #tabs <= 1)
         tabScrollRight.interactable = (#tabs > 1 and activeIdx < #tabs)
 
         element.data.visibleCount = visibleCount
@@ -1751,27 +1622,29 @@ function CustomDocument.GetOrCreateTabbedViewer()
         contentArea:AddChild(activeTab.contentPanel)
     end
 
-    local viewerStyles = ThemeEngine.GetStyles()
-    viewerStyles[#viewerStyles + 1] = gui.Style {
-        classes = {"framedPanel"},
-        priority = 5,
-        opacity = 0.98,
-        borderWidth = 0,
-        borderColor = "clear",
-    }
-    viewerStyles[#viewerStyles + 1] = gui.Style {
-        classes = {"framedPanel", "~uiblur"},
-        priority = 5,
-        opacity = 1,
-    }
-    for _, s in ipairs(BuildJournalTabStyles()) do
-        viewerStyles[#viewerStyles + 1] = s
-    end
+    -- local viewerStyles = ThemeEngine.GetStyles()
+    -- viewerStyles[#viewerStyles + 1] = gui.Style {
+    --     classes = {"framedPanel"},
+    --     priority = 5,
+    --     opacity = 0.98,
+    --     borderWidth = 0,
+    --     borderColor = "clear",
+    -- }
+    -- viewerStyles[#viewerStyles + 1] = gui.Style {
+    --     classes = {"framedPanel", "~uiblur"},
+    --     priority = 5,
+    --     opacity = 1,
+    -- }
+    -- for _, s in ipairs(BuildJournalTabStyles()) do
+    --     viewerStyles[#viewerStyles + 1] = s
+    -- end
 
+    -- Outer Journal Panel
     viewer = gui.Panel {
-        styles = viewerStyles,
+        styles = ThemeEngine.GetStyles(), --viewerStyles,
         classes = {"framedPanel", "journalViewer", "journalTabbedViewer"},
-        bgimage = true,
+        border = 0,
+        -- bgimage = true,
         blurBackground = true,
         x = loc.x,
         y = loc.y,
@@ -1998,6 +1871,13 @@ function CustomDocument.GetOrCreateTabbedViewer()
     }
 
     g_tabbedViewer = viewer
+
+    ThemeEngine.OnThemeChanged(mod, function()
+        if g_tabbedViewer ~= nil and g_tabbedViewer.valid then
+            g_tabbedViewer.styles = ThemeEngine.GetStyles()
+        end
+    end)
+
     return viewer
 end
 

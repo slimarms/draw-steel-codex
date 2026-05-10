@@ -283,6 +283,10 @@ ThemeEngine.RegisterTheme{
             width = "100%",
         },
         {
+            selectors = {"panel", "buttonIcon", "parent:disabled"},
+            bgcolor = "@disabled",
+        },
+        {
             selectors = {"panel", "buttonIcon", "hover"},
             brightness = 2,
         },
@@ -329,6 +333,41 @@ ThemeEngine.RegisterTheme{
         },
         {
             selectors = {"label", "sizeXxl"},
+            fontSize = 28,
+            priority = 5,
+        },
+        {
+            selectors = {"input", "sizeXxs"},
+            fontSize = 10,
+            priority = 5,
+        },
+        {
+            selectors = {"input", "sizeXs"},
+            fontSize = 12,
+            priority = 5,
+        },
+        {
+            selectors = {"input", "sizeS"},
+            fontSize = 14,
+            priority = 5,
+        },
+        {
+            selectors = {"input", "sizeM"},
+            fontSize = 16,
+            priority = 5,
+        },
+        {
+            selectors = {"input", "sizeL"},
+            fontSize = 18,
+            priority = 5,
+        },
+        {
+            selectors = {"input", "sizeXl"},
+            fontSize = 24,
+            priority = 5,
+        },
+        {
+            selectors = {"input", "sizeXxl"},
             fontSize = 28,
             priority = 5,
         },
@@ -429,6 +468,7 @@ ThemeEngine.RegisterTheme{
         {
             selectors = {"button", "disabled"},
             bgcolor = "@disabled",
+            opacity = 0.3,
         },
         {
             selectors = {"label", "button", "~disabled", "hasIcon", "hover"},
@@ -931,9 +971,7 @@ ThemeEngine.RegisterTheme{
             selectors = {"tab", "selected"},
             bold = true,
             color = "@fgStrong",
-            bgcolor = "@bgAlt",
-            borderColor = "@fg",
-            borderWidth = 2,
+            border = {x1 = 1, x2 = 1, y1 = 0, y2 = 1},
         },
         {
             selectors = {"tabBar"},
@@ -941,6 +979,9 @@ ThemeEngine.RegisterTheme{
             width = "auto",
             height = "auto",
             halign = "center",
+            bgimage = true,
+            borderColor = "@border",
+            border = {x1 = 0, x2 = 0, y1 = 1, y2 = 0},
         },
 
         --[[ Tooltip ]]
@@ -1086,6 +1127,24 @@ ThemeEngine.RegisterTheme{
             selectors = {"panel", "buttonIcon", "parent:settingsButton"},
             bgimage = "panels/gamescreen/settings.png",
         },
+        -- pagingArrow: the canonical previous/next paging chevron.
+        -- Use `gui.Button{ classes = {"pagingArrow"} }` for the left arrow and
+        -- `gui.Button{ classes = {"pagingArrow", "right"} }` for the right
+        -- arrow (the `right` modifier flips the glyph horizontally). This
+        -- pattern REPLACES the legacy `gui.PaginButton` helper -- there is no
+        -- bespoke constructor; pagingArrow is just an iconButton kind class
+        -- registered in `gui.iconButtonClasses` (Gui.lua), painted here.
+        {
+            selectors = {"panel", "buttonIcon", "parent:pagingArrow"},
+            bgimage = "panels/InventoryArrow.png",
+            width = "50% height",
+            halign = "right",
+        },
+        {
+            selectors = {"panel", "buttonIcon", "parent:pagingArrow", "parent:right"},
+            scale = {x = -1, y = 1},
+            halign = "left",
+        },
         -- Inset the icon to be smaler when the button carries the `bordered`
         -- class, so the glyph doesn't crowd the border. Targets buttonIcon under
         -- both Button paths (icon-only iconButton and legacy text+icon label).
@@ -1119,7 +1178,7 @@ ThemeEngine.RegisterTheme{
         },
         {
             selectors = {"panel", "buttonIcon", "parent:selected"},
-            bgcolor = "@fgInverse",
+            brightness = 2,
         },
 
         --[[
@@ -1132,8 +1191,18 @@ ThemeEngine.RegisterTheme{
             borderColor = "@border",
         },
         {
+            selectors = {"noBorder"},
+            border = 0,
+            priority = 5,
+        },
+        {
             selectors = {"bold"},
             bold = true,
+            priority = 5,
+        },
+        {
+            selectors = {"transparent"},
+            bgcolor = "clear",
             priority = 5,
         },
         {

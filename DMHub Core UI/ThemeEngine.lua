@@ -25,6 +25,18 @@ local mod = dmhub.GetModLoading()
 ---     means zero exceptions to maintain.
 ---   `parent:*` / `~classname` are selector grammar (parent-state and
 ---     negation), not class names; they're untouched by the rule.
+---
+--- Kind-class buttons (icon-only): a small set of registered class names
+--- (see `gui.iconButtonClasses` in Gui.lua) make `gui.Button` take the
+--- icon-only render path and let `parent:<kind>` rules in the iconButton
+--- family supply the bgimage. Use these instead of bespoke constructors:
+---   gui.Button{ classes = {"pagingArrow"} }            -- previous arrow
+---   gui.Button{ classes = {"pagingArrow", "right"} }   -- next arrow
+--- The `pagingArrow` kind class is the canonical replacement for the
+--- legacy `gui.PaginButton` helper -- there is no `gui.PaginButton`; route
+--- paging chevrons through `gui.Button` + the `pagingArrow` class so the
+--- chrome, hit-target, hover/press cascade, and bgimage all come from the
+--- iconButton theme rules in DefaultStyles.lua.
 --- @class ThemeEngine
 ThemeEngine = {} --RegisterGameType("ThemeEngine")
 

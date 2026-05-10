@@ -963,18 +963,8 @@ function MarkdownDocument.DisplayPanel(self, args)
     local m_blockquotes = {}
     local m_tokenExtraInfo = {}
 
-    local function BuildDisplayStyles()
-        return ThemeEngine.MergeStyles({
-            {
-                selectors = {"label"},
-                color = "@fg",
-                priority = 5,
-            },
-        })
-    end
-
     local params = {
-        styles = BuildDisplayStyles(),
+        styles = ThemeEngine.GetStyles(),
         width = "100%",
         height = "100%",
         flow = "vertical",
@@ -1792,7 +1782,7 @@ function MarkdownDocument.DisplayPanel(self, args)
 
     ThemeEngine.OnThemeChanged(mod, function()
         if resultPanel ~= nil and resultPanel.valid then
-            resultPanel.styles = BuildDisplayStyles()
+            resultPanel.styles = ThemeEngine.GetStyles()
             resultPanel:FireEventTree("refreshDocument")
         end
     end)
