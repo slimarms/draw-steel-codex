@@ -186,6 +186,12 @@ end
 --- @return string
 function CharacterFeature:GetDescription()
 	if self.description == "" then
+
+        if self.modifiers ~= nil and #self.modifiers > 0 and self.modifiers[1].behavior == "activated" then
+            local result = self.modifiers[1].activatedAbility:try_get("flavor", "")
+            return result
+        end
+
 		local result = ""
 		for i,modifier in ipairs(self.modifiers) do
 			local desc = modifier:AutoDescribe()

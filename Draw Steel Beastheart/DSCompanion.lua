@@ -8,12 +8,92 @@ function creature:IsCompanion()
     return false
 end
 
+function creature:GetCompanionToken()
+    local companionid = self.companionid
+    if not companionid then
+        return nil
+    end
+
+    local token = dmhub.GetTokenById(companionid)
+    if token and token.valid then
+        return token
+    end
+
+    return nil
+end
+
+--- Soft-release the beastheart's currently-summoned companion (if any) and
+--- clear the companionid link so the next Call summons a fresh one. The
+--- companion token is despawned (token.despawned = true), not destroyed --
+--- the underlying bestiary entry and any per-token state survive.
+--- @param beastheartToken CharacterToken
+function creature:ReleaseCompanion(beastheartToken)
+    local companionToken = self:GetCompanionToken()
+    if companionToken ~= nil then
+        companionToken.despawned = true
+    end
+
+    if beastheartToken ~= nil and beastheartToken.valid then
+        beastheartToken:ModifyProperties{
+            description = "Released companion",
+            execute = function()
+                beastheartToken.properties.companionid = false
+            end,
+        }
+    end
+end
+
 function AnimalCompanion:IsCompanion()
     return true
 end
 
 function AnimalCompanion:IsMonster()
     return false
+end
+
+-- Skill sharing: per Beastheart "Shared Skills" rule, the companion has any
+-- skill its summoner has and vice versa. We override SkillProficiencyLevel on
+-- both sides; the recursion guard breaks the cycle when each side delegates
+-- to the partner. SkillProficiencyLevel is the right hook because the
+-- character sheet, the skill-check roller, and the expertise UI all read it
+-- (whereas HasSkillProficiency is used by the SkillsDialog to edit the
+-- explicit override table -- "own skills only" semantics are correct there).
+local g_skillshareRecursion = 0
+
+local function PickHigherProficiency(a, b)
+    if a == nil or a.multiplier == nil then return b end
+    if b == nil or b.multiplier == nil then return a end
+    if b.multiplier > a.multiplier then return b end
+    return a
+end
+
+function AnimalCompanion:SkillProficiencyLevel(skillInfo)
+    local own = monster.SkillProficiencyLevel(self, skillInfo)
+    if g_skillshareRecursion > 0 then return own end
+
+    local summoner = self:SummonerToken()
+    if summoner == nil then return own end
+
+    g_skillshareRecursion = g_skillshareRecursion + 1
+    local shared = summoner.properties:SkillProficiencyLevel(skillInfo)
+    g_skillshareRecursion = g_skillshareRecursion - 1
+
+    return PickHigherProficiency(own, shared)
+end
+
+local g_originalCharacterSkillProficiencyLevel = character.SkillProficiencyLevel
+function character.SkillProficiencyLevel(self, skillInfo)
+    local own = g_originalCharacterSkillProficiencyLevel(self, skillInfo)
+    if g_skillshareRecursion > 0 then return own end
+
+    local companionToken = self:GetCompanionToken()
+    if companionToken == nil then return own end
+
+    g_skillshareRecursion = g_skillshareRecursion + 1
+    local shared = companionToken.properties:SkillProficiencyLevel(skillInfo)
+    g_skillshareRecursion = g_skillshareRecursion - 1
+
+    return PickHigherProficiency(own, shared)
 end
 
 function AnimalCompanion:RefreshToken(token)
@@ -25,6 +105,23 @@ function AnimalCompanion:RefreshToken(token)
     local summonerToken = summonerid and dmhub.GetTokenById(self._tmp_summonerid)
     if summonerToken and summonerToken.valid then
         self._tmp_summonerToken = summonerToken
+
+        -- If the summoner has switched companion species (or this companion was
+        -- spawned before the bestiary stamp existed), soft-release it so the
+        -- next Call spawns the correct type. Only the controlling client runs
+        -- the action to avoid duplicate despawns.
+        if (not token.despawned) and summonerToken.canControl then
+            local expectedType = summonerToken.properties:GetCompanionType()
+            local actualType = self:try_get("companionBestiaryId")
+            if expectedType ~= nil and actualType ~= expectedType then
+                local capturedSummoner = summonerToken
+                dmhub.Schedule(0, function()
+                    if mod.unloaded then return end
+                    if not capturedSummoner.valid then return end
+                    capturedSummoner.properties:ReleaseCompanion(capturedSummoner)
+                end)
+            end
+        end
     else
         self._tmp_summonerToken = nil
     end

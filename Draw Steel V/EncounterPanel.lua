@@ -261,7 +261,8 @@ local function createGroupPanel(encounter)
                 panels[#panels + 1] = gui.Panel {
 
                     width = "85%",
-                    height = "65",
+                    height = "auto",
+                    minHeight = 55,
                     border = 1,
                     borderColor = "white",
                     bgimage = true,
@@ -288,7 +289,7 @@ local function createGroupPanel(encounter)
                     gui.Panel {
 
                         width = 50,
-                        height = 65,
+                        height = "auto",
                         borderColor = "white",
                         border = 1,
                         bgimage = true,
@@ -376,7 +377,7 @@ local function createGroupPanel(encounter)
 
                             element.children = panels
 
-                            if #panels >= 3 then
+                            if #panels >= 4 then
                                 element.parent:SetClassTree("full", true)
                             else
                                 element.parent:SetClassTree("full", false)
@@ -385,7 +386,8 @@ local function createGroupPanel(encounter)
 
                     },
 
-                    gui.AddButton {
+                    gui.Button {
+                        classes = {"addButton"},
 
                         halign = "center",
                         valign = "center",
@@ -552,7 +554,8 @@ local function createGroupPanel(encounter)
 
 
 
-                    gui.DeleteItemButton {
+                    gui.Button {
+                        classes = {"deleteButton"},
                         width = 16,
                         height = 16,
                         x = 18,
@@ -938,7 +941,8 @@ function Encounter.Editor(self, options)
             valign = "top",
             tmargin = 5,
 
-            gui.AddButton {
+            gui.Button {
+                classes = {"addButton"},
 
                 halign = "center",
                 valign = "center",
@@ -1035,7 +1039,9 @@ function Encounter.Editor(self, options)
 
 
 
-            gui.AddButton {
+            gui.Button {
+                classes = {"addButton"},
+            
 
                 halign = "center",
                 valign = "center",
@@ -1240,10 +1246,7 @@ function Encounter.CreateEditorDialog(encounter, options)
 
         gui.Panel {
 
-            styles = {
-                Styles.Default,
-                Styles.Panel,
-            },
+            styles = ThemeEngine.GetStyles(),
 
 
             classes = { "framedPanel" },
@@ -1257,7 +1260,8 @@ function Encounter.CreateEditorDialog(encounter, options)
 
             encounter.Editor(encounter, options),
 
-            gui.CloseButton {
+            gui.Button {
+                classes = {"closeButton"},
 
                 halign = "right",
                 valign = "top",
@@ -1565,7 +1569,8 @@ CreateEncounterPanel = function()
 
 
 
-                        gui.DeleteItemButton {
+                        gui.Button {
+                            classes = {"deleteButton"},
                             width = 16,
                             height = 16,
                             x = 18,
@@ -1604,7 +1609,8 @@ CreateEncounterPanel = function()
         }
     }
 
-    local addEncounterButton = gui.AddButton {
+    local addEncounterButton = gui.Button {
+        classes = {"addButton"},
 
         halign = 'center',
 

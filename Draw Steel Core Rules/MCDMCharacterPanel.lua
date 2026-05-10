@@ -7918,6 +7918,43 @@ local TACPANEL_FACTORIES = {
     notes = TacPanel.Notes,
 }
 
+--- Register a tac-panel section so it appears in the character details panel.
+--- Mods outside this file should call this at load time to add their own
+--- sections (the section becomes available the next time a character panel
+--- is built).
+--- @param id string Section id (used for ordering preference + drag/drop).
+--- @param factory fun(): Panel Returns the section panel; called once per character panel build.
+--- @param opts? {after?: string, before?: string} Position relative to an existing section. Defaults to appending at the end.
+function TacPanel.RegisterSection(id, factory, opts)
+    opts = opts or {}
+    TACPANEL_FACTORIES[id] = factory
+
+    for i,existing in ipairs(TACPANEL_DEFAULT_ORDER) do
+        if existing == id then
+            table.remove(TACPANEL_DEFAULT_ORDER, i)
+            break
+        end
+    end
+
+    local insertAt = #TACPANEL_DEFAULT_ORDER + 1
+    if opts.after then
+        for i,existing in ipairs(TACPANEL_DEFAULT_ORDER) do
+            if existing == opts.after then
+                insertAt = i + 1
+                break
+            end
+        end
+    elseif opts.before then
+        for i,existing in ipairs(TACPANEL_DEFAULT_ORDER) do
+            if existing == opts.before then
+                insertAt = i
+                break
+            end
+        end
+    end
+    table.insert(TACPANEL_DEFAULT_ORDER, insertAt, id)
+end
+
 function TacPanel.KeyName()
     return string.format("tacpanel_order:%s", dmhub.userid or "default")
 end

@@ -3,10 +3,12 @@ local mod = dmhub.GetModLoading()
 local g_mainActionId = "d19658a2-4d7b-4504-af9e-1a5410fb17fd"
 local g_maneuverId = "a513b9a6-f311-4b0f-88b8-4e9c7bf92d0b"
 local g_triggeredactionId = "b9bc06dd-80f1-4f33-bc55-25c114e3300c"
+local g_villainActionId = "villain-action"
 local g_abilityActionSortOrder = {
     [g_mainActionId] = -2,
     [g_maneuverId] = -1,
     [g_triggeredactionId] = 0,
+    [g_villainActionId] = 1,
 }
 
 local fontScaling = 1
@@ -595,12 +597,36 @@ local function CreateAbilityListPanel()
         },
     }
 
+    local m_villainActionsLabel = gui.Label {
+        classes = { "submenuHeading" },
+        data = { ord = g_villainActionId },
+        width = "100%",
+        text = "Villain Actions",
+        press = function(element)
+            element:SetClassTree("collapseSet", not element:HasClass("collapseSet"))
+            resultPanel:FireEvent("refreshToken")
+        end,
+        gui.CollapseArrow {
+            halign = "right",
+            valign = "center",
+        },
+    }
+
     m_mainActionsLabel:SetClassTree("collapseSet", true)
     m_maneuversLabel:SetClassTree("collapseSet", true)
     m_triggersLabel:SetClassTree("collapseSet", true)
     m_otherActionsLabel:SetClassTree("collapseSet", true)
+    m_villainActionsLabel:SetClassTree("collapseSet", true)
+
+    local function IsVillainAction(ability)
+        local v = ability:try_get("villainAction")
+        return v ~= nil and v ~= "none"
+    end
 
     local GetActionId = function(ability)
+        if IsVillainAction(ability) then
+            return g_villainActionId
+        end
         local actionid = ability:ActionResource()
         if actionid ~= g_mainActionId and actionid ~= g_maneuverId then
             actionid = "other"
@@ -633,6 +659,7 @@ local function CreateAbilityListPanel()
         m_maneuversLabel,
         m_triggersLabel,
         m_otherActionsLabel,
+        m_villainActionsLabel,
         styles = buildActionMenuStyles(),
         width = "100%-12",
         height = "auto",
@@ -649,6 +676,15 @@ local function CreateAbilityListPanel()
             local abilities = c:GetActivatedAbilities {} -- characterSheet = true }
             local children = {}
 
+            local hasVillainActions = false
+            for _, ability in ipairs(abilities) do
+                if IsVillainAction(ability) then
+                    hasVillainActions = true
+                    break
+                end
+            end
+            m_villainActionsLabel:SetClass("collapsed", not hasVillainActions)
+
             local showAbilities = {}
             if not m_mainActionsLabel:HasClass("collapseSet") then
                 showAbilities[g_mainActionId] = true
@@ -660,6 +696,10 @@ local function CreateAbilityListPanel()
 
             if not m_otherActionsLabel:HasClass("collapseSet") then
                 showAbilities["other"] = true
+            end
+
+            if hasVillainActions and not m_villainActionsLabel:HasClass("collapseSet") then
+                showAbilities[g_villainActionId] = true
             end
 
             local filteredAbilities = {}
@@ -687,6 +727,11 @@ local function CreateAbilityListPanel()
                 if action_a ~= action_b then
                     return (g_abilityActionSortOrder[action_a or ""] or 0) <
                         (g_abilityActionSortOrder[action_b or ""] or 0)
+                end
+
+                if action_a == g_villainActionId then
+                    -- Villain Action 1 < Villain Action 2 < Villain Action 3 by string compare
+                    return a:try_get("villainAction", "") < b:try_get("villainAction", "")
                 end
 
                 return a.name < b.name
@@ -718,7 +763,7 @@ local function CreateAbilityListPanel()
             end
 
             --now insert the headings at the right locations.
-            local headings = { m_mainActionsLabel, m_maneuversLabel, m_triggersLabel, m_otherActionsLabel }
+            local headings = { m_mainActionsLabel, m_maneuversLabel, m_triggersLabel, m_otherActionsLabel, m_villainActionsLabel }
             local j = 1
             while #headings > 0 and j <= #children do
                 for n, heading in ipairs(headings) do
@@ -1023,16 +1068,14 @@ function CharSheet.CharacterSheetAndAvatarPanel()
                 end,
 
                 refreshToken = function(element, info)
-                    if info.token.properties:IsMonster() then
+                    if info.token.properties:IsMonster() or info.token.properties:IsCompanion() then
                         element.text = info.token.properties:try_get("monster_type", "")
-                        if info.token.properties:IsMonster() and element.text == "" then
+                        if element.text == "" then
                             element.text = "(No monster type)"
                             element:SetClass("invalid", true)
                         else
                             element:SetClass("invalid", false)
                         end
-                        --element.text = info.token.properties:RaceOrMonsterType()
-                        --element.text = creature.GetTokenDescription(element)
                         element.editable = true
                     else
                         element.text = info.token.properties:RaceOrMonsterType()
@@ -1047,7 +1090,9 @@ function CharSheet.CharacterSheetAndAvatarPanel()
             gui.Label {
 
                 refreshToken = function(element, info)
-                    if info.token.properties:IsMonster() then
+                    if info.token.properties:IsCompanion() then
+                        element.text = "Companion Type"
+                    elseif info.token.properties:IsMonster() then
                         element.text = "Monster"
                     else
                         element.text = "Ancestry"
@@ -4255,7 +4300,7 @@ local function DSCharSheet()
 
                                     refreshToken = function(element, info)
                                         --monsters can direct edit stamina.
-                                        element.editable = info.token.properties:IsMonster()
+                                        element.editable = info.token.properties:IsMonster() or info.token.properties:IsCompanion()
 
                                         local maxhp = info.token.properties:MaxHitpoints()
                                         element.text = string.format("/%d", math.tointeger(maxhp))
@@ -4263,7 +4308,7 @@ local function DSCharSheet()
 
                                     press = function(element)
                                         local token = CharacterSheet.instance.data.info.token
-                                        if token.properties:IsMonster() then
+                                        if token.properties:IsMonster() or token.properties:IsCompanion() then
                                             return
                                         end
                                         local baseValue = token.properties:BaseHitpoints()
