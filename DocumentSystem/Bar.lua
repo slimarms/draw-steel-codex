@@ -13,15 +13,20 @@ function RichBar.CreateDisplay(self)
     local m_fill
     local m_count = 0
     m_fill = gui.Panel {
+        classes = {"successBarFill"},
         floating = true,
         width = "0%",
         height = 20,
-        bgcolor = "#00EEFF",
         gradient = Styles.grayscaleGradient,
         bgimage = true,
         halign = "left",
         refreshTag = function(element, tag, match, token)
-            element.selfStyle.bgcolor = self.GetColorFromToken(token) or "#00EEFF"
+            local tokenColor = self.GetColorFromToken(token)
+            if tokenColor ~= nil then
+                element.selfStyle.bgcolor = tokenColor
+            else
+                element.selfStyle.bgcolor = nil
+            end
         end,
 
         thinkTime = 0.01,
@@ -37,23 +42,31 @@ function RichBar.CreateDisplay(self)
         end,
     }
     local successBar = gui.Panel {
+        classes = {"successBar"},
         width = 100,
         height = 20,
         valign = "center",
         halign = "left",
         flow = "horizontal",
         bgimage = true,
-        bgcolor = "black",
-        styles = {
+        styles = ThemeEngine.MergeTokens({
+            {
+                selectors = {"successBar"},
+                bgcolor = "@bg",
+            },
+            {
+                selectors = {"successBarFill"},
+                bgcolor = "@accent",
+            },
             {
                 selectors = { "segment" },
-                borderColor = "white",
+                borderColor = "@fgStrong",
             },
             {
                 selectors = { "segment", "parent:uploading" },
-                borderColor = "grey",
+                borderColor = "@fgMuted",
             },
-        },
+        }),
         refreshTag = function(element, tag, match, token)
             m_count = #match.text
             local index = string.find(match.text, "-")
@@ -154,25 +167,25 @@ function RichBar.CreateDisplay(self)
             m_token = token
             successBar:SetClass("uploading", false)
         end,
-        styles = {
+        styles = ThemeEngine.MergeTokens({
             {
                 selectors = { "plusButton" },
                 width = 20,
                 height = 20,
                 borderWidth = 1,
-                borderColor = "white",
-                color = "white",
-                bgcolor = "black",
+                borderColor = "@fgStrong",
+                color = "@fgStrong",
+                bgcolor = "@bg",
                 bold = true,
                 fontSize = 20,
                 textAlignment = "center",
             },
             {
                 selectors = { "plusButton", "hover" },
-                color = "black",
-                bgcolor = "white",
+                color = "@bg",
+                bgcolor = "@fgStrong",
             },
-        },
+        }),
 
         minusButton,
         successBar,

@@ -34,15 +34,6 @@ CustomDocument.documentTypes = {}
 
 local g_tabbedViewer = nil
 
--- Tab system colors
-local TAB_RICH_BLACK = "#040807"
-local TAB_CREAM = "#FFFEF8"
-local TAB_ACTIVE_BG = "#191A18"
-local TAB_INACTIVE_BG = "#10110F"
-local TAB_GOLD = "#966D4B"
-local TAB_REMOVE_RED = "#D53031"
-local TAB_REMOVE_BG = "#241c1a"
-
 -- Tab system sizes
 local TAB_HEIGHT = 18
 local TAB_MAX_WIDTH = 200
@@ -52,108 +43,123 @@ local TAB_CLOSE_FONT = 10
 local TAB_BAR_HEIGHT = TAB_HEIGHT + 6
 local TAB_ARROW_WIDTH = 20
 
-local JournalTabStyles = {
-    {
-        selectors = {"panel", "journalTabBar"},
-        bgimage = true,
-        bgcolor = TAB_RICH_BLACK,
-        height = TAB_BAR_HEIGHT,
-        width = "100%-70",
-        flow = "horizontal",
-        halign = "left",
-        valign = "top",
-        borderColor = TAB_GOLD,
-        border = { x1 = 0, y1 = 1, x2 = 0, y2 = 0 },
-    },
-    {
-        selectors = {"panel", "journalTab"},
-        bgimage = true,
-        bgcolor = TAB_INACTIVE_BG,
-        height = TAB_HEIGHT,
-        width = "auto",
-        maxWidth = TAB_MAX_WIDTH,
-        flow = "horizontal",
-        halign = "left",
-        valign = "bottom",
-        hpad = 8,
-        vpad = 4,
-        cornerRadius = { x1 = 4, y1 = 4, x2 = 0, y2 = 0 },
-        border = { x1 = 0, y1 = 1, x2 = 0, y2 = 0 },
-        borderColor = TAB_GOLD,
-    },
-    {
-        selectors = {"panel", "journalTab", "hover"},
-        brightness = 1.3,
-        transitionTime = 0.15,
-    },
-    {
-        selectors = {"panel", "journalTab", "selected"},
-        bgcolor = TAB_ACTIVE_BG,
-        brightness = 1,
-        border = { x1 = 1, y1 = 0, x2 = 1, y2 = 1 },
-        borderColor = TAB_GOLD,
-    },
-    {
-        selectors = {"label", "journalTabBubbleIcon"},
-        width = TAB_HEIGHT - 4,
-        height = TAB_HEIGHT - 4,
-        bgimage = "panels/square.png",
-        bgcolor = "black",
-        borderWidth = 1,
-        borderColor = TAB_CREAM,
-        cornerRadius = "50% height",
-        textAlignment = "center",
-        fontSize = TAB_FONT_SIZE - 2,
-        color = TAB_CREAM,
-        valign = "center",
-        rmargin = 4,
-    },
-    {
-        selectors = {"label", "journalTabLabel"},
-        width = "auto",
-        height = "auto",
-        fontSize = TAB_FONT_SIZE,
-        color = TAB_CREAM,
-        valign = "center",
-        textWrap = false,
-        textOverflow = "ellipsis",
-        maxWidth = TAB_MAX_WIDTH - 40,
-        rmargin = 6,
-    },
-    {
-        selectors = {"panel", "journalTabClose"},
-        width = TAB_CLOSE_SIZE,
-        height = TAB_CLOSE_SIZE,
-        halign = "right",
-        valign = "center",
-        bgimage = true,
-        bgcolor = TAB_REMOVE_BG,
-        border = 1,
-        borderColor = TAB_REMOVE_RED,
-        cornerRadius = 2,
-    },
-    {
-        selectors = {"panel", "journalTabClose", "hover"},
-        brightness = 1.5,
-    },
-    {
-        selectors = {"label", "journalTabCloseLabel"},
-        width = "100%",
-        height = "100%",
-        halign = "center",
-        valign = "center",
-        textAlignment = "center",
-        fontSize = TAB_CLOSE_FONT,
-        color = TAB_REMOVE_RED,
-    },
-    -- Tab scroll arrows
-    {
-        selectors = {"journalTabArrow"},
-        height = TAB_BAR_HEIGHT,
-        width = TAB_ARROW_WIDTH,
-        valign = "center",
-    },
-}
+-- Tab system styles. Built fresh per call so @-token references resolve
+-- against the active scheme. Returns a styles array suitable for spreading
+-- into a panel's `styles` arg.
+local function BuildJournalTabStyles()
+    return ThemeEngine.MergeTokens({
+        {
+            selectors = {"panel", "journalTabBarOuter"},
+            bgimage = true,
+            bgcolor = "@bg",
+            height = TAB_BAR_HEIGHT,
+            width = "100%",
+            flow = "horizontal",
+            borderColor = "@accent",
+            border = { x1 = 0, y1 = 1, x2 = 0, y2 = 0 },
+        },
+        {
+            selectors = {"panel", "journalTabBar"},
+            bgimage = true,
+            bgcolor = "@bg",
+            height = TAB_BAR_HEIGHT,
+            width = "100%-70",
+            flow = "horizontal",
+            halign = "left",
+            valign = "top",
+            borderColor = "@accent",
+            border = { x1 = 0, y1 = 1, x2 = 0, y2 = 0 },
+        },
+        {
+            selectors = {"panel", "journalTab"},
+            bgimage = true,
+            bgcolor = "@bg",
+            height = TAB_HEIGHT,
+            width = "auto",
+            maxWidth = TAB_MAX_WIDTH,
+            flow = "horizontal",
+            halign = "left",
+            valign = "bottom",
+            hpad = 8,
+            vpad = 4,
+            cornerRadius = { x1 = 4, y1 = 4, x2 = 0, y2 = 0 },
+            border = { x1 = 0, y1 = 1, x2 = 0, y2 = 0 },
+            borderColor = "@accent",
+        },
+        {
+            selectors = {"panel", "journalTab", "hover"},
+            brightness = 1.3,
+            transitionTime = 0.15,
+        },
+        {
+            selectors = {"panel", "journalTab", "selected"},
+            bgcolor = "@bgAlt",
+            brightness = 1,
+            border = { x1 = 1, y1 = 0, x2 = 1, y2 = 1 },
+            borderColor = "@accent",
+        },
+        {
+            selectors = {"label", "journalTabBubbleIcon"},
+            width = TAB_HEIGHT - 4,
+            height = TAB_HEIGHT - 4,
+            bgimage = "panels/square.png",
+            bgcolor = "@bg",
+            borderWidth = 1,
+            borderColor = "@fgStrong",
+            cornerRadius = "50% height",
+            textAlignment = "center",
+            fontSize = TAB_FONT_SIZE - 2,
+            color = "@fgStrong",
+            valign = "center",
+            rmargin = 4,
+        },
+        {
+            selectors = {"label", "journalTabLabel"},
+            width = "auto",
+            height = "auto",
+            fontSize = TAB_FONT_SIZE,
+            color = "@fgStrong",
+            valign = "center",
+            textWrap = false,
+            textOverflow = "ellipsis",
+            maxWidth = TAB_MAX_WIDTH - 40,
+            rmargin = 6,
+        },
+        {
+            selectors = {"panel", "journalTabClose"},
+            width = TAB_CLOSE_SIZE,
+            height = TAB_CLOSE_SIZE,
+            halign = "right",
+            valign = "center",
+            bgimage = true,
+            bgcolor = "@bgAlt",
+            border = 1,
+            borderColor = "@danger",
+            cornerRadius = 2,
+        },
+        {
+            selectors = {"panel", "journalTabClose", "hover"},
+            brightness = 1.5,
+        },
+        {
+            selectors = {"label", "journalTabCloseLabel"},
+            width = "100%",
+            height = "100%",
+            halign = "center",
+            valign = "center",
+            textAlignment = "center",
+            fontSize = TAB_CLOSE_FONT,
+            color = "@danger",
+        },
+        -- Tab scroll arrows
+        {
+            selectors = {"journalTabArrow"},
+            height = TAB_BAR_HEIGHT,
+            width = TAB_ARROW_WIDTH,
+            valign = "center",
+        },
+    })
+end
 
 function CustomDocument.Register(args)
     CustomDocument.documentTypes[args.id] = args
@@ -461,10 +467,8 @@ local function buildJournalTree(currentDocId, dialogPanel)
             children = childrenPanels,
         }
 
-        local arrow = gui.CollapseArrow {
-            classes = { cond(isCollapsed, "collapseSet") },
-            width = 10,
-            height = 10,
+        local arrow = gui.ExpandoArrow {
+            classes = cond(not isCollapsed, {"expanded"}),
             valign = "center",
             lmargin = 4,
         }
@@ -476,21 +480,21 @@ local function buildJournalTree(currentDocId, dialogPanel)
             halign = "left",
             valign = "center",
             bgimage = "panels/square.png",
-            styles = {
+            styles = ThemeEngine.MergeTokens({
                 { bgcolor = "clear" },
-                { selectors = {"hover"}, bgcolor = "#ffffff44" },
-            },
+                { selectors = {"hover"}, bgcolor = "@fgMuted" },
+            }),
             press = function(element)
                 isCollapsed = not isCollapsed
                 contentPanel:SetClass("collapsed", isCollapsed)
-                arrow:SetClass("collapseSet", isCollapsed)
+                arrow:SetClass("expanded", not isCollapsed)
             end,
 
             arrow,
             gui.Label {
+                classes = {"fgMuted"},
                 text = description,
                 fontSize = 12,
-                color = "#cccccc",
                 width = "auto",
                 height = "auto",
                 valign = "center",
@@ -536,10 +540,12 @@ local function buildJournalTree(currentDocId, dialogPanel)
                     halign = "left",
                     valign = "center",
                     bgimage = "panels/square.png",
-                    styles = {
-                        { bgcolor = cond(isCurrentDoc, "#ffffff22", "clear") },
-                        { selectors = {"hover"}, bgcolor = "#ffffff44" },
-                    },
+                    classes = isCurrentDoc and {"currentDoc"} or {},
+                    styles = ThemeEngine.MergeTokens({
+                        { bgcolor = "clear" },
+                        { selectors = {"currentDoc"}, bgcolor = "@bgAlt" },
+                        { selectors = {"hover"}, bgcolor = "@fgMuted" },
+                    }),
                     press = function(element)
                         if member.id == currentDocId then return end
                         if dialogPanel and dialogPanel.data then
@@ -601,12 +607,16 @@ local function buildJournalTree(currentDocId, dialogPanel)
         valign = "bottom",
 
         gui.Panel {
-            styles = {Styles.Default},
+            styles = ThemeEngine.MergeStyles({
+                {
+                    selectors = {"journalTreePopup"},
+                    bgcolor = "@bg",
+                    borderColor = "@border",
+                },
+            }),
             classes = {"journalTreePopup"},
             bgimage = "panels/square.png",
-            bgcolor = "#1a1a1a",
             border = 1,
-            borderColor = "#555555",
             width = 300,
             height = "auto",
             maxHeight = 400,
@@ -644,12 +654,18 @@ function CustomDocument:CreateInterface(args)
     local m_bubbleIconInput = nil
     if args.bubbleIcon then
         m_bubbleIconInput = gui.Input {
+            classes = {"bubbleIconInput"},
+            styles = ThemeEngine.MergeTokens({
+                {
+                    selectors = {"bubbleIconInput"},
+                    bgcolor = "@bg",
+                    color = "@fgStrong",
+                    borderColor = "@fgStrong",
+                },
+            }),
             text = args.bubbleIcon,
             bgimage = "panels/square.png",
-            bgcolor = "black",
-            color = "white",
             cornerRadius = "50% height",
-            borderColor = "white",
             borderWidth = 1,
             width = 25,
             height = 25,
@@ -682,9 +698,9 @@ function CustomDocument:CreateInterface(args)
     local m_bubbleLockIcon = nil
     if args.bubbleIcon then
         m_bubbleLockIcon = gui.Panel {
-            width = 16,
-            height = 16,
-            bgcolor = "white",
+            classes = {"buttonIcon"},
+            width = 20,
+            height = 20,
             bgimage = "panels/square.png",
             valign = "center",
             lmargin = 8,
@@ -761,18 +777,15 @@ function CustomDocument:CreateInterface(args)
 
     local m_editingButton
 
-
     local resultPanel
 
-
-
     if dmhub.isDM then --and not args.presentationMode then
-        m_presentButton = gui.SimpleIconButton {
+    -- Present to Players
+        m_presentButton = gui.Button {
+            icon = "icons/icon_app/icon_app_34.png",
             escapeActivates = false,
-            width = buttonSize,
-            height = buttonSize,
             halign = "left",
-            bgimage = "icons/icon_app/icon_app_34.png",
+            hmargin = 4,
             thinkTime = 0.2,
             think = function(element)
                 local presentedDialog = GameHud.instance.GetCurrentlyPresentedDialog()
@@ -806,12 +819,12 @@ function CustomDocument:CreateInterface(args)
 
 
     if self:HaveEditPermissions() and not args.presentationMode then
-        m_playerPreviewButton = gui.SimpleIconButton {
+        -- Preview as player
+        m_playerPreviewButton = gui.Button {
+            icon = "icons/icon_game/icon_game_193.png",
             escapeActivates = false,
-            width = buttonSize,
-            height = buttonSize,
             halign = "left",
-            bgimage = "icons/icon_game/icon_game_193.png",
+            hmargin = 4,
             press = function(element)
                 if m_editingButton ~= nil and m_editingButton:HasClass("active") then
                     --if we are editing, stop editing.
@@ -829,13 +842,11 @@ function CustomDocument:CreateInterface(args)
         }
 
         --editing button.
-        m_editingButton = gui.SimpleIconButton {
+        m_editingButton = gui.Button {
+            icon = "icons/icon_tool/icon_tool_79.png",
             escapeActivates = false,
-            width = buttonSize,
-            height = buttonSize,
             halign = "left",
-            hmargin = 0,
-            bgimage = "icons/icon_tool/icon_tool_79.png",
+            hmargin = 4,
             press = function(element)
                 if not writePanel:HasClass("collapsed") then
                     resultPanel:FireEventTree("savedoc")
@@ -871,14 +882,12 @@ function CustomDocument:CreateInterface(args)
     local m_controlMenuButtons = {}
 
     -- Back button
-    m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.SimpleIconButton {
+    m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.Button {
+        icon = "icons/icon_arrow/icon_arrow_28.png",
         escapeActivates = false,
-        width = buttonSize,
-        height = buttonSize,
         halign = "left",
-        bgimage = "icons/icon_arrow/icon_arrow_28.png",
+        hmargin = 4,
         rotate = 180,
-        bgcolor = "#666666",
         linger = function(element)
             gui.Tooltip("Back")(element)
         end,
@@ -894,18 +903,16 @@ function CustomDocument:CreateInterface(args)
         refreshNavButtons = function(element)
             local dialogPanel = args.dialogPanel
             local hasHistory = dialogPanel ~= nil and #dialogPanel.data.history > 0
-            element.selfStyle.bgcolor = hasHistory and "white" or "#666666"
+            element.interactable = hasHistory
         end,
     }
 
     -- Forward button
-    m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.SimpleIconButton {
+    m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.Button {
+        icon = "icons/icon_arrow/icon_arrow_28.png",
         escapeActivates = false,
-        width = buttonSize,
-        height = buttonSize,
         halign = "left",
-        bgimage = "icons/icon_arrow/icon_arrow_28.png",
-        bgcolor = "#666666",
+        hmargin = 4,
         linger = function(element)
             gui.Tooltip("Forward")(element)
         end,
@@ -921,16 +928,16 @@ function CustomDocument:CreateInterface(args)
         refreshNavButtons = function(element)
             local dialogPanel = args.dialogPanel
             local hasForward = dialogPanel ~= nil and #dialogPanel.data.forwardHistory > 0
-            element.selfStyle.bgcolor = hasForward and "white" or "#666666"
+            element.interactable = hasForward
         end,
     }
 
-    m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.SimpleIconButton {
+    -- Zoom out
+    m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.Button {
+        icon = "icons/icon_tool/icon_tool_41.png",
         escapeActivates = false,
-        width = buttonSize,
-        height = buttonSize,
         halign = "left",
-        bgimage = "icons/icon_tool/icon_tool_41.png",
+        hmargin = 4,
         linger = function(element)
             gui.Tooltip(string.format("Decrease Font Size (Currently %d%%)", round(dmhub.GetSettingValue("journal:fontsize"))))(element)
         end,
@@ -942,12 +949,12 @@ function CustomDocument:CreateInterface(args)
         end,
     }
 
-    m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.SimpleIconButton {
+    -- Zoom in
+    m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.Button {
+        icon = "icons/icon_tool/icon_tool_40.png",
         escapeActivates = false,
-        width = buttonSize,
-        height = buttonSize,
         halign = "left",
-        bgimage = "icons/icon_tool/icon_tool_40.png",
+        hmargin = 4,
         linger = function(element)
             gui.Tooltip(string.format("Increase Font Size (Currently %d%%)", round(dmhub.GetSettingValue("journal:fontsize"))))(element)
         end,
@@ -967,12 +974,12 @@ function CustomDocument:CreateInterface(args)
 
     if not args.presentationMode then
         if self:HaveEditPermissions() then
-            m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.SimpleIconButton {
+            -- Edit external
+            m_controlMenuButtons[#m_controlMenuButtons + 1] = gui.Button {
+                icon = "ui-icons/icon-scale.png",
                 escapeActivates = false,
-                width = buttonSize,
-                height = buttonSize,
                 halign = "left",
-                bgimage = "ui-icons/icon-scale.png",
+                hmargin = 4,
                 press = function(element)
                     if resultPanel.data.watcher ~= nil then
                         resultPanel.data.watcher:Destroy()
@@ -1013,10 +1020,8 @@ function CustomDocument:CreateInterface(args)
 
     m_controlMenuButtons[#m_controlMenuButtons + 1] = m_titlePanel
 
-    local m_closeButton = gui.CloseButton {
-        classes = { cond(args.suppressCloseButton or args.presentationMode or (args.dialog == nil and args.close == nil), "collapsed") },
-        width = buttonSize,
-        height = buttonSize,
+    local m_closeButton = gui.Button {
+        classes = { "closeButton", "sizeXs", cond(args.suppressCloseButton or args.presentationMode or (args.dialog == nil and args.close == nil), "collapsed") },
         hmargin = 4,
         closedocuments = function(element)
             element:FireEvent("press")
@@ -1042,14 +1047,13 @@ function CustomDocument:CreateInterface(args)
         height = "auto",
         fontSize = 16,
         markdown = true,
-        color = "#999999",
         lmargin = 8,
         textOverflow = "ellipsis",
         textWrap = false,
-        styles = {
-            { color = "#999999" },
-            { selectors = {"hover"}, color = "#ffffff" },
-        },
+        styles = ThemeEngine.MergeTokens({
+            { color = "@fgMuted" },
+            { selectors = {"hover"}, color = "@fgStrong" },
+        }),
         press = function(element)
             if element.popup then
                 element.popup = nil
@@ -1076,7 +1080,6 @@ function CustomDocument:CreateInterface(args)
     }
 
     local m_searchInput = gui.SearchInput {
-        styles = ThemeEngine.GetStyles(),
         width = 200,
         height = 16,
         halign = "right",
@@ -1135,13 +1138,13 @@ function CustomDocument:CreateInterface(args)
 
             if #results == 0 then
                 element.popup = gui.Label {
+                    classes = {"bg"},
                     width = "auto",
                     height = "auto",
                     halign = "center",
                     valign = "bottom",
                     fontSize = 14,
                     bgimage = true,
-                    bgcolor = "black",
                     pad = 8,
                     text = "No results found",
                 }
@@ -1167,8 +1170,7 @@ function CustomDocument:CreateInterface(args)
     }
 
     local m_topBar = gui.Panel {
-        bgimage = true,
-        bgcolor = Styles.RichBlack02,
+        classes = {"bg"},
         width = "100%",
         height = "auto",
         halign = "center",
@@ -1205,17 +1207,21 @@ function CustomDocument:CreateInterface(args)
         monitorGame = "/assets/objectTables/documents/table/" .. self.id
     end
 
+    local documentPanelStyles = ThemeEngine.GetStyles()
+    for _, rule in ipairs(ThemeEngine.MergeTokens({
+        {
+            selectors = { "iconButton", "active" },
+            brightness = 2,
+            priority = 20,
+            bgcolor = "@accent",
+        },
+    })) do
+        documentPanelStyles[#documentPanelStyles + 1] = rule
+    end
+
     resultPanel = gui.Panel {
         classes = {"documentPanel"},
-        styles = {
-            Styles.Default,
-            {
-                selectors = { "iconButton", "active" },
-                brightness = 2,
-                priority = 20,
-                bgcolor = "yellow",
-            },
-        },
+        styles = documentPanelStyles,
         monitorGame = monitorGame,
         width = "100%",
         height = "100%",
@@ -1597,11 +1603,10 @@ function CustomDocument.GetOrCreateTabbedViewer()
         end,
     }
 
-    local closeAllButton = gui.CloseButton {
+    local closeAllButton = gui.Button {
+        classes = {"closeButton", "sizeXs"},
         valign = "center",
         halign = "right",
-        height = 16,
-        width = 16,
         rmargin = 16,
         escapePriority = EscapePriority.EXIT_MODAL_DIALOG,
         click = function(element)
@@ -1615,7 +1620,8 @@ function CustomDocument.GetOrCreateTabbedViewer()
 
     local tabButtonsPanel = gui.Panel {
         classes = {"panel", "journalTabBar"},
-        clip = true,
+        valign = "bottom",
+        clip = false,
     }
 
     local tabArrowsPanel = gui.Panel {
@@ -1629,13 +1635,8 @@ function CustomDocument.GetOrCreateTabbedViewer()
     }
 
     local tabBar = gui.Panel {
-        width = "100%",
-        height = TAB_BAR_HEIGHT,
-        flow = "horizontal",
-        bgimage = true,
-        bgcolor = TAB_RICH_BLACK,
-        borderColor = TAB_GOLD,
-        border = { x1 = 0, y1 = 1, x2 = 0, y2 = 0 },
+        classes = {"panel", "journalTabBarOuter"},
+        height = "auto",
         tabButtonsPanel,
         tabArrowsPanel,
     }
@@ -1750,22 +1751,20 @@ function CustomDocument.GetOrCreateTabbedViewer()
         contentArea:AddChild(activeTab.contentPanel)
     end
 
-    local viewerStyles = {
-        Styles.Panel,
-        gui.Style {
-            classes = {"framedPanel"},
-            priority = 5,
-            opacity = 0.98,
-            borderWidth = 0,
-            borderColor = "clear",
-        },
-        gui.Style {
-            classes = {"framedPanel", "~uiblur"},
-            priority = 5,
-            opacity = 1,
-        },
+    local viewerStyles = ThemeEngine.GetStyles()
+    viewerStyles[#viewerStyles + 1] = gui.Style {
+        classes = {"framedPanel"},
+        priority = 5,
+        opacity = 0.98,
+        borderWidth = 0,
+        borderColor = "clear",
     }
-    for _, s in ipairs(JournalTabStyles) do
+    viewerStyles[#viewerStyles + 1] = gui.Style {
+        classes = {"framedPanel", "~uiblur"},
+        priority = 5,
+        opacity = 1,
+    }
+    for _, s in ipairs(BuildJournalTabStyles()) do
         viewerStyles[#viewerStyles + 1] = s
     end
 
@@ -2026,22 +2025,22 @@ function CustomDocument:PresentDocument(args)
 
     local dialog
 
+    local dialogStyles = ThemeEngine.GetStyles()
+    dialogStyles[#dialogStyles + 1] = gui.Style {
+        classes = { "framedPanel" },
+        priority = 5,
+        opacity = 0.98,
+        borderWidth = 0,
+        borderColor = "clear",
+    }
+    dialogStyles[#dialogStyles + 1] = gui.Style {
+        classes = { "framedPanel", "~uiblur" },
+        priority = 5,
+        opacity = 1,
+    }
+
     dialog = gui.Panel {
-        styles = {
-            Styles.Panel,
-            gui.Style {
-                classes = { "framedPanel" },
-                priority = 5,
-                opacity = 0.98,
-                borderWidth = 0,
-                borderColor = "clear",
-            },
-            gui.Style {
-                classes = { "framedPanel", "~uiblur" },
-                priority = 5,
-                opacity = 1,
-            },
-        },
+        styles = dialogStyles,
         classes = { "framedPanel", "journalViewer" },
         bgimage = true,
         blurBackground = true,

@@ -36,11 +36,10 @@ function RichParty.CreateDisplay(self)
             end
         end,
 
-        gui.AddButton {
+        gui.Button {
+            classes = {"addButton", "sizeXs"},
             halign = "right",
             valign = "center",
-            width = 16,
-            height = 16,
             refreshTag = function(element, richTag, patternMatch, token)
                 token = token or m_token
                 element:SetClass("collapsed", token.player)
@@ -234,7 +233,7 @@ function RichParty.CreateDisplay(self)
                             element.selfStyle.imageRect = token:GetPortraitRectForAspect(78 * 0.01, portrait)
                         end,
 
-                        gui.CloseButton {
+                        gui.Button {
                             styles = {
                                 {
                                     hidden = 1,
@@ -244,6 +243,7 @@ function RichParty.CreateDisplay(self)
                                     hidden = 0,
                                 },
                             },
+                            classes = {"closeButton", "sizeXxs"},
                             refreshTag = function(element, richTag, patternMatch, token)
                                 token = token or m_token
                                 element:SetClass("collapsed", token.player)
@@ -251,8 +251,6 @@ function RichParty.CreateDisplay(self)
                             escapeActivates = false,
                             halign = "right",
                             valign = "top",
-                            width = 12,
-                            height = 12,
                             hmargin = 2,
                             vmargin = 2,
                             press = function(element)
@@ -398,29 +396,29 @@ function RichParty.CreateDisplay(self)
 
         },
 
-        styles = {
+        styles = ThemeEngine.MergeTokens({
             {
                 selectors = { "richParty" },
-                borderColor = "#FFFFFF66",
+                borderColor = "@border",
                 borderWidth = 1,
             },
             {
                 selectors = { "richParty", "drag-target" },
-                borderColor = "white",
+                borderColor = "@fgStrong",
             },
             {
                 selectors = { "richParty", "drag-target-hover" },
-                borderColor = "yellow",
+                borderColor = "@accent",
             },
             {
                 selectors = { "tokenPanel", "hover", "~playerview" },
                 borderWidth = 1,
-                borderColor = "#ffffff88",
+                borderColor = "@border",
             },
             {
                 selectors = {"tokenPanel", "highlight"},
                 borderWidth = 2,
-                borderColor = "white",
+                borderColor = "@fgStrong",
                 y = -8,
                 transitionTime = 0.2,
             },
@@ -438,12 +436,12 @@ function RichParty.CreateDisplay(self)
             {
                 selectors = { "tokenPanel", "drag-target" },
                 borderWidth = 1,
-                borderColor = "white",
+                borderColor = "@fgStrong",
             },
             {
                 selectors = { "tokenPanel", "drag-target-hover" },
                 borderWidth = 1,
-                borderColor = "yellow",
+                borderColor = "@accent",
             },
             {
                 selectors = { "tokenPanel", "new" },
@@ -456,7 +454,7 @@ function RichParty.CreateDisplay(self)
                 uiscale = { x = 0, y = 1 },
                 transitionTime = 0.2,
             },
-        },
+        }),
 
         dragTarget = true,
 

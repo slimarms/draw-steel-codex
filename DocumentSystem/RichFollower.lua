@@ -70,7 +70,7 @@ function RichFollower.CreateDisplay(self)
     local resultPanel
     self:_validate()
 
-    local assignButtonStyles = {
+    local assignButtonStyles = ThemeEngine.MergeTokens({
         {
             priority = 10,
             selectors = {"assign-button"},
@@ -82,26 +82,26 @@ function RichFollower.CreateDisplay(self)
         {
             priority = 10,
             selectors = {"assign-button", "hover"},
-            bgcolor = "#333333",
-            borderColor = "#666666",
+            bgcolor = "@bgAlt",
+            borderColor = "@border",
             borderWidth = 1,
-            transitionTime = 0.2
+            transitionTime = 0.2,
         },
         {
             priority = 10,
             selectors = {"assign-button", "press"},
-            bgcolor = "#808080",
-            borderColor = "#F0F0F0",
+            bgcolor = "@fgMuted",
+            borderColor = "@fgStrong",
             borderWidth = 1,
-            transitionTime = 0.2
+            transitionTime = 0.2,
         },
         {
             priority = 10,
             selectors = {"assign-button-label"},
             bgimage = "panels/square.png",
-            bgcolor = "#333333",
+            bgcolor = "@bgAlt",
             border = 1,
-            borderColor = "white",
+            borderColor = "@fgStrong",
             cornerRadius = 4,
             fontSize = 12,
             hmargin = 32,
@@ -111,20 +111,22 @@ function RichFollower.CreateDisplay(self)
             priority = 10,
             selectors = {"assign-button-label", "revoke"},
             borderWidth = 1,
-            borderColor = "#660000",
-            bgcolor = "#330000",
+            borderColor = "@danger",
+            bgcolor = "@bgAlt",
+            brightness = 0.6,
         },
         {
             priority = 10,
             selectors = {"assign-button-label", "press", "revoke"},
-            bgcolor = "#660000",
-            borderColor = "#990000",
+            bgcolor = "@danger",
+            borderColor = "@danger",
+            brightness = 1.2,
         },
         {
             selectors = {"token-image-frame"},
             borderWidth = 0,
-        }
-    }
+        },
+    })
 
     local titleLabel = gui.Label{
         width = "100%",
@@ -139,12 +141,11 @@ function RichFollower.CreateDisplay(self)
     }
 
     local headerPanel = gui.Panel{
+        classes = {"followerHeader"},
         width = "100%",
         flow = "horizontal",
         height = 20,
         bgimage = true,
-        bgcolor = "black",
-        borderColor = "white",
         border = {x1 = 0, y1 = 1, x2 = 0, y2 = 0},
         titleLabel,
     }
@@ -276,22 +277,27 @@ function RichFollower.CreateDisplay(self)
     }
 
     resultPanel = gui.Panel{
-        styles = {
+        styles = ThemeEngine.MergeTokens({
+            {
+                selectors = {"followerHeader"},
+                bgcolor = "@bg",
+                borderColor = "@fgStrong",
+            },
             {
                 selectors = {"follower-panel"},
                 borderWidth = 1,
-                borderColor = "#ffffff88",
+                borderColor = "@border",
             },
             {
                 selectors = {"hover"},
-                borderColor = "white",
+                borderColor = "@fgStrong",
                 borderWidth = 2,
             },
             {
                 selectors = {"focus"},
-                borderColor = "yellow",
-            }
-        },
+                borderColor = "@accent",
+            },
+        }),
         classes = {"follower-panel"},
         flow = "vertical",
         width = "98%",
@@ -352,17 +358,15 @@ function RichFollower.CreateEditor(self)
     }
     
     local headerPanel = gui.Panel {
+        classes = {"followerEditorHeader"},
         width = "100%",
         flow = "horizontal",
         height = 18,
         bgimage = true,
-        bgcolor = "black",
-        borderColor = "white",
         borderWidth = 1,
         titleLabel,
-        gui.SettingsButton {
-            width = 12,
-            height = 12,
+        gui.Button {
+            classes = {"settingsButton", "sizeXxs"},
             valign = "center",
             halign = "right",
             click = function(element)
@@ -374,6 +378,7 @@ function RichFollower.CreateEditor(self)
     }
 
     local detailPanel = gui.Label {
+        classes = {"followerEditorDetail"},
         width = "100%",
         height = "100% available",
         fontSize = 12,
@@ -382,7 +387,6 @@ function RichFollower.CreateEditor(self)
         textAlignment = "topLeft",
         bgimage = true,
         bgcolor = "clear",
-        borderColor = "#ffffff88",
         borderWidth = 1,
         refreshEditor = function(element)
             element.text = DescribeFollower(self.follower)
@@ -390,6 +394,17 @@ function RichFollower.CreateEditor(self)
     }
 
     resultPanel = gui.Panel {
+        styles = ThemeEngine.MergeTokens({
+            {
+                selectors = {"followerEditorHeader"},
+                bgcolor = "@bg",
+                borderColor = "@fgStrong",
+            },
+            {
+                selectors = {"followerEditorDetail"},
+                borderColor = "@border",
+            },
+        }),
         flow = "vertical",
         width = 160,
         height = "100%",

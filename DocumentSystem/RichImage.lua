@@ -48,24 +48,22 @@ function RichImage.CreateEditor(self)
         refreshEditor = function(element, richTag)
             self = richTag or self
         end,
-        gui.SettingsButton{
+        gui.Button{
+            classes = {"settingsButton", "sizeXxs"},
             halign = "right",
             valign = "top",
-            width = 12,
-            height = 12,
             press = function(element)
                 if element.popup ~= nil then
                     element.popup = nil
                     return
                 end
                 element.popup = gui.Panel{
-                    styles = Styles.Default,
-                    bgimage = true,
-                    bgcolor = "black",
-                    opacity = 0.8,
+                    styles = ThemeEngine.GetStyles(),
+                    classes = {"bordered", "bg"},
                     width = "auto",
                     height = "auto",
                     flow = "vertical",
+                    pad = 8,
 
                     gui.Panel{
                         flow = "horizontal",
@@ -73,14 +71,12 @@ function RichImage.CreateEditor(self)
                         height = "auto",
                         gui.Label{
                             fontSize = 14,
-                            color = "white",
                             width = "auto",
                             height = "auto",
                             text = "Dimensions:",
                         },
                         gui.Label{
                             fontSize = 14,
-                            color = "white",
                             width = "auto",
                             height = "auto",
                             text = "--",
@@ -102,7 +98,6 @@ function RichImage.CreateEditor(self)
                         height = "auto",
                         gui.Label{
                             fontSize = 14,
-                            color = "white",
                             width = "auto",
                             height = "auto",
                             text = "Scale:",

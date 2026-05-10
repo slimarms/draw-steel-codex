@@ -88,7 +88,7 @@ local function StripSpoilers(text)
                 b = b + 1
             elseif text:sub(a + 1, a + 1) == "#" and depth == 0 then
                 if markDepth == 0 then
-                    result = result .. "<alpha=#FF><mark=#ffffff><color=#ffffff>"
+                    result = result .. ThemeEngine.ResolveTokens("<alpha=#FF><mark=@fg><color=@fg>")
                     markEnd = "</color></mark>"
                 end
                 markDepth = markDepth + 1
@@ -142,7 +142,7 @@ local function StripSpoilers(text)
 
                     if markDepth == 1 and not canSpeak then
                         --TODO: get fonts working.
-                        result = result .. "<alpha=#FF><mark=#ffffff><color=#ffffff>"
+                        result = result .. ThemeEngine.ResolveTokens("<alpha=#FF><mark=@fg><color=@fg>")
                         markEnd = "</color></mark>"
                         --result = result .. "<font=\"Tengwar\">"
                         --markEnd = "</font>"
@@ -741,15 +741,19 @@ local function TierRoll(n)
     }
 end
 
-local g_linkStyles = {
-    gui.Style {
-        color = "white",
-    },
-    gui.Style {
-        selectors = { "hover" },
-        color = "#FFD700",
-    },
-}
+-- Link styles for inline markdown links. Built fresh per call so @-token
+-- references resolve against the active scheme.
+local function BuildLinkStyles()
+    return ThemeEngine.MergeTokens({
+        {
+            color = "@fg",
+        },
+        {
+            selectors = { "hover" },
+            color = "@accent",
+        },
+    })
+end
 
 local function PowerRollDisplay(doc)
     local resultPanel
@@ -770,7 +774,7 @@ local function PowerRollDisplay(doc)
             flow = "horizontal",
             halign = "left",
             gui.Label {
-                styles = g_linkStyles,
+                styles = BuildLinkStyles(),
                 halign = "left",
                 refreshPowerRoll = function(element, info)
                     m_info = info
@@ -815,7 +819,7 @@ local function PowerRollDisplay(doc)
             },
 
             gui.Label{
-                styles = g_linkStyles,
+                styles = BuildLinkStyles(),
                 lmargin = 8,
                 fontSize = 16,
                 width = 120,
@@ -959,24 +963,19 @@ function MarkdownDocument.DisplayPanel(self, args)
     local m_blockquotes = {}
     local m_tokenExtraInfo = {}
 
+    local function BuildDisplayStyles()
+        return ThemeEngine.MergeStyles({
+            {
+                selectors = {"label"},
+                color = "@fg",
+                priority = 5,
+            },
+        })
+    end
+
     local params = {
-        styles = {
-            Styles.Table,
-            gui.Style {
-                selectors = { "checkbox-label" },
-                width = "auto",
-                height = "auto",
-            },
-            gui.Style {
-                selectors = { "checkbox-label", "parent:uploading" },
-                opacity = 0.5,
-            },
-            gui.Style {
-                selectors = { "checkbox" },
-                minWidth = 0,
-            },
-        },
-        width = "100%-24",
+        styles = BuildDisplayStyles(),
+        width = "100%",
         height = "100%",
         flow = "vertical",
         halign = "center",
@@ -1306,6 +1305,14 @@ function MarkdownDocument.DisplayPanel(self, args)
 
                     currentTableRow.data.children = {}
 
+                    -- First row of each table is the markdown header row (followed
+                    -- by `|---|`). Toggle the headerRow class so the cascade's
+                    -- {row, headerRow} / {label, parent:headerRow} rules apply.
+                    -- SetClass with a boolean correctly clears the class on rows
+                    -- that were previously a header row but got repositioned.
+                    local isHeaderRow = #currentTable.data.children == 0
+                    currentTableRow:SetClass("headerRow", isHeaderRow)
+
                     newTableRows[#newTableRows + 1] = currentTableRow
 
                     currentTable.data.children[#currentTable.data.children + 1] = currentTableRow
@@ -1400,6 +1407,7 @@ function MarkdownDocument.DisplayPanel(self, args)
                     end
 
                     local textPanel = m_textPanels[#newTextPanels + 1] or gui.Label {
+                        classes = {"fg"},
                         width = "auto",
                         height = "auto",
                         maxWidth = "100%",
@@ -1591,10 +1599,16 @@ function MarkdownDocument.DisplayPanel(self, args)
                 elseif token.type == "blockquote" then
                     currentRichRow = nil
                     local blockquote = m_blockquotes[#newBlockquotes + 1] or gui.Panel {
+                        classes = {"markdownBlockquote"},
+                        styles = ThemeEngine.MergeTokens({
+                            {
+                                selectors = {"markdownBlockquote"},
+                                bgcolor = "@bgAlt",
+                                borderColor = "@fgStrong",
+                            },
+                        }),
                         bgimage = true,
-                        bgcolor = "#333333",
                         opacity = 0.4,
-                        borderColor = "white",
                         border = {x1 = 4, y1 = 0, x2 = 0, y2 = 0},
                         width = "100%",
                         height = "auto",
@@ -1776,6 +1790,13 @@ function MarkdownDocument.DisplayPanel(self, args)
     resultPanel = gui.Panel(params)
     resultPanel:FireEventTree("refreshDocument")
 
+    ThemeEngine.OnThemeChanged(mod, function()
+        if resultPanel ~= nil and resultPanel.valid then
+            resultPanel.styles = BuildDisplayStyles()
+            resultPanel:FireEventTree("refreshDocument")
+        end
+    end)
+
     return resultPanel
 end
 
@@ -1891,21 +1912,17 @@ function MarkdownDocument:EditPanel(args)
     }
 
     local charactersUsedLabel = gui.Label {
+        classes = {"fg"},
         width = "auto",
         height = "auto",
         halign = "right",
         valign = "center",
         fontSize = CustomDocument.ScaleFontSize(16),
-        color = "white",
         refreshLength = function(element, text)
             local len = #text
             local remaining = CustomDocument.MaxLength - len
             if remaining < 1000 then
-                if remaining < 200 then
-                    element.selfStyle.color = "red"
-                else
-                    element.selfStyle.color = "white"
-                end
+                element:SetClass("danger", remaining < 200)
 
                 element.text = string.format("%d characters remaining...", remaining)
                 element:SetClass("hidden", false)
@@ -2199,15 +2216,15 @@ function MarkdownDocument:EditPanel(args)
                 halign = "center",
                 hpad = 10,
                 vpad = 5,
-                styles = {
+                styles = ThemeEngine.MergeTokens({
                     {
                         bgcolor = "clear",
                     },
                     {
                         selectors = {"hover"},
-                        bgcolor = Styles.textColor,
+                        bgcolor = "@fg",
                     },
-                },
+                }),
                 hover = function(element)
                     CustomDocument.PreviewLink(element, linkText)
                 end,
@@ -2223,15 +2240,15 @@ function MarkdownDocument:EditPanel(args)
                     height = "auto",
                     textAlignment = "left",
                     valign = "center",
-                    styles = {
+                    styles = ThemeEngine.MergeTokens({
                         {
-                            color = Styles.textColor,
+                            color = "@fg",
                         },
                         {
                             selectors = {"parent:hover"},
-                            color = "black",
+                            color = "@fgInverse",
                         },
-                    },
+                    }),
                 },
                 gui.Label{
                     text = resolvedType,
@@ -2241,15 +2258,15 @@ function MarkdownDocument:EditPanel(args)
                     halign = "right",
                     textAlignment = "right",
                     valign = "center",
-                    styles = {
+                    styles = ThemeEngine.MergeTokens({
                         {
                             color = typeColor,
                         },
                         {
                             selectors = {"parent:hover"},
-                            color = "black",
+                            color = "@fgInverse",
                         },
-                    },
+                    }),
                 },
             }
         else
@@ -2292,15 +2309,15 @@ function MarkdownDocument:EditPanel(args)
                     halign = "center",
                     hpad = 10,
                     vpad = 4,
-                    styles = {
+                    styles = ThemeEngine.MergeTokens({
                         {
                             bgcolor = "clear",
                         },
                         {
                             selectors = {"hover"},
-                            bgcolor = Styles.textColor,
+                            bgcolor = "@fg",
                         },
-                    },
+                    }),
                     press = function(element)
                         -- Replace the link text with the suggestion
                         local text = inputElement.text
@@ -2354,15 +2371,15 @@ function MarkdownDocument:EditPanel(args)
                         height = "auto",
                         textAlignment = "left",
                         valign = "center",
-                        styles = {
+                        styles = ThemeEngine.MergeTokens({
                             {
-                                color = Styles.textColor,
+                                color = "@fg",
                             },
                             {
                                 selectors = {"parent:hover"},
-                                color = "black",
+                                color = "@fgInverse",
                             },
-                        },
+                        }),
                     },
                     gui.Label{
                         text = result.type,
@@ -2372,15 +2389,15 @@ function MarkdownDocument:EditPanel(args)
                         halign = "right",
                         textAlignment = "right",
                         valign = "center",
-                        styles = {
+                        styles = ThemeEngine.MergeTokens({
                             {
                                 color = typeColor,
                             },
                             {
                                 selectors = {"parent:hover"},
-                                color = "black",
+                                color = "@fgInverse",
                             },
-                        },
+                        }),
                     },
                 }
             end
@@ -2392,13 +2409,19 @@ function MarkdownDocument:EditPanel(args)
             valign = "bottom",
             halign = "right",
             gui.Panel{
+                classes = {"linkPopupFrame"},
+                styles = ThemeEngine.MergeTokens({
+                    {
+                        selectors = {"linkPopupFrame"},
+                        bgcolor = "@bg",
+                        borderColor = "@fgStrong",
+                    },
+                }),
                 bgimage = "panels/square.png",
-                bgcolor = Styles.backgroundColor,
                 width = 400,
                 height = "auto",
                 maxHeight = 300,
                 border = 2,
-                borderColor = Styles.textColor,
                 flow = "vertical",
                 children = children,
             },
@@ -2444,11 +2467,11 @@ function MarkdownDocument:EditPanel(args)
 
         if meta.desc then
             children[#children + 1] = gui.Label{
+                classes = {"fg"},
                 text = meta.desc,
                 fontSize = 13,
                 width = "100%",
                 height = "auto",
-                color = Styles.textColor,
                 vpad = 4,
             }
         end
@@ -2482,13 +2505,19 @@ function MarkdownDocument:EditPanel(args)
             valign = "bottom",
             halign = "right",
             gui.Panel{
+                classes = {"linkPopupFrame"},
+                styles = ThemeEngine.MergeTokens({
+                    {
+                        selectors = {"linkPopupFrame"},
+                        bgcolor = "@bg",
+                        borderColor = "@fgStrong",
+                    },
+                }),
                 bgimage = "panels/square.png",
-                bgcolor = Styles.backgroundColor,
                 width = 300,
                 height = "auto",
                 maxHeight = 300,
                 border = 2,
-                borderColor = Styles.textColor,
                 flow = "vertical",
                 children = children,
             },
@@ -2673,15 +2702,15 @@ function MarkdownDocument:EditPanel(args)
                 halign = "center",
                 hpad = 10,
                 vpad = 5,
-                styles = {
+                styles = ThemeEngine.MergeTokens({
                     {
                         bgcolor = "clear",
                     },
                     {
                         selectors = {"hover"},
-                        bgcolor = Styles.textColor,
+                        bgcolor = "@fg",
                     },
-                },
+                }),
                 press = function(element)
                     AcceptAutocomplete(inputElement, result)
                 end,
@@ -2692,11 +2721,11 @@ function MarkdownDocument:EditPanel(args)
                         local tooltipChildren = {}
                         if result.desc then
                             tooltipChildren[#tooltipChildren + 1] = gui.Label{
+                                classes = {"fg"},
                                 text = result.desc,
                                 fontSize = 13,
                                 width = "100%",
                                 height = "auto",
-                                color = Styles.textColor,
                                 vpad = 4,
                             }
                         end
@@ -2732,11 +2761,11 @@ function MarkdownDocument:EditPanel(args)
                         local tooltipChildren = {}
                         if result.desc then
                             tooltipChildren[#tooltipChildren + 1] = gui.Label{
+                                classes = {"fg"},
                                 text = result.desc,
                                 fontSize = 13,
                                 width = "100%",
                                 height = "auto",
-                                color = Styles.textColor,
                                 vpad = 4,
                             }
                         end
@@ -2784,15 +2813,15 @@ function MarkdownDocument:EditPanel(args)
                     height = "auto",
                     textAlignment = "left",
                     valign = "center",
-                    styles = {
+                    styles = ThemeEngine.MergeTokens({
                         {
-                            color = Styles.textColor,
+                            color = "@fg",
                         },
                         {
                             selectors = {"parent:hover"},
-                            color = "black",
+                            color = "@fgInverse",
                         },
-                    },
+                    }),
                 },
                 gui.Label{
                     text = result.type,
@@ -2802,15 +2831,15 @@ function MarkdownDocument:EditPanel(args)
                     halign = "right",
                     textAlignment = "right",
                     valign = "center",
-                    styles = {
+                    styles = ThemeEngine.MergeTokens({
                         {
                             color = typeColor,
                         },
                         {
                             selectors = {"parent:hover"},
-                            color = "black",
+                            color = "@fgInverse",
                         },
-                    },
+                    }),
                 },
             }
         end
@@ -2833,13 +2862,19 @@ function MarkdownDocument:EditPanel(args)
             valign = "bottom",
             halign = "right",
             gui.Panel{
+                classes = {"linkPopupFrame"},
+                styles = ThemeEngine.MergeTokens({
+                    {
+                        selectors = {"linkPopupFrame"},
+                        bgcolor = "@bg",
+                        borderColor = "@fgStrong",
+                    },
+                }),
                 bgimage = "panels/square.png",
-                bgcolor = Styles.backgroundColor,
                 width = 400,
                 height = "auto",
                 maxHeight = 300,
                 border = 2,
-                borderColor = Styles.textColor,
                 flow = "vertical",
                 children = children,
             },
@@ -3276,11 +3311,17 @@ MarkdownReferenceTooltip = function()
     local children = {}
 
     children[#children + 1] = gui.TableRow {
+        classes = {"markdownRefRow"},
+        styles = ThemeEngine.MergeTokens({
+            {
+                selectors = {"markdownRefRow"},
+                borderColor = "@border",
+            },
+        }),
         width = "100%",
         height = "auto",
         bgcolor = "clear",
         bgimage = true,
-        borderColor = "white",
         border = 1,
 
         gui.Panel {
@@ -3316,11 +3357,17 @@ MarkdownReferenceTooltip = function()
             annotations = annotations,
         }
         children[#children + 1] = gui.TableRow {
+            classes = {"markdownRefRow"},
+            styles = ThemeEngine.MergeTokens({
+                {
+                    selectors = {"markdownRefRow"},
+                    borderColor = "@border",
+                },
+            }),
             width = "100%",
             height = "auto",
             bgcolor = "clear",
             bgimage = true,
-            borderColor = "white",
             border = 1,
             gui.Panel {
                 width = "50%",

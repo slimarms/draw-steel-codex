@@ -11,13 +11,19 @@ function RichCounter.CreateDisplay(self)
     local m_token
 
     resultPanel = gui.Panel{
+        classes = {"richCounterFrame"},
         bgimage = true,
-        bgcolor = "black",
-        borderColor = "white",
         borderWidth = 2,
         width = 64,
         height = 30,
         halign = "left",
+        styles = ThemeEngine.MergeTokens({
+            {
+                selectors = {"richCounterFrame"},
+                bgcolor = "@bg",
+                borderColor = "@fgStrong",
+            },
+        }),
         gui.Label{
             styles = {
                 {
