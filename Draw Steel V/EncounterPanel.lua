@@ -354,7 +354,7 @@ local function createGroupPanel(encounter)
 
                             element.children = panels
 
-                            if #panels >= 3 then
+                            if #panels >= 4 then
                                 element.parent:SetClassTree("full", true)
                             else
                                 element.parent:SetClassTree("full", false)
@@ -893,6 +893,220 @@ function Encounter.Editor(self, options)
             end
 
         },
+
+        --[[gui.Panel {
+
+            classes = {
+
+                'monster-drag-target',
+
+            },
+
+            width = "90%",
+            height = 110,
+            border = 1,
+            borderColor = Styles.textColor,
+            halign = 'center',
+            tmargin = 12,
+            bgimage = true,
+            bgcolor = "black",
+
+            monsterDraggedOnto = function()
+                print("venla got the event")
+            end,
+
+            press = function()
+                local monsterinfo = dmhub.GetSelectedMonster()
+
+                if monsterinfo == nil then
+                    return
+                end
+
+                self:AddMonster(monsterinfo.monsterid)
+
+                resultPanel:FireEventTree("displayMonsters")
+            end,
+
+
+
+            thinkTime = 0.1,
+            think = function(element)
+                local imageAspect = element.bgsprite.dimensions.y / element.bgsprite.dimensions.x
+
+                local w = element.renderedWidth
+                local h = element.renderedHeight
+                local panelAspect = h / w
+
+                local height = panelAspect / imageAspect
+
+                element.selfStyle.imageRect = {
+                    x1 = 0,
+                    x2 = 1,
+                    y1 = 0.5 - height / 2,
+                    y2 = 0.5 + height / 2,
+                }
+            end,
+
+
+
+            gui.Button {
+                classes = {"addButton"},
+            
+
+                halign = "center",
+                valign = "center",
+
+                click = function(element)
+                    local monsterpanels = {}
+
+                    for monsterid, monster in pairs(assets.monsters) do
+                        print("VENLA: ", monster, monster.name, monster.description)
+                        local name = creature.GetTokenDescription(monster)
+
+                        monsterpanels[#monsterpanels + 1] = gui.Label {
+
+                            text = name,
+                            fontSize = 11,
+                            bgimage = true,
+                            width = "100%",
+                            height = 20,
+
+                            search = function(element, searchtext)
+                                if string.find(string.lower(element.text), searchtext) then
+                                    element:SetClass("collapsed", false)
+                                else
+                                    element:SetClass("collapsed", true)
+                                end
+                            end,
+
+                            click = function(label)
+                                self:AddMonster(monsterid)
+
+                                element.popup = nil
+
+                                resultPanel:FireEventTree("displayMonsters")
+                            end
+
+
+                        }
+                    end
+
+                    table.sort(monsterpanels, function(a, b)
+                        return a.text < b.text
+                    end)
+
+
+                    local monsterlist = gui.Panel {
+
+                        bgimage = true,
+                        bgcolor = "black",
+                        width = 300,
+                        height = 400,
+                        flow = "vertical",
+                        maxHeight = 400,
+                        vscroll = true,
+
+                        children = monsterpanels,
+
+                        styles = {
+
+                            {
+                                classes = { "label" },
+                                bgcolor = "black",
+                                color = Styles.textColor,
+                            },
+
+                            {
+                                classes = { "label", "hover" },
+                                bgcolor = Styles.textColor,
+                                color = "black",
+                            }
+
+                        },
+
+                    }
+
+                    element.popup = gui.Panel {
+
+                        styles = Styles.Default,
+                        width = "auto",
+                        height = "auto",
+                        flow = "vertical",
+
+                        gui.Input {
+
+                            fontSize = 11,
+                            height = 20,
+                            width = 280,
+                            placeholderText = "Search...",
+                            hasFocus = true,
+
+                            edit = function(element)
+                                element.parent:FireEventTree("search", string.lower(element.text))
+                            end,
+
+                            confirm = function(element)
+                                local query = element.text
+                                if query ~= "" then
+                                    local resultCount = 0
+                                    for _, child in ipairs(monsterlist.children) do
+                                        if not child:HasClass("collapsed") then
+                                            resultCount = resultCount + 1
+                                        end
+                                    end
+                                    track("search_query", {
+                                        query = query,
+                                        resultCount = resultCount,
+                                        context = "encounter_add_monster",
+                                        dailyLimit = 20,
+                                    })
+                                end
+                            end,
+
+                        },
+
+                        monsterlist,
+                    }
+                end,
+
+
+            },
+
+            gui.Label {
+
+                text = "Drag a monster here from Bestiary",
+                fontSize = 14,
+                valign = "bottom",
+                halign = "center",
+                bmargin = 10,
+
+                thinkTime = 0.2,
+                think = function(element)
+                    local monsterinfo = dmhub.GetSelectedMonster()
+
+                    if monsterinfo == nil then
+                        element.text = "Select a monster in the Bestiary to add"
+                        element.parent.bgimage = true
+                        element.parent.selfStyle.bgcolor = "black"
+                    else
+                        local monster = assets.monsters[monsterinfo.monsterid]
+                        element.text = string.format("<b>%s</b> is selected. Click to add", monster.name)
+                        local monsterimage = monster.appearance.portraitId
+                        if monsterimage ~= nil then
+                            element.parent.bgimage = monsterimage
+                            element.parent.selfStyle.bgcolor = "#ffffff11"
+                        else
+                            element.parent.bgimage = true
+                            element.parent.selfStyle.bgcolor = "black"
+                        end
+                    end
+                end
+            }
+
+
+
+
+        },]]
 
         appearancesCheck,
 

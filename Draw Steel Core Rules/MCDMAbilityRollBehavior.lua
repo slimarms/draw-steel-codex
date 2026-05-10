@@ -9,6 +9,17 @@ local g_animateTiers = setting{
     storage = "preference",
 }
 
+-- When true, ability power roll resolution pauses after the roll completes
+-- but BEFORE per-target tier is read, so a test harness can write
+-- rollProperties.overrideTier deterministically. The harness clears this
+-- flag to release the cast. Storage is transient so it never persists.
+setting{
+    id = "test:aiholdroll",
+    description = "Test: Hold Power Roll for Override",
+    default = false,
+    storage = "transient",
+}
+
 --register the ability to modify power roll damage during spell casting.
 ActivatedAbilityModifyCastBehavior.RegisterParam{
     id = "ability_damage",
@@ -1436,6 +1447,14 @@ function ActivatedAbilityPowerRollBehavior:Cast(ability, casterToken, targets, o
             refreshAtPanel = nil
             holdOpenRefreshAt = nil
         end
+    end
+
+    -- Test hook: pause between roll-complete and per-target tier read so a
+    -- harness can deterministically write rollProperties.overrideTier. The
+    -- harness clears the setting to release. Transient storage means this
+    -- never affects production play.
+    while m_canceled == false and dmhub.GetSettingValue("test:aiholdroll") do
+        coroutine.yield(0.02)
     end
 
     CharacterPanel.UnlockDisplayAbility()
