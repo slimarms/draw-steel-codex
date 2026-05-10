@@ -1530,12 +1530,10 @@ CreateJournalPanel = function()
             height = 32,
             flow = "horizontal",
 
-            gui.Panel {
-                classes = { "clickableIcon" },
-                width = 24,
-                height = 24,
+            gui.Button {
+                classes = { "sizeM" },
                 halign = "right",
-                bgimage = "game-icons/open-folder.png",
+                icon = "game-icons/open-folder.png",
                 linger = gui.Tooltip("Create a new folder"),
                 press = function(element)
                     assets:UploadNewDocumentFolder {
@@ -1544,11 +1542,10 @@ CreateJournalPanel = function()
                 end,
             },
 
-            gui.AddButton {
+            gui.Button {
+                classes = {"addButton", "sizeM"},
                 halign = "right",
                 valign = "center",
-                width = 24,
-                height = 24,
                 click = function(element)
                     if element.popup ~= nil then
                         element.popup = nil
