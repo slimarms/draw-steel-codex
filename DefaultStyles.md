@@ -82,6 +82,7 @@ Specialized variants:
 - `{portraitImage}` — fixed-size compendium portrait (196x294, 2px `@border` frame). Reach for this on Race / Class / Career portrait sidebars.
 - `{panel, dicePreview}` — marker class for live-dice render targets. The `bgimage = "#DicePreview"` render hookup and `bgcolor = "white"` **must** stay inline at the call site — the engine's render-target rendering doesn't honor cascade properties.
 - `{panel, buttonIcon}` — auto-emitted child of `gui.Button{ icon = ... }`. Tints to `@fg` and brightens on hover; you don't apply this class manually.
+- `{panel, blockQuote}` — reach for this when you want a child region to read as a "quoted" / "aside" / "called-out" passage set apart from surrounding body content. Typical uses: flavor text inside a longer description, an attributed quotation, a rules-clarification callout, a GM-only note inset into a player-facing panel. Carries its own inset padding and vertical margin so it sits visually separated from siblings without per-call spacing tweaks; drop labels / child panels inside and let the cascade handle the framing. (Exact accent treatment is theme-owned and may differ across schemes — choose this class for the *semantic* "this is a quoted aside," not for any specific look.)
 
 #### Segmented fill bar
 
