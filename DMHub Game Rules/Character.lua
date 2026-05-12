@@ -610,7 +610,7 @@ function character:GetDarkvision()
 		darkvision = override
 	end
 
-	darkvision = self:CalculateAttribute("darkvision", darkvision)
+	darkvision = self:CalculateAttribute("darkvision", darkvision) or 0
 	if darkvision <= 0 then
 		return nil
 	end
