@@ -355,12 +355,12 @@ CreateLayersPanel = function()
 		width = "100%",
 		height = "auto",
 		halign = "left",
-		gui.AddButton{
+		gui.Button{
+			classes = {"addButton", "sizeS"},
 			halign = 'center',
 			valign = 'top',
-			width = 20,
-			height = 20,
 			vmargin = 2,
+			tooltip = "Add a new floor",
 			click = function(element)
                 element.popup = gui.ContextMenu{
                     entries = {
@@ -387,7 +387,6 @@ CreateLayersPanel = function()
                     }
                 }
 			end,
-			hover = gui.Tooltip("Add a new floor"),
 		}
 	}
 
@@ -1110,21 +1109,22 @@ CreateLayersPanel = function()
 		end,
 	}
 
+	local accentHex = string.gsub(ThemeEngine.ResolveTokens("@accent") or "#4A9FD8", "^#", "")
 	local highlightGradient = core.Gradient{
 		point_a = { x = 0, y = 0 },
 		point_b = { x = 1, y = 0 },
 		stops = {
 			{
 				position = 0,
-				color = 'srgb:#C0957100',
+				color = 'srgb:#' .. accentHex .. '00',
 			},
 			{
 				position = 0.6,
-				color = 'srgb:#C09571BB',
+				color = 'srgb:#' .. accentHex .. 'BB',
 			},
 			{
 				position = 1.0,
-				color = 'srgb:#C0957100',
+				color = 'srgb:#' .. accentHex .. '00',
 			},
 		},
 	}

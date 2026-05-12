@@ -2601,7 +2601,9 @@ Commands.RegisterMacro{
         end
 
         for _, token in ipairs(tokens) do
+            local snapshot = token:PrepareUploadAppearance()
             token.portrait = str
+            token:UploadAppearance(snapshot)
             token:RefreshAppearanceLocally()
         end
     end,
@@ -2642,10 +2644,15 @@ spine.register{
     -- Decides which animation should be playing based on the token's current state.
     refresh = function(token)
         print("TOKENREFRESH:: REFRESHING")
-        local q = dmhub.initiativeQueue
-        local isOurTurn = q ~= nil and (not q.hidden)
-            and InitiativeQueue.GetInitiativeId(token) == q.currentTurn
-        if isOurTurn then
+        local summonerRampage = false
+        local summonerid = token.summonerid
+        if summonerid ~= nil then
+            local summoner = dmhub.GetCharacterById(summonerid)
+            if summoner ~= nil and summoner.properties ~= nil then
+                summonerRampage = summoner.properties:GetUnboundedResourceQuantity(CharacterResource.rampageId) >= 8
+            end
+        end
+        if summonerRampage then
             token:SetSpineSkin("base")
             token:SetSpineAnimation{ id = "3_RAMPAGE_idle" }
             token:SetSpineIdleFidgets{}
@@ -2716,10 +2723,15 @@ spine.register{
     -- Decides which animation should be playing based on the token's current state.
     refresh = function(token)
         print("TOKENREFRESH:: REFRESHING")
-        local q = dmhub.initiativeQueue
-        local isOurTurn = q ~= nil and (not q.hidden)
-            and InitiativeQueue.GetInitiativeId(token) == q.currentTurn
-        if isOurTurn then
+        local summonerRampage = false
+        local summonerid = token.summonerid
+        if summonerid ~= nil then
+            local summoner = dmhub.GetCharacterById(summonerid)
+            if summoner ~= nil and summoner.properties ~= nil then
+                summonerRampage = summoner.properties:GetUnboundedResourceQuantity(CharacterResource.rampageId) >= 8
+            end
+        end
+        if summonerRampage then
             token:SetSpineSkin("base")
             token:SetSpineAnimation{ id = "3_RAMPAGE_idle" }
             token:SetSpineIdleFidgets{}
