@@ -220,7 +220,7 @@ function creature:CalculateNamedCustomAttribute(id)
 end
 
 function creature:IsPassthrough()
-    return self:CalculateNamedCustomAttribute("Passthrough") > 0
+    return (self:CalculateNamedCustomAttribute("Passthrough") or 0) > 0
 end
 
 function creature:GetForcedPushOptions()
