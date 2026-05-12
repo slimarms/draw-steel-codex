@@ -5806,7 +5806,7 @@ function creature:GetResources()
 	end
 
 	local spellLevel = self:SpellLevel()
-	if spellLevel > 0 then
+	if (spellLevel or 0) > 0 then
 		local slots = GameSystem.spellSlotsTable[spellLevel] or GameSystem.spellSlotsTable[#GameSystem.spellSlotsTable]
 		for i,quantity in ipairs(slots) do
 			local resourceid = CharacterResource.spellSlotIds[i]
