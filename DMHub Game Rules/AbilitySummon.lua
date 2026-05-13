@@ -802,7 +802,7 @@ end
 --- @param squadCtx table|nil persistent squad-selection state (see Cast()).
 --- @param creatureCtx table|nil persistent creature-selection state with .choices and .selectedCreature.
 --- @return Loc|nil pickedLoc, table|nil squadResult, table|nil pickedCreature.
-function ActivatedAbilitySummonBehavior.PromptPlacementLoc(casterToken, rangeTiles, index, total, isMinion, squadCtx, creatureCtx)
+function ActivatedAbilitySummonBehavior.PromptPlacementLoc(casterToken, rangeTiles, index, total, isMinion, squadCtx, creatureCtx, ability)
     local SQUAD_CAP = 8
 
     local origin = casterToken.loc
@@ -1260,6 +1260,17 @@ function ActivatedAbilitySummonBehavior:Cast(ability, casterToken, targets, args
         return
     end
 
+    -- Register a post-cast handler that force-dismisses the tooltip card.
+    args.OnFinishCastHandlers = args.OnFinishCastHandlers or {}
+    args.OnFinishCastHandlers[#args.OnFinishCastHandlers+1] = function()
+        if GameHud == nil or GameHud.instance == nil then return end
+        if rawget(GameHud.instance, "abilityDisplay") == nil then return end
+        local panel = GameHud.instance.abilityDisplay
+        if panel ~= nil and panel.valid then
+            panel:FireEvent("hideAbility")
+        end
+    end
+
     for _,target in ipairs(targets) do
         local newOwner = ""
         if self.casterControls then
@@ -1462,7 +1473,7 @@ function ActivatedAbilitySummonBehavior:Cast(ability, casterToken, targets, args
                     creatureCtxArg = placementCreatureCtx
                 end
                 local isMinion = chosenOption ~= nil and chosenOption.properties ~= nil and chosenOption.properties:try_get("minion", false)
-                local pickedLoc, squadResult, pickedCreature = ActivatedAbilitySummonBehavior.PromptPlacementLoc(casterToken, rangeTiles, j, numSummons, isMinion, squadCtxArg, creatureCtxArg)
+                local pickedLoc, squadResult, pickedCreature = ActivatedAbilitySummonBehavior.PromptPlacementLoc(casterToken, rangeTiles, j, numSummons, isMinion, squadCtxArg, creatureCtxArg, ability)
                 if pickedLoc == nil then
                     --user cancelled; stop placing further summons but keep what's already there.
                     break
