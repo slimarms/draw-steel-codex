@@ -1,15 +1,15 @@
 # EotW Hero Sheet - Working Brief
 
 > Status: WORKING - D1 frame/scope DECIDED; D2 surface + layering DECIDED; D3 layout converging
-> through mock rounds 3-8 (current = round 8); handoff refreshed 2026-10-08 session 2.
+> through mock rounds 3-10 (current = round 10); handoff refreshed 2026-10-08 session 2.
 
 ## NEXT SESSION STARTS HERE (handoff 2026-10-08, session 2)
 
 Read the ledger (bottom) first: it is the record of every decision, newest last. Then open the
-CURRENT MOCK: https://claude.ai/artifact/UkGYCopdu4DAiuh2P7xUb2 - version 7 = round 9 (versions
-1-6 = rounds 3-8). Source docs/eotw-hero-sheet/mock/layouts.html + data.js (pregens) + std.js
+CURRENT MOCK: https://claude.ai/artifact/UkGYCopdu4DAiuh2P7xUb2 - version 8 = round 10 (versions
+1-7 = rounds 3-9). Source docs/eotw-hero-sheet/mock/layouts.html + data.js (pregens) + std.js
 (standard actions + free strikes, tools/probe_std.py) + vet.js (veteran inventory, real tbl-gear
-records) + art/. Older round sources kept as mock/layouts-r3..r8.html. The round 2 form mock
+records) + art/. Older round sources kept as mock/layouts-r3..r9.html. The round 2 form mock
 (A page / B1 hero art / B2 where-you-are) is a different artifact: BjjVgkj3vYRcGynndsQgRG
 (mock/eotw-hero-sheet.html). Republish by file path to keep the URL.
 
@@ -31,11 +31,9 @@ Where the design stands (round 8; details in the ledger):
 - TYPE SYSTEM: section headers white + larger (16px caps); stat headers gold small caps.
 
 Open next (in rough order):
-1. James's reaction to round 9: does the scene backdrop (where you are / hero art wash / none)
-   fix the "splash of colour then bland boxes" problem, or does the visual treatment need a
-   rethink (D4 skin)? This also settles the FORM question (round 2's B2 is the "where you are"
-   backdrop; B1's hero-art column is now the card).
-2. (merged into 1)
+1. James's pick for size-to-potency (two groups / centred lines / grid) from round 10; the
+   backdrop is decided ("where you are" + frosted translucent panels).
+2. (form question settled: B2 backdrop, B1's art lives on as the card)
 3. D4 skin (motion, sound, final palette - accent theme-dependence is open), D9 states (draft,
    away in a party, dead, video portraits, missing art), D7 equip interaction details
    (Equip/Unequip rules, kit-match gating, kit-less treasure rules), D8 EotW-native content
@@ -656,6 +654,8 @@ Forge Steel / Draw Steel Plus / Compact Beyond screenshots.
 | 2026-10-08 | ROUND 8 MOCK published as version 6 (same URL; round 7 kept as mock/layouts-r7.html): Kit card + Treasures card (scrolling body, no caps); level row "1 [bar] 2  Victories 0" with XP on hover; header system (section = 16px white caps: Characteristics, Skills, Languages, Immunities, Weaknesses, Abilities, Features, Kit/Prayer/Ward..., Treasures; stat = gold small caps: characteristic names, skill groups, size/speed/disengage/stability, Potency, list groups, treasure types, kit bonus names); size/speed/disengage/stability self-labelled, Potency + weak/average/strong; the movement/potency toggle removed. Brief handoff section rewritten for the next session. | Awaiting James. |
 | 2026-10-08 | ROUND 8 VERDICTS (James): "looks better". The size/speed/potency block looked too empty on its right - spread or centre it to fit. The scene behind the sheet had gone; bring it back to compare: the layout is starting to work, but it reads as a splash of colour around the portrait and then a lot of bland black and grey boxes - the translucent scene may fix that, otherwise rethink. Brief and mock committed to design/eotw-hero-sheet (a563ebe5). | James. |
 | 2026-10-08 | ROUND 9 MOCK published as version 7 (same URL; round 8 kept as mock/layouts-r8.html): BACKDROP toggle - Where you are (default: the Hero's Guild for your heroes in town, the blurred battle map for a teammate's hero in an encounter, i.e. round 2's B2), Hero art (a blurred, saturated wash of the hero's own illustration), None (round 8); over a backdrop every panel is a translucent dark plate (66%) with a blur, and Abilities + Features share one plate (62%). The body stats + potency became one aligned 4-column grid filling their block (row 1 Size, Speed, Disengage, Stability; row 2 Potency, Weak, Average, Strong). Build note: the codex tooltip styling already has a blurBackground option. | Awaiting James. |
+| 2026-10-08 | BACKDROP = "WHERE YOU ARE" (decided): the Hero's Guild in town, the blurred battle map in an encounter, with FROSTED TRANSLUCENT PANELS over it (liked). Settles round 2's form question in favour of B2; the hero-art column (B1) lives on as the card. Round 9 verdict also: Potency's header sat too far from its values in the 4-column grid - try centring or another option that keeps the group together; the battle-map case needed an explicit way to compare. | James. |
+| 2026-10-08 | ROUND 10 MOCK published as version 8 (same URL; round 9 kept as mock/layouts-r9.html): backdrop toggle removed (always where you are); new WHERE toggle (Town / In an encounter) drives the backdrop and the switcher (town = your roster; encounter = the heroes in this encounter, yours first and marked); SIZE-TO-POTENCY toggle: Two groups (default: 2x2 size/speed/disengage/stability, hairline, Potency captioned over weak/average/strong), Centred lines (body stats line + potency in an outlined pill), Round 9 grid. | Awaiting James. |
 | 2026-10-08 | PRECEDENT IS CONTEXT, NOT AUTHORITY: nobody has done a Draw Steel character sheet well; solving that is the aim. Layout reasoning rests on the DS rules (a test = characteristic + skill) and EotW's own surfaces, not on other sheets. | James. |
 | 2026-10-08 | SWITCHER (Q2c) = BY CONTEXT: in town it cycles your roster; in game it cycles the heroes in this encounter, yours first, others marked by the card's border ladder (own = 2px blue), never colour alone. Ours, not in David's doc. | James. Mirrors the surrounding roster (Guild vs HUD), so ownership stays legible. |
 
