@@ -1,0 +1,871 @@
+<title>EotW Sheet Layouts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap">
+<style>
+  /* Layout: review page (controls, a 1920x1080 stage scaled to fit, notes, a stamina bar study).
+     Round 6: the card (with level progress) + gear on the left, never scrolling; one stats band
+     (characteristics as tiles, movement and potency lighter); abilities | features below.
+     One deliberate dark look: the product is EotW's fixed-dark builder palette. */
+  :root {
+    color-scheme: dark;
+    --page: #0e0e0d; --page-fg: #d9d3c7; --page-mut: #8f897e; --page-line: #2a2926; --ctl: #1a1a18;
+    --screen: #0b0c0b; --card: #1a1b18; --card-hover: #262722; --border: #3a3833;
+    --cream: #DFCFC0; --cream-light: #F3EDE7; --tan: #BC9B7B; --muted: #9a9188; --lab: #A6A096; --ink: #10110F;
+    --mine: #6fa8ff; --gold: #ffd66b; --warn: #e9b86f;
+    --st-ok: #4DB88C; --st-winded: #E8A030; --st-dying: #C94040; --temp: #E4DDD0;
+    --slab: "Bitter", "Roboto Slab", Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--page); color: var(--page-fg); }
+  body { margin: 0; font-family: var(--slab); }
+  .page { max-width: 1960px; margin: 0 auto; padding-block: 22px 60px; padding-inline: 20px; }
+  button, select, input { font: inherit; }
+  button:focus-visible, select:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  /* review chrome */
+  .intro h1 { font-size: 26px; font-weight: 800; margin: 0; color: #f1ece2; text-wrap: balance; }
+  .intro p { margin: 8px 0 0; color: var(--page-mut); font-size: 14px; line-height: 1.55; max-width: 1040px; }
+  .intro p b { color: #f1ece2; font-weight: 600; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; margin: 18px 0 14px; }
+  .ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ctl > span { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--page-mut); font-weight: 700; }
+  .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--page-line); border-radius: 8px; overflow: hidden; }
+  .seg button { font-size: 13px; color: var(--page-fg); background: var(--ctl); border: 0; padding: 7px 12px; cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--page-line); }
+  .seg button:hover { background: #24231f; }
+  .seg button.on { background: var(--cream); color: var(--ink); font-weight: 700; }
+  .ctl select { font-size: 13px; color: var(--page-fg); background: var(--ctl); border: 1px solid var(--page-line); border-radius: 8px; padding: 6px 10px; }
+  .tog { font-size: 13px; color: var(--page-fg); background: var(--ctl); border: 1px solid var(--page-line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  .tog[aria-pressed="true"] { border-color: var(--tan); color: #f1ece2; background: #24231f; }
+
+  .stage-wrap { position: relative; width: 100%; overflow: hidden; border-radius: 10px; border: 1px solid #000; background: #000; }
+  .stage-wrap.full { overflow-x: auto; }
+  .stage { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; transform-origin: 0 0; overflow: hidden;
+    background: var(--screen); color: var(--cream); font-family: var(--slab); }
+  .stage-wrap.full .stage { position: relative; }
+
+  .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; margin-top: 20px; }
+  .note { min-width: 0; border: 1px solid var(--page-line); border-radius: 10px; padding: 14px 16px; background: #121210; }
+  .note h2 { font-size: 16px; margin: 0 0 6px; color: #f1ece2; }
+  .note li { font-size: 14px; line-height: 1.55; }
+  .note ul { margin: 0; padding-left: 18px; }
+  .note li + li { margin-top: 4px; }
+  h2.sec { font-size: 20px; color: #f1ece2; margin: 36px 0 6px; }
+  p.sec { margin: 0 0 14px; color: var(--page-mut); font-size: 14px; line-height: 1.55; max-width: 1040px; }
+
+  /* ---------- the sheet ---------- */
+  .lay { position: absolute; inset: 0; padding: 24px; display: grid; grid-template-columns: 400px minmax(0, 1fr); gap: 20px; }
+  .left { min-height: 0; min-width: 0; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+  .main { min-height: 0; min-width: 0; display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 16px; }
+  .blk { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; min-width: 0; }
+  .bh { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tan); margin-bottom: 6px; }
+  .bh .r { margin-left: auto; display: flex; gap: 8px; letter-spacing: 0; text-transform: none; font-weight: 600; }
+  .none { color: var(--muted); font-style: italic; }
+  .btn { font-size: 14px; color: var(--cream); background: var(--card); border: 1px solid var(--border); border-radius: 6px; height: 38px; padding: 0 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0; }
+  .btn:hover { background: var(--card-hover); border-color: var(--tan); }
+  .btn.primary { border-color: var(--gold); color: var(--gold); }
+  .btn.sm { height: 24px; font-size: 12.5px; padding: 0 9px; }
+  .btn kbd { font: inherit; font-size: 11px; color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 0 5px; }
+  .cta { font-size: 12px; font-weight: 700; color: var(--ink); background: var(--gold); border-radius: 9px; padding: 1px 8px; }
+  .pill { font-size: 12px; color: var(--lab); border: 1px solid var(--border); border-radius: 9px; padding: 0 8px; white-space: nowrap; }
+
+  /* the card: the EotW hero card's grammar at sheet size, with level progress on the plate */
+  .card { position: relative; width: 400px; height: 520px; flex-shrink: 0; border-radius: 10px; border: 1px solid #000000cc; background: #151515 center / cover; background-position: 50% 12%; overflow: hidden; }
+  .plate { position: absolute; left: 10px; right: 10px; bottom: 10px; background: #000000c4; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; }
+  .plate .pn { font-size: 28px; font-weight: 800; color: #fff; line-height: 1.08; }
+  .plate .ps { font-size: 14px; color: #c6d0da; margin-top: 2px; }
+  .xpl { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: #c6d0da; margin-bottom: 4px; }
+  .xpl b { color: #fff; }
+  .xpbar { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.12); overflow: hidden; }
+  .xpbar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--tan), var(--cream)); }
+  .bnote { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: #c6d0da; margin-top: 5px; font-variant-numeric: tabular-nums; }
+  .bnote b { color: #fff; }
+  .rrow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 10px; align-items: center; border-top: 1px solid rgba(255,255,255,0.10); padding-top: 9px; }
+  .ring { width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(223,207,192,0.6); background: #000000a0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: var(--cream-light); font-variant-numeric: tabular-nums; }
+  .rcell { font-size: 12.5px; color: #c6d0da; min-width: 0; line-height: 1.25; }
+  .rcell b { color: #fff; font-size: 14px; }
+  .rcell.num { text-align: center; padding-left: 10px; border-left: 1px solid rgba(255,255,255,0.10); }
+  .rcell.num b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .pips { display: inline-flex; gap: 3px; margin-left: 4px; vertical-align: 3px; }
+  .pips i { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
+
+  /* gear */
+  .gearcard { flex: 0 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .split { height: 1px; background: rgba(255,255,255,0.10); margin: 10px -16px 9px; flex-shrink: 0; }
+  .kitcols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .kitcols .ksec + .ksec { border-left: 1px solid rgba(255,255,255,0.08); padding-left: 14px; }
+  .kv.one { grid-template-columns: 1fr auto; }
+  .sub3 { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin: 8px 0 2px; display: flex; justify-content: space-between; gap: 8px; }
+  .sub3 span { letter-spacing: 0; text-transform: none; font-weight: 600; }
+  .res { display: inline-flex; align-items: center; gap: 7px; padding-left: 10px; border-left: 1px solid rgba(255,255,255,0.10); }
+  .res i { width: 12px; height: 12px; transform: rotate(45deg); border: 2px solid var(--tan); }
+  .res b { font-size: 20px; color: #fff; font-variant-numeric: tabular-nums; }
+  .surges { display: inline-flex; gap: 2px; color: var(--gold); }
+  .surges:empty { display: none; }
+  .surges svg { width: 13px; height: 13px; display: block; }
+  .sec2 { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 9px 0 3px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .sec2 span { letter-spacing: 0; text-transform: none; font-weight: 600; }
+  .kith { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .kith .kn { font-size: 16.5px; font-weight: 700; color: var(--cream-light); }
+  .kith .kg { font-size: 12.5px; color: var(--muted); }
+  .kv { display: grid; grid-template-columns: 1fr auto 1fr auto; gap: 1px 12px; font-size: 13.5px; margin-top: 4px; }
+  .kv span:nth-child(odd) { color: var(--lab); }
+  .kv span:nth-child(even) { color: var(--cream-light); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .mk { color: var(--tan); font-weight: 400; margin-left: 4px; font-size: 11px; vertical-align: 1px; }
+  .kdesc { font-size: 13px; color: var(--cream); margin-top: 3px; line-height: 1.4; }
+  .kitpair { display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+  .kchip { font-size: 15px; font-weight: 700; color: var(--cream-light); }
+  .kchip i { font-style: normal; color: var(--tan); font-size: 12px; margin-right: 5px; vertical-align: 1px; }
+  .kplus { color: var(--muted); }
+  .choose { margin-top: 6px; display: grid; grid-template-columns: auto 1fr 1fr; gap: 6px; align-items: center; font-size: 12.5px; color: var(--lab); }
+  .choose > span:first-child { white-space: nowrap; }
+  .opt { font-size: 12.5px; text-align: left; border: 1px solid var(--border); border-radius: 6px; padding: 3px 7px; background: transparent; color: var(--cream); cursor: pointer; white-space: nowrap; }
+  .opt b { color: var(--cream-light); }
+  .opt.on { border-color: var(--cream-light); background: #2c2a25; }
+  .chooseh { grid-column: 1 / -1; font-size: 11.5px; color: var(--muted); font-style: italic; }
+  .it { display: flex; align-items: center; gap: 8px; font-size: 13.5px; padding: 3px 6px 3px 10px; border: 1px solid var(--border); border-radius: 6px; background: rgba(0,0,0,0.2); margin-top: 4px; min-height: 31px; }
+  .it:hover, .it.pinned { border-color: #6a6459; }
+  .it .nm2 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .it .rt { margin-left: auto; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .it .tg { font-size: 12px; color: var(--muted); font-style: italic; white-space: nowrap; padding-right: 4px; }
+  .it.todo { border-color: var(--gold); }
+  .warnchip { font-size: 11px; color: var(--warn); border: 1px solid rgba(233,184,111,0.5); border-radius: 9px; padding: 0 6px; white-space: nowrap; }
+  .cons { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+  .cons .it { margin-top: 0; min-height: 28px; padding: 2px 9px; font-size: 13px; }
+  .cons .q { color: var(--cream-light); font-weight: 700; margin-left: 4px; }
+  .cons .it.more { color: var(--tan); border-style: dashed; cursor: pointer; }
+
+  /* top bar */
+  .topbar { display: flex; align-items: center; gap: 10px; min-height: 60px; min-width: 0; }
+  .sw { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 auto; overflow: hidden; }
+  .sw .grp { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-right: 2px; white-space: nowrap; }
+  .sw .sep { width: 1px; align-self: stretch; background: var(--border); margin: 6px 4px; }
+  .th { width: 40px; height: 56px; border-radius: 6px; background-size: cover; background-position: 50% 15%; border: 1px solid #000; cursor: pointer; flex-shrink: 0; padding: 0; }
+  .th.mine { box-shadow: 0 0 0 2px rgba(111,168,255,0.8); }
+  .th.cur { outline: 2px solid var(--cream-light); outline-offset: 3px; }
+  .ownerchip { font-size: 14px; color: var(--cream); border: 1px solid rgba(111,168,255,0.55); background: rgba(111,168,255,0.10); border-radius: 18px; padding: 6px 14px; white-space: nowrap; }
+  .ownerchip i { color: var(--muted); }
+  .close.sig { border: 2px solid var(--gold); color: var(--gold); animation: pulse 1.6s ease-in-out infinite; }
+  .close .sigt { font-weight: 700; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 4px rgba(255,214,107,0.25); } }
+  @media (prefers-reduced-motion: reduce) { .close.sig { animation: none; } }
+
+  /* stats band: numbers row over words row */
+  .band { padding: 12px 18px; }
+  .glab { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan); margin-bottom: 6px; white-space: nowrap; }
+  .nums { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 26px; align-items: stretch; }
+  .tiles { display: grid; gap: 7px; }
+  .tile { background: rgba(0,0,0,0.22); border: 1px solid var(--border); border-radius: 8px; padding: 6px 4px 5px; text-align: center; min-width: 0; }
+  .tile .lab { font-size: 14px; color: var(--lab); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile .val { font-size: 30px; font-weight: 800; color: var(--cream-light); line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .tile.sm { padding: 4px 4px 3px; border-color: rgba(58,56,51,0.7); background: rgba(0,0,0,0.12); }
+  .tile.sm .lab { font-size: 12.5px; }
+  .tile.sm .val { font-size: 19px; font-weight: 700; }
+  .lines { display: flex; flex-direction: column; justify-content: center; gap: 10px; padding-left: 22px; border-left: 1px solid rgba(255,255,255,0.08); }
+  .lrow { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: baseline; gap: 10px; }
+  .lrow .glab { margin: 0; }
+  .pairs { display: flex; flex-wrap: wrap; gap: 4px 22px; font-size: 14.5px; color: var(--lab); }
+  .pairs b { color: var(--cream-light); font-size: 20px; margin-left: 6px; font-variant-numeric: tabular-nums; }
+  .smt { display: grid; grid-template-columns: 4fr 3fr; gap: 14px; padding-left: 22px; border-left: 1px solid rgba(255,255,255,0.08); align-content: center; }
+  .hr { height: 1px; background: rgba(255,255,255,0.08); margin: 10px 0 9px; }
+  .wrow { display: grid; grid-template-columns: minmax(0, 2.4fr) minmax(0, 0.9fr) minmax(0, 1.1fr) minmax(0, 0.8fr); gap: 18px; }
+  .wrow > div + div { border-left: 1px solid rgba(255,255,255,0.08); padding-left: 16px; }
+  .wl { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan); margin-bottom: 3px; }
+  .words { font-size: 14px; line-height: 1.6; color: var(--cream); min-width: 0; }
+  .words .g { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tan); margin-right: 5px; }
+  .words .sk { white-space: nowrap; display: inline-block; margin-right: 18px; }
+
+  /* lists */
+  .lists { min-height: 0; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); grid-template-rows: auto minmax(0, 1fr); gap: 0 20px; }
+  .lhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-bottom: 9px; border-bottom: 1px solid rgba(188,155,123,0.4); min-width: 0; min-height: 44px; }
+  .lhead h3 { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cream-light); }
+  .lhead .cnt { font-size: 13px; color: var(--muted); margin-right: 6px; }
+  .chip { font-size: 12.5px; height: 28px; padding: 0 10px; border-radius: 14px; border: 1px solid var(--border); background: transparent; color: var(--cream); cursor: pointer; }
+  .chip:hover { border-color: var(--tan); }
+  .chip.on { background: var(--cream); color: var(--ink); border-color: var(--cream); font-weight: 700; }
+  .search { font-size: 13px; height: 28px; flex: 1 1 110px; min-width: 100px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--border); background: rgba(0,0,0,0.25); color: var(--cream); }
+  .search::placeholder { color: var(--muted); }
+  .lbody { overflow-y: auto; min-height: 0; padding: 8px 6px 0 0; scrollbar-width: thin; scrollbar-color: #4a4740 transparent; }
+  .grp { margin-top: 14px; } .grp:first-child { margin-top: 2px; }
+  .grph { display: flex; align-items: baseline; gap: 8px; padding: 3px 0; width: 100%; background: none; border: 0; color: inherit; text-align: left; cursor: pointer; }
+  .grph .car { width: 12px; font-size: 10px; color: var(--muted); transition: transform 0.12s; }
+  .grp.closed .grph .car { transform: rotate(-90deg); }
+  .grp.closed .gb { display: none; }
+  .grph .gl { font-size: 13px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan); }
+  .grph .gc { font-size: 13px; color: var(--muted); }
+  .grph .gn { margin-left: auto; font-size: 12px; color: var(--muted); font-style: italic; }
+  .arow { display: flex; align-items: baseline; gap: 10px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(26,27,24,0.85); margin-top: 6px; cursor: pointer; min-width: 0; }
+  .arow:hover { border-color: #6a6459; background: rgba(38,39,34,0.9); }
+  .arow.pinned { border-color: var(--cream-light); }
+  .arow .an { font-size: 16px; font-weight: 700; color: var(--cream-light); white-space: nowrap; }
+  .arow .ak { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .arow .tags { margin-left: auto; display: flex; gap: 6px; flex-shrink: 0; }
+  .atag { font-size: 12.5px; color: var(--lab); white-space: nowrap; }
+  .atag.cost { color: var(--tan); font-weight: 700; }
+  .atag + .atag::before { content: "\00B7"; color: var(--muted); margin-right: 6px; }
+  .compact { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+  .compact .arow { margin-top: 0; padding: 6px 10px; }
+  .compact .arow .an { font-size: 14.5px; font-weight: 600; }
+  .fcard { border: 1px solid var(--border); border-radius: 8px; background: rgba(26,27,24,0.85); padding: 10px 14px; margin-top: 7px; }
+  .ft { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .ft .fn { font-size: 16px; font-weight: 700; color: var(--cream-light); }
+  .ft .ftags { margin-left: auto; display: flex; gap: 5px; }
+  .ptag { font-size: 12px; color: var(--muted); border: 1px solid var(--border); border-radius: 9px; padding: 0 7px; white-space: nowrap; }
+  .fsub { font-size: 13px; font-style: italic; color: var(--muted); margin-top: 1px; }
+  .fd { font-size: 14px; color: var(--cream); line-height: 1.55; margin-top: 6px; white-space: pre-line; }
+  .fd.clamp { max-height: 110px; overflow: hidden; -webkit-mask-image: linear-gradient(180deg, #000 65%, transparent); mask-image: linear-gradient(180deg, #000 65%, transparent); }
+  .more { font-size: 13px; color: var(--tan); background: none; border: 0; padding: 0; margin-top: 4px; cursor: pointer; text-decoration: underline; }
+  .empty { font-size: 14px; color: var(--muted); font-style: italic; padding: 20px 4px; }
+
+  /* hover / pinned card */
+  .hcard { position: absolute; z-index: 50; width: 470px; max-height: 620px; overflow-y: auto; background: #12110f; border: 1px solid #5a554c; border-radius: 10px;
+    box-shadow: 0 18px 48px rgba(0,0,0,0.65); padding: 14px 16px 12px; pointer-events: none; }
+  .hcard.pinned { pointer-events: auto; border: 2px solid var(--cream-light); padding: 13px 15px 11px; }
+  .hcard .x { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--cream); cursor: pointer; display: none; }
+  .hcard.pinned .x { display: block; }
+  .hcard .hint { font-size: 11.5px; color: var(--muted); margin-top: 8px; font-style: italic; }
+  .c-title { font-size: 20px; font-weight: 800; color: var(--cream-light); padding-right: 30px; }
+  .c-title span { font-size: 15px; color: var(--tan); font-weight: 700; margin-left: 6px; }
+  .c-type { font-size: 13px; font-weight: 700; color: var(--tan); letter-spacing: 0.06em; margin-top: 1px; }
+  .c-fl { font-size: 14px; font-style: italic; color: var(--muted); margin-top: 6px; }
+  .c-kw { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--lab); border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 5px 0; margin-top: 8px; }
+  .c-kw b { color: var(--cream); font-weight: 600; }
+  .c-dt { display: flex; gap: 22px; font-size: 13px; color: var(--lab); margin-top: 6px; flex-wrap: wrap; }
+  .c-dt b { color: var(--cream); font-weight: 600; }
+  .c-roll { font-size: 14px; font-weight: 700; color: var(--cream-light); margin-top: 9px; }
+  .tier { display: flex; gap: 10px; font-size: 14px; color: var(--cream); margin-top: 5px; line-height: 1.4; }
+  .tier .tb { flex-shrink: 0; width: 82px; font-size: 12px; font-weight: 700; color: var(--tan); border: 1px solid rgba(188,155,123,0.45); border-radius: 4px; text-align: center; padding: 1px 0; height: fit-content; }
+  .c-eff { font-size: 14px; color: var(--cream); margin-top: 8px; line-height: 1.5; white-space: pre-line; }
+  .c-list { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+  .c-impl { font-size: 12px; font-style: italic; margin-top: 8px; }
+
+  /* stamina bars */
+  .bar { position: relative; display: flex; align-items: center; width: 100%; height: 22px; border: 1px solid var(--st-ok); border-radius: 3px; background: #00000066; }
+  .bar.st-winded { border-color: var(--st-winded); } .bar.st-dying { border-color: var(--st-dying); }
+  .bar .clip { position: absolute; inset: 0; overflow: hidden; border-radius: 2px; display: flex; align-items: center; }
+  .bar .f { height: calc(100% - 2px); margin-left: 1px; flex-shrink: 0; background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(0,0,0,0.18)), var(--st-ok); }
+  .bar.st-winded .f { background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(0,0,0,0.18)), var(--st-winded); }
+  .bar.st-dying .f { background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(0,0,0,0.18)), var(--st-dying); }
+  .bar .t { height: calc(100% - 2px); flex-shrink: 0; background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(0,0,0,0.2)), var(--temp); }
+  .bar b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; text-shadow: 0 1px 2px #000, 0 0 3px #000; font-variant-numeric: tabular-nums; white-space: nowrap; z-index: 3; }
+  .bar.sm { height: 14px; } .bar.sm b { font-size: 10px; }
+  .bar .tick { position: absolute; top: -2px; bottom: -2px; width: 2px; background: rgba(255,255,255,0.9); box-shadow: 0 0 0 1px rgba(0,0,0,0.6); z-index: 2; }
+  .bar .band { position: absolute; top: 1px; bottom: 1px; border: 2px solid var(--temp); border-radius: 2px; z-index: 1;
+    background: repeating-linear-gradient(135deg, rgba(228,221,208,0.55) 0 4px, rgba(228,221,208,0.25) 4px 8px); }
+  .bar .over { position: absolute; right: -9px; top: 50%; width: 0; height: 0; transform: translateY(-50%); border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 7px solid var(--temp); z-index: 2; }
+  .bar.sm .over { right: -7px; border-top-width: 4px; border-bottom-width: 4px; border-left-width: 5px; }
+  .bar .dz { position: absolute; top: 1px; bottom: 1px; left: 1px; background: rgba(201,64,64,0.16); border-right: 2px solid rgba(255,255,255,0.75); }
+  .bar .dzf { position: absolute; top: 1px; bottom: 1px; background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(0,0,0,0.2)), var(--st-dying); }
+  .bar .capout { position: absolute; top: 1px; bottom: 1px; z-index: 1; border: 2px solid var(--temp); border-left: 0; border-radius: 0 3px 3px 0;
+    background: repeating-linear-gradient(135deg, rgba(228,221,208,0.55) 0 4px, rgba(228,221,208,0.25) 4px 8px); }
+  .barwrap.t3 { width: 82%; }
+
+  /* stamina study */
+  .study-wrap { overflow-x: auto; border: 1px solid var(--page-line); border-radius: 10px; }
+  table.study { border-collapse: collapse; width: 100%; min-width: 1240px; background: #0b0c0b; }
+  .study th, .study td { border-bottom: 1px solid var(--page-line); padding: 14px 16px; vertical-align: top; text-align: left; }
+  .study thead th { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--page-mut); font-weight: 700; }
+  .study thead th small { display: block; letter-spacing: 0; text-transform: none; font-weight: 400; font-size: 12px; margin-top: 2px; }
+  .study th[scope="row"] { width: 250px; font-weight: 400; }
+  .study th[scope="row"] b { display: block; color: #f1ece2; font-size: 15px; margin-bottom: 4px; }
+  .study th[scope="row"] span { font-size: 13px; color: var(--page-mut); line-height: 1.45; display: block; }
+  .study td .cardsz { width: 132px; margin-top: 12px; }
+  .study td .cap { font-size: 11px; color: var(--page-mut); margin-top: 5px; }
+  .foot { margin-top: 26px; font-size: 13px; color: var(--page-mut); line-height: 1.6; max-width: 1100px; }
+</style>
+
+<div class="page">
+  <header class="intro">
+    <h1>EotW sheet layouts</h1>
+    <p>Round 7 mock. <b>Left column:</b> the card keeps its own resource and surge look, and one card below it holds the kit (or the class's prayer, ward, enchantment or augmentation) and then Treasures, split into leveled treasures, trinkets and consumables. Lists shorten behind "+N more" so nothing is ever cut off. <b>Abilities:</b> the tagging plan now also moves the Dwarf's Light and the Conduit's rituals into Features.</p>
+  </header>
+
+  <div class="controls" role="toolbar" aria-label="Mock controls">
+    <div class="ctl"><span>Hero</span><select id="ctl-hero" aria-label="Hero"></select></div>
+    <div class="ctl"><span>Movement and potency</span>
+      <div class="seg" id="ctl-mp">
+        <button data-mp="lines">Labelled lines</button>
+        <button data-mp="tiles">Small tiles</button>
+      </div>
+    </div>
+    <div class="ctl"><span>Simulate</span>
+      <button class="tog" id="ctl-vet" aria-pressed="false">Veteran inventory</button>
+      <button class="tog" id="ctl-imm" aria-pressed="false">Many immunities</button>
+      <button class="tog" id="ctl-prog" aria-pressed="false">Some progress</button>
+      <button class="tog" id="ctl-twokit" aria-pressed="false">Tactician: two melee kits</button>
+      <button class="tog" id="ctl-res" aria-pressed="false">Resource and surges</button>
+      <button class="tog" id="ctl-sig" aria-pressed="false">A trigger is waiting</button>
+    </div>
+    <div class="ctl"><span>Stamina</span><select id="ctl-stam" aria-label="Stamina state"></select></div>
+    <div class="ctl"><span>Zoom</span><div class="seg" id="ctl-zoom"><button data-zoom="fit">Fit</button><button data-zoom="full">100%</button></div></div>
+  </div>
+
+  <div class="stage-wrap" id="wrap"><div class="stage" id="stage"></div></div>
+
+  <div class="notes">
+    <section class="note">
+      <h2>What changed from round 6</h2>
+      <ul>
+        <li>The resource is the card's icon and value, and surges are one icon each beside it, none when there are none. Try "Resource and surges".</li>
+        <li>The gear card is now Kit (or Prayer and Ward, Enchantment and Ward, Augmentation) above Treasures, with leveled treasures, trinkets and consumables as sub-headings.</li>
+        <li>The Tactician's two kits read as one kit, laid out exactly like a single kit. Hover a value to see which kit it comes from.</li>
+        <li>Treasure lists shorten behind "+N more" until the card fits, so nothing renders off screen.</li>
+        <li>Light, Revitalizing Ritual and the Ritualist perk's blessing ritual are features now, not abilities.</li>
+      </ul>
+    </section>
+    <section class="note">
+      <h2>Abilities follow the tagging plan</h2>
+      <ul>
+        <li>A feature tagged Ability or Trigger shows as an ability card here; its feature row stays hidden.</li>
+        <li>Prose features that the codex implements as an ability stay visible features. The Conduit's Life and War Domain Effects are now in Features (Combat), not Abilities.</li>
+        <li>Kit signature abilities, core-feature actions such as Mark, free strikes and standard actions have no tagged feature, so they always show.</li>
+        <li>Triggered actions come from a separate list in the codex; round 5's data had missed them.</li>
+      </ul>
+    </section>
+    <section class="note">
+      <h2>Stand-ins</h2>
+      <ul>
+        <li>Bitter replaces Berlingske Slab. The hover card imitates the codex ability card; the real one is CreateAbilityTooltip.</li>
+        <li>The Human Censor's two test abilities ("Halt Miscreant! - Copy", "Test custom trigger") are left off: they are custom test content on that pregen.</li>
+        <li>The veteran inventory, many immunities, progress and second melee kit are simulated with real item and kit records.</li>
+        <li>All on-screen wording is placeholder copy for sign-off later.</li>
+      </ul>
+    </section>
+  </div>
+
+  <h2 class="sec">Stamina bar study (for the David conversation)</h2>
+  <p class="sec">The sheet uses S1, the hero card's bar as built, for now. The T variants are kept for the conversation with David: temporary stamina is lost first, so each draws temp as the part of the bar damage reaches first. Every variant shows the winded mark and the dead value.</p>
+  <div class="study-wrap"><table class="study" id="study"></table></div>
+
+  <p class="foot">Earlier rounds are in this artifact's version history. Data: real pregens from the running app.</p>
+</div>
+
+<script src="data.js"></script>
+<script src="std.js"></script>
+<script src="vet.js"></script>
+<script>
+(function () {
+  "use strict";
+  const HEROES = window.HEROES || [];
+  const STD = window.STD || [];
+  const VETERAN = window.VETERAN || [];
+  const byKey = Object.fromEntries(HEROES.map(h => [h.key, h]));
+  const ROSTER_TOWN = ["fury", "tactician", "censor", "null", "elementalist", "conduit"];
+  const PARTY_GAME = ["fury", "tactician", "censor", "null", "talent", "shadow", "troubadour"];
+  const PILLARS = ["Combat", "Exploration", "Montage", "Negotiation", "Respite"];
+  const SECTION_ORDER = ["Core", "Class", "Ancestry", "Complication", "Kit", "Titles", "Perks", "Career", "Culture", "Treasures"];
+  const IMPL = { 4: ["Fully automated", "#8fd18f"], 3: ["Mostly automated", "#c9bfa9"], 2: ["Partly automated", "#e9b86f"], 1: ["Not automated", "#e07a5f"], 0: ["Narrative", "#9a9188"] };
+  const SKILL_GROUPS = {"crafting": ["Alchemy", "Architecture", "Blacksmithing", "Carpentry", "Cooking", "Fletching", "Forgery", "Jewelry", "Mechanics", "Tailoring"], "exploration": ["Climb", "Drive", "Endurance", "Gymnastics", "Heal", "Jump", "Lift", "Navigate", "Ride", "Swim"], "interpersonal": ["Brag", "Empathize", "Flirt", "Gamble", "Handle Animals", "Interrogate", "Intimidate", "Lead", "Lie", "Music", "Perform", "Persuade", "Read Person"], "intrigue": ["Alertness", "Conceal Object", "Disguise", "Eavesdrop", "Escape Artist", "Hide", "Pick Lock", "Pick Pocket", "Sabotage", "Search", "Sneak", "Track"], "lore": ["Criminal Underworld", "Culture", "History", "Magic", "Monsters", "Nature", "Psionics", "Religion", "Rumors", "Society", "Strategy", "Timescape"]};
+  const GROUP_ORDER = ["crafting", "exploration", "interpersonal", "intrigue", "lore"];
+  const GROUP_LABEL = { crafting: "Crafting", exploration: "Exploration", interpersonal: "Interpersonal", intrigue: "Intrigue", lore: "Lore" };
+  const XP_PER_LEVEL = 16;
+  const MANY_IMM = ["Acid 3", "Cold 3", "Corruption 3", "Fire 3", "Lightning 3", "Poison 3", "Psychic 10"], MANY_WEAK = ["Holy 5", "Sonic 2"];
+  /* kit records from data/objectTables/kits */
+  const KITS = {
+    "Shining Armor": { name: "Shining Armor", armor: ["Heavy"], weapons: ["Medium", "Shield"], bon: [["Stamina", 12], ["Stability", 1]], dmg: { melee: "+2/+2/+2" } },
+    "Rapid-Fire": { name: "Rapid-Fire", armor: ["Light"], weapons: ["Bow"], bon: [["Stamina", 3], ["Speed", 1], ["Disengage", 1], ["Ranged distance", 7]], dmg: { ranged: "+2/+2/+2" } },
+    "Panther": { name: "Panther", armor: [], weapons: ["Heavy"], bon: [["Stamina", 6], ["Speed", 1], ["Stability", 1]], dmg: { melee: "+0/+0/+4" } },
+  };
+  const KIT_GEAR = { "Panther": { armor: [], weapons: ["Heavy"] }, "Cloak and Dagger": { armor: ["Light"], weapons: ["Light"] }, "Mountain": { armor: ["Heavy"], weapons: ["Heavy"] }, "Swashbuckler": { armor: ["Light"], weapons: ["Medium"] } };
+  /* kit-equivalents read from each pregen's feature choices */
+  const EQUIV = {
+    conduit: [{ h: "Prayer", name: "Prayer of Distance", bon: [["Ranged magic distance", "+2"]] }, { h: "Ward", name: "Bastion Ward", bon: [["Saving throws", "+1"]] }],
+    elementalist: [{ h: "Enchantment", name: "Enchantment of Destruction", bon: [["Magic damage", "+1"]] }, { h: "Ward", name: "Ward of Delightful Consequences", text: "The first time each round that you take damage, you gain 1 surge." }],
+    talent: [{ h: "Augmentation", name: "Distance Augmentation", bon: [["Ranged psionic distance", "+2"]] }],
+    null: [{ h: "Augmentation", name: null }],
+  };
+  /* triggered actions come from GetTriggeredActions(), not the ability list (records from the class data) */
+  const TRIGGERS = {
+    conduit: [{ name: "Word of Guidance", cat: "Triggered Action", action: "Triggered action", keywords: ["Magic", "Ranged"], target: "One ally", flavor: "You invigorate an attacking ally with divine energy.",
+      trigger: "The target makes an ability power roll for an ability that deals damage.", effect: "The power roll gains an edge.\nSpend 1 Piety: The power roll gains a double edge." }],
+    elementalist: [{ name: "Explosive Assistance", cat: "Triggered Action", action: "Triggered action", keywords: [], target: "Self or one ally", flavor: "You add a little magic to an ally's aggression at just the right time.",
+      trigger: "The target force moves a creature or object.", effect: "The forced movement distance gains a bonus equal to your Reason score.\nSpend 1 Essence: The forced movement distance gains a bonus equal to twice your Reason score instead." }],
+  };
+  /* abilities whose source is a visible prose feature (tagging plan) or custom test content on a pregen */
+  const NOT_ABILITIES = { "Life Domain Effect": "feature", "War Domain Effect": "feature", "Light": "feature", "Revitalizing Ritual": "feature", "Magic Ritual of Blessing": "feature", "Halt Miscreant! - Copy": "test", "Test custom trigger": "test" };
+  const EXTRA_FEATURES = { conduit: [
+    { name: "Life Domain Effect", section: "Class", kind: "normal", tags: ["Combat"], desc: "Choose yourself or one ally within 10 squares. That character can spend a Recovery, can end one effect on them that is ended by a saving throw or that ends at the end of their turn, or can stand up if they are prone. Alternatively, you or one ally within 10 squares gains temporary Stamina equal to two times your Intuition score." },
+    { name: "War Domain Effect", section: "Class", kind: "normal", tags: ["Combat"], desc: "Three allies of your choice within 10 squares of you, including yourself, gain two surges." },
+    { name: "Revitalizing Ritual", section: "Class", kind: "normal", tags: ["Respite"], desc: "Each time you finish a respite, you can choose yourself or an ally who is also ending a respite to gain the benefit of a divine ritual. When you perform the ritual, the chosen character gains a bonus to their recovery value equal to your level, which lasts until you finish another respite." },
+    { name: "Ritualist", section: "Perks", kind: "normal", tags: ["Exploration", "Montage"], desc: "You can spend 1 uninterrupted minute to perform a magic ritual of blessing, targeting yourself or one willing creature you touch. The target has a double edge on the next test they make within the next minute. A target can't use this benefit on an activity that takes longer than 1 minute." },
+  ] };
+  const STAM_STATES = [
+    ["full", "Full", (m, w) => ({ cur: m, temp: 0 })],
+    ["fulltemp", "Full, 8 temp", (m, w) => ({ cur: m, temp: 8 })],
+    ["hurttemp", "Hurt, 10 temp", (m, w) => ({ cur: m - 3, temp: 10 })],
+    ["windtemp", "Winded, 5 temp", (m, w) => ({ cur: w - 4, temp: 5 })],
+    ["winded", "Winded", (m, w) => ({ cur: w - 4, temp: 0 })],
+    ["dying", "Dying", (m, w) => ({ cur: -3, temp: 0 })],
+    ["neardeath", "Near death", (m, w) => ({ cur: -(w - 3), temp: 0 })],
+  ];
+
+  const state = { hero: "fury", mp: "lines", stam: "full", vet: false, imm: false, prog: false, twokit: false, res: false, sig: false, zoom: "fit", caps: { lev: 4, trk: 4, con: 8 },
+    chips: new Set(), search: "", closed: new Set(), more: new Set(), hover: null, pin: null, meleeFrom: "Shining Armor" };
+  try { const b = localStorage.getItem("eotw-r6-mp"); if (b === "lines" || b === "tiles") state.mp = b; } catch (e) {}
+  (location.hash || "").replace("#", "").split(".").forEach(t => {
+    if (t === "tiles" || t === "lines") state.mp = t;
+    else if (["vet", "imm", "prog", "twokit", "res", "sig"].includes(t)) state[t] = true;
+    else if (/^pin-/.test(t)) state.pin = t.slice(4).replace("-", ":");
+    else if (t) state.hero = t;
+  });
+
+  const esc = s => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const isMine = h => h.owner === "You";
+  const pc = x => (x * 100).toFixed(2) + "%";
+  const signed = n => (n >= 0 ? "+" : "") + n;
+
+  /* ---------- data helpers ---------- */
+  function stamOf(h, key) {
+    const max = h.stamina.max, w = h.stamina.winded;
+    const def = STAM_STATES.find(s => s[0] === (key || state.stam)) || STAM_STATES[0];
+    const v = def[2](max, w);
+    return { cur: v.cur, temp: v.temp, max: max, w: w };
+  }
+  const stamState = s => s.cur <= 0 ? "dying" : s.cur <= s.w ? "winded" : "ok";
+  const stamText = s => s.cur + "/" + s.max + (s.temp > 0 ? " +" + s.temp : "");
+  const immOf = h => state.imm ? MANY_IMM : (h.immunities || []);
+  const weakOf = h => state.imm ? MANY_WEAK : (h.weaknesses || []);
+  function progressOf(h) {
+    const xp = state.prog ? 11 : (parseInt(h.xp, 10) || 0);
+    const vic = state.prog ? 2 : (h.victories || 0);
+    return { vic: vic, into: Math.max(0, xp - (h.level - 1) * XP_PER_LEVEL), need: XP_PER_LEVEL, next: h.level + 1 };
+  }
+  function inventoryOf(h) {
+    const base = (h.inventory || []).map(it => ({ name: it.name, kind: "Trinket", body: null, equipped: it.equipped, qty: it.qty || 1, desc: "An item from the hero's ancestry.", keywords: [] }));
+    if (!(state.vet && isMine(h))) return base;
+    return base.concat(VETERAN.map(it => Object.assign({}, it)));
+  }
+  const toEquip = h => isMine(h) ? inventoryOf(h).filter(it => it.won && !it.equipped).length : 0;
+  function kitGearOf(h) {
+    if (h.key === "tactician") { const b = state.twokit ? KITS["Panther"] : KITS["Rapid-Fire"]; const a = KITS["Shining Armor"]; return { armor: a.armor.concat(b.armor), weapons: a.weapons.concat(b.weapons) }; }
+    return h.kit ? KIT_GEAR[h.kit.name] : null;
+  }
+  function gearLine(g) {
+    if (!g) return "";
+    const uniq = a => a.filter((x, i) => a.indexOf(x) === i);
+    return (g.armor.length ? uniq(g.armor).join(" or ") + " armor" : "No armor") + ", " + uniq(g.weapons).map(w => w === "Shield" ? "shield" : w.toLowerCase() + " weapon").join(", ");
+  }
+  //weapon and armor treasure only helps when the kit uses that kind of gear (Heroes p.314)
+  function itemWarn(h, it) {
+    const m = /^(Light|Medium|Heavy) Armor$/.exec(it.body || "");
+    if (!m) return "";
+    const g = kitGearOf(h);
+    if (!g) return "No kit: no benefit";
+    if (g.armor.includes(m[1])) return "";
+    return (g.armor.length ? "Kit armor is " + g.armor.join(" or ").toLowerCase() : "Kit has no armor") + ": no benefit";
+  }
+
+  /* ---------- stamina bars (S1 = the hero card's bar as built) ---------- */
+  function barS1(s, small) {
+    const pct = Math.max(0, Math.min(1, s.cur / s.max));
+    const tp = (s.max > 0 && s.temp > 0) ? Math.min(1 - pct, s.temp / s.max) : 0;
+    return '<div class="bar st-' + stamState(s) + (small ? " sm" : "") + '"><span class="clip"><span class="f" style="width:' + pc(pct * 0.98) + '"></span><span class="t" style="width:' + pc(tp * 0.98) + '"></span></span><b>' + esc(stamText(s)) + "</b></div>";
+  }
+  const tick = pos => '<span class="tick" style="left:calc(' + pc(pos) + ' - 1px)"></span>';
+  function band(pct, tp) {
+    if (tp <= 0) return "";
+    let left = pct, right = pct + tp, over = "";
+    if (right > 1) { right = 1; left = Math.max(0, 1 - tp); over = '<span class="over"></span>'; }
+    return '<span class="band" style="left:' + pc(left) + ";width:" + pc(right - left) + '"></span>' + over;
+  }
+  function barT1(s, small) {
+    const pct = Math.max(0, Math.min(1, s.cur / s.max)), tp = s.temp > 0 ? s.temp / s.max : 0;
+    return '<div class="bar st-' + stamState(s) + (small ? " sm" : "") + '"><span class="clip"><span class="f" style="width:' + pc(pct * 0.98) + '"></span></span>' + band(pct, tp) + tick(s.w / s.max) + "<b>" + esc(stamText(s)) + "</b></div>";
+  }
+  function barT2(s, small) {
+    const DZ = 0.18, pos = 1 - DZ;
+    const pct = Math.max(0, Math.min(1, s.cur / s.max)), tp = s.temp > 0 ? s.temp / s.max : 0;
+    const dyingFrac = s.cur < 0 ? Math.min(1, -s.cur / s.w) : 0;
+    const zone = '<span class="dz" style="width:' + pc(DZ) + '"></span>' + (dyingFrac > 0 ? '<span class="dzf" style="left:calc(' + pc(DZ * (1 - dyingFrac)) + ' + 1px);width:calc(' + pc(DZ * dyingFrac) + ' - 1px)"></span>' : "");
+    const fill = '<span class="f" style="position:absolute;top:1px;bottom:1px;height:auto;margin:0;left:' + pc(DZ) + ";width:" + pc(pos * pct) + '"></span>';
+    let bandHtml = "";
+    if (tp > 0) {
+      let left = DZ + pos * pct, right = left + pos * tp, over = "";
+      if (right > 1) { right = 1; left = Math.max(DZ, 1 - pos * tp); over = '<span class="over"></span>'; }
+      bandHtml = '<span class="band" style="left:' + pc(left) + ";width:" + pc(right - left) + '"></span>' + over;
+    }
+    return '<div class="bar st-' + stamState(s) + (small ? " sm" : "") + '"><span class="clip">' + zone + fill + "</span>" + bandHtml + tick(DZ + pos * (s.w / s.max)) + "<b>" + esc(stamText(s)) + "</b></div>";
+  }
+  function barT3(s, small) {
+    const pct = Math.max(0, Math.min(1, s.cur / s.max)), tp = s.temp > 0 ? s.temp / s.max : 0;
+    let inside = "", outside = "";
+    if (tp > 0) {
+      const inW = Math.min(tp, 1 - pct), outW = Math.min(0.22, tp - inW);
+      if (inW > 0) inside = '<span class="band" style="left:' + pc(pct) + ";width:" + pc(inW) + '"></span>';
+      if (outW > 0) outside = '<span class="capout" style="left:100%;width:' + pc(outW) + '"></span>';
+    }
+    return '<div class="barwrap t3"><div class="bar st-' + stamState(s) + (small ? " sm" : "") + '"><span class="clip"><span class="f" style="width:' + pc(pct * 0.98) + '"></span></span>' + inside + outside + tick(s.w / s.max) + "<b>" + esc(stamText(s)) + "</b></div></div>";
+  }
+
+  /* ---------- left column: the card, then kit and treasures ---------- */
+  //the card draws one surge icon per available surge (EotwHeroCard CreateSurgeCorner); stand-in glyph
+  const SURGE_ICON = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7 0 2 7h3.5L4.5 12 10 4.8H6.6Z" fill="currentColor"/></svg>';
+  const resOf = h => state.res ? { v: 3, s: 2 } : { v: h.resource.value, s: h.surges };
+  function heroCard(h) {
+    const s = stamOf(h), st = stamState(s), p = progressOf(h), r = resOf(h);
+    const left = st === "dying" ? "<b>Dying</b>" : st === "winded" ? "<b>Winded</b> at " + esc(s.w) : "Winded at <b>" + esc(s.w) + "</b>";
+    return '<div class="card" role="img" aria-label="' + esc(h.name) + '" style="background-image:url(art/' + esc(h.key) + '.jpg)">' +
+      '<div class="plate"><div><div class="pn">' + esc(h.name) + '</div><div class="ps">Level ' + esc(h.level) + " " + esc(h.ancestry) + " " + esc(h.className) + " &middot; " + esc(h.subclass || "") + "</div></div>" +
+      '<div><div class="xpl"><span><b>' + p.into + "</b> of " + p.need + " XP to level " + p.next + "</span><span>Victories <b>" + p.vic + '</b></span></div><div class="xpbar"><i style="width:' + pc(Math.min(1, p.into / p.need)) + '"></i></div></div>' +
+      "<div>" + barS1(s, false) + '<div class="bnote"><span>' + left + "</span><span>Dead at <b>-" + esc(s.w) + "</b></span></div></div>" +
+      '<div class="rrow"><span class="ring" title="Recoveries">' + esc(h.recoveries.cur) + '</span><div class="rcell"><b>Recoveries</b><br>of ' + esc(h.recoveries.max) + " &middot; +" + esc(h.recoveries.value) + " each</div>" +
+      '<span class="res" title="' + esc(h.resource.name || "Heroic Resource") + '"><i></i><b>' + esc(r.v) + "</b></span>" +
+      '<span class="surges" title="' + esc(r.s) + ' surges">' + (r.s > 0 ? SURGE_ICON.repeat(Math.min(9, r.s)) : "") + "</span></div></div></div>";
+  }
+  //pairs are [label, value, hover text]; one column for the narrow two-up kit-equivalents
+  function kvGrid(pairs, one) {
+    return '<div class="kv' + (one ? " one" : "") + '">' + pairs.map(p => "<span>" + esc(p[0]) + "</span><span" + (p[2] ? ' title="' + esc(p[2]) + '"' : "") + ">" + esc(p[1]) + "</span>").join("") + (!one && pairs.length % 2 ? "<span></span><span></span>" : "") + "</div>";
+  }
+  const ksec = (label, body) => '<div class="ksec"><div class="bh">' + esc(label) + "</div>" + body + "</div>";
+  const kname = (name, line) => '<div class="kith"><span class="kn">' + esc(name) + "</span>" + (line ? '<span class="kg">' + esc(line) + "</span>" : "") + "</div>";
+  function kitBlock(h) {
+    if (h.key === "tactician") return ksec("Kit", tacticianKit(h));
+    if (h.kit) return ksec("Kit", kname(h.kit.name, gearLine(kitGearOf(h))) + kvGrid((h.kit.bonuses || []).map(b => [b.label, b.value])));
+    const eq = EQUIV[h.key];
+    if (!eq) return ksec("Kit", '<div class="none" style="font-size:13.5px">No kit</div>');
+    const body = (e, one) => e.name ? kname(e.name) + (e.bon ? kvGrid(e.bon, one) : "") + (e.text ? '<div class="kdesc">' + esc(e.text) + "</div>" : "") : '<div class="none" style="font-size:13.5px">None chosen</div>';
+    if (eq.length === 1) return ksec(eq[0].h, body(eq[0], false));
+    return '<div class="kitcols">' + eq.map(e => ksec(e.h, body(e, true))).join("") + "</div>";
+  }
+  //one combined kit, laid out like any other kit: each bonus is the better of the two (hover for the other)
+  function tacticianKit(h) {
+    const a = KITS["Shining Armor"], b = state.twokit ? KITS["Panther"] : KITS["Rapid-Fire"];
+    const labels = [];
+    [a, b].forEach(k => k.bon.forEach(([l]) => { if (!labels.includes(l)) labels.push(l); }));
+    const pairs = labels.map(l => {
+      const va = (a.bon.find(x => x[0] === l) || [])[1], vb = (b.bon.find(x => x[0] === l) || [])[1];
+      const useA = vb == null || (va != null && va >= vb);
+      const other = va != null && vb != null ? "; " + (useA ? b.name + " gives " + signed(vb) : a.name + " gives " + signed(va)) : "";
+      return [l, signed(useA ? va : vb), "From " + (useA ? a.name : b.name) + other];
+    });
+    const shared = a.dmg.melee && b.dmg.melee;
+    ["melee", "ranged"].forEach(t => {
+      const from = [a, b].filter(k => k.dmg[t]);
+      if (!from.length) return;
+      const k = from.length > 1 ? (state.meleeFrom === a.name ? a : b) : from[0];
+      pairs.push([t === "melee" ? "Melee damage" : "Ranged damage", k.dmg[t], from.length > 1 ? "Chosen in town: " + k.name : "From " + k.name]);
+    });
+    let html = kname(a.name + " + " + b.name) + '<div class="kith"><span class="kg">' + esc(gearLine(kitGearOf(h))) + "</span></div>" + kvGrid(pairs);
+    if (shared) html += '<div class="choose"><span>Melee damage</span>' + [a, b].map(k => '<button class="opt' + (state.meleeFrom === k.name ? " on" : "") + '" data-melee="' + esc(k.name) + '"' + (isMine(h) ? "" : " disabled") + ">" + esc(k.name) + " <b>" + esc(k.dmg.melee) + "</b></button>").join("") +
+      '<span class="chooseh">Both kits give a melee bonus: choose one in town (a respite).</span></div>';
+    return html;
+  }
+  function treasureLists(h) {
+    const inv = inventoryOf(h);
+    return { inv: inv, lev: inv.filter(it => it.kind === "Leveled treasure"), trk: inv.filter(it => it.kind === "Trinket" || it.kind === "Artifact"), con: inv.filter(it => it.kind === "Consumable") };
+  }
+  function treasuresBlock(h) {
+    const T = treasureLists(h), n = toEquip(h), idx = it => T.inv.indexOf(it);
+    const row = it => {
+      const i = idx(it), warn = itemWarn(h, it), todo = it.won && !it.equipped && isMine(h), id = "it:" + i;
+      let right = "";
+      if (warn) right += '<span class="warnchip" title="' + esc(warn) + '">No benefit</span>';
+      if (todo) right += '<button class="btn primary sm" data-flash="Equips if the rules allow it">Equip</button>';
+      else if (isMine(h) && it.body) right += '<button class="btn sm" data-flash="' + (it.equipped ? "Unequips it" : "Equips if the rules allow it") + '">' + (it.equipped ? "Unequip" : "Equip") + "</button>";
+      else right += '<span class="tg">' + (it.equipped ? "Equipped" : "Carried") + "</span>";
+      return '<div class="it' + (todo ? " todo" : "") + (state.pin === id ? " pinned" : "") + '" data-card="' + id + '" tabindex="0"><span class="nm2">' + esc(it.name) + (it.body ? ' <span class="none">(' + esc(it.body) + ")</span>" : "") + '</span><span class="rt">' + right + "</span></div>";
+    };
+    //past the cap, the last slot becomes "+N more", which opens the rest as a card
+    const capped = (list, max, kind) => list.length <= max ? list.map(row).join("") : list.slice(0, max - 1).map(row).join("") + '<div class="it" data-card="more:' + kind + '" tabindex="0" style="color:var(--tan);border-style:dashed">+' + (list.length - max + 1) + " more</div>";
+    const none = '<div class="none" style="font-size:13px">None</div>';
+    let html = '<div class="bh">Treasures<span class="r">' + (n ? '<span class="cta">' + n + " to equip</span>" : "") + "</span></div>";
+    html += '<div class="sub3">Leveled treasures<span>' + T.lev.length + " of 3 carried</span></div>" + (T.lev.length ? capped(T.lev, state.caps.lev, "lev") : none);
+    html += '<div class="sub3">Trinkets<span>' + T.trk.length + "</span></div>" + (T.trk.length ? capped(T.trk, state.caps.trk, "trk") : none);
+    const chip = it => '<div class="it' + (state.pin === "it:" + idx(it) ? " pinned" : "") + '" data-card="it:' + idx(it) + '" tabindex="0">' + esc(it.name) + (it.qty > 1 ? '<span class="q">x' + it.qty + "</span>" : "") + "</div>";
+    const cmax = state.caps.con, shown = T.con.length <= cmax ? T.con : T.con.slice(0, cmax - 1);
+    html += '<div class="sub3">Consumables<span>' + T.con.reduce((sum, it) => sum + it.qty, 0) + "</span></div>" + (T.con.length ? '<div class="cons">' + shown.map(chip).join("") +
+      (T.con.length > cmax ? '<div class="it more" data-card="more:con" tabindex="0">+' + (T.con.length - cmax + 1) + " more</div>" : "") + "</div>" : none);
+    return html;
+  }
+  function gearBlk(h) { return '<div class="blk gearcard">' + kitBlock(h) + '<div class="split"></div>' + treasuresBlock(h) + "</div>"; }
+
+  /* ---------- top bar ---------- */
+  function switcher(h) {
+    const mine = isMine(h);
+    const keys = (mine ? ROSTER_TOWN : PARTY_GAME).filter(k => byKey[k]);
+    const th = k => {
+      const x = byKey[k];
+      return '<button class="th' + (isMine(x) && !mine ? " mine" : "") + (k === h.key ? " cur" : "") + '" data-hero="' + esc(k) + '" title="' + esc(x.name + (isMine(x) ? ", level " + x.level : ", " + x.owner + "'s hero")) + '" aria-label="' + esc(x.name) + '" style="background-image:url(art/' + esc(k) + '.jpg)"></button>';
+    };
+    if (mine) return '<div class="sw"><span class="grp">Your roster</span>' + keys.map(th).join("") + "</div>";
+    const ours = keys.filter(k => isMine(byKey[k])), theirs = keys.filter(k => !isMine(byKey[k]));
+    return '<div class="sw"><span class="grp">This encounter</span>' + ours.map(th).join("") + '<span class="sep"></span>' + theirs.map(th).join("") + "</div>";
+  }
+  function topbar(h) {
+    let right = "";
+    if (isMine(h)) {
+      right += '<button class="btn" data-flash="Opens the builder\'s Appearance page">Change Appearance</button>';
+      if (h.victories === 0) right += '<button class="btn" data-flash="Opens the builder (before the first win)">Edit in Builder</button>';
+    } else right += '<span class="ownerchip">' + esc(h.owner) + "'s hero <i>(read-only)</i></span>";
+    right += '<button class="btn close' + (state.sig ? " sig" : "") + '" data-flash="Closes the sheet">' + (state.sig ? '<span class="sigt">A trigger is waiting</span> &middot; ' : "") + "Close <kbd>Esc</kbd></button>";
+    return '<div class="topbar">' + switcher(h) + right + "</div>";
+  }
+
+  /* ---------- stats band ---------- */
+  function skillsInline(h) {
+    const mine = new Set(h.skills || []);
+    const parts = GROUP_ORDER.map(g => [g, SKILL_GROUPS[g].filter(s => mine.has(s))]).filter(([, l]) => l.length);
+    return parts.length ? parts.map(([g, l]) => '<span class="sk"><span class="g">' + esc(GROUP_LABEL[g]) + "</span>" + esc(l.join(", ")) + "</span>").join("") : '<span class="none">None</span>';
+  }
+  const listOrNone = arr => arr.length ? esc(arr.join(", ")) : '<span class="none">None</span>';
+  const tile = (l, v, sm) => '<div class="tile' + (sm ? " sm" : "") + '"><div class="lab">' + esc(l) + '</div><div class="val">' + esc(v) + "</div></div>";
+  function statsBand(h) {
+    const p = h.potency || {};
+    const moves = ["Size", "Speed", "Disengage", "Stability"];
+    const right = state.mp === "tiles"
+      ? '<div class="smt"><div><div class="glab">Movement</div><div class="tiles" style="grid-template-columns:repeat(4,1fr)">' + moves.map(n => tile(n, h[n.toLowerCase()], true)).join("") + '</div></div><div><div class="glab">Potency</div><div class="tiles" style="grid-template-columns:repeat(3,1fr)">' + tile("Weak", p.weak, true) + tile("Average", p.average, true) + tile("Strong", p.strong, true) + "</div></div></div>"
+      : '<div class="lines"><div class="lrow"><span class="glab">Movement</span><span class="pairs">' + moves.map(n => "<span>" + n + "<b>" + esc(h[n.toLowerCase()]) + "</b></span>").join("") + '</span></div><div class="lrow"><span class="glab">Potency</span><span class="pairs"><span>Weak<b>' + esc(p.weak) + "</b></span><span>Average<b>" + esc(p.average) + "</b></span><span>Strong<b>" + esc(p.strong) + "</b></span></span></div></div>";
+    return '<div class="blk band"><div class="nums"><div><div class="glab">Characteristics</div><div class="tiles" style="grid-template-columns:repeat(5,1fr)">' + h.chars.map(c => tile(c.name, c.v)).join("") + "</div></div>" + right + "</div>" +
+      '<div class="hr"></div><div class="wrow">' +
+      '<div><div class="wl">Skills</div><div class="words">' + skillsInline(h) + "</div></div>" +
+      '<div><div class="wl">Languages</div><div class="words">' + listOrNone(h.languages || []) + "</div></div>" +
+      '<div><div class="wl">Immunities</div><div class="words">' + listOrNone(immOf(h)) + "</div></div>" +
+      '<div><div class="wl">Weaknesses</div><div class="words">' + listOrNone(weakOf(h)) + "</div></div></div></div>";
+  }
+
+  /* ---------- abilities ---------- */
+  const GROUPS = ["Main actions", "Maneuvers", "Triggered actions", "Respite activities", "Other", "Free strikes", "Standard actions"];
+  function ownAbilities(h) {
+    const own = (h.abilities || []).map((a, i) => ({ a: a, id: "own:" + i })).filter(x => !NOT_ABILITIES[x.a.name]);
+    (TRIGGERS[h.key] || []).forEach((a, i) => own.push({ a: a, id: "trg:" + i }));
+    return own;
+  }
+  function groupOf(a) {
+    if (a.cat === "Triggered Action" || (a.trigger && a.trigger.length)) return "Triggered actions";
+    if (a.cat === "Basic Attack") return "Free strikes";
+    if (a.cat === "Common Ability" || a.cat === "Move") return "Standard actions";
+    const act = a.action || "";
+    if (act === "Main Action") return "Main actions";
+    if (/Maneuver/.test(act)) return "Maneuvers";
+    if (/Respite/.test(act)) return "Respite activities";
+    return "Other";
+  }
+  function actionTag(a) {
+    if (a.cat === "Triggered Action" || (a.trigger && a.trigger.length)) return "Triggered action";
+    if (a.cat === "Move") return "Move action";
+    const act = a.action || "";
+    if (act === "Main Action") return "Main action";
+    if (act === "Respite Activity") return "Respite activity";
+    return act || "Free";
+  }
+  function costTag(a, h) {
+    if (a.cost) return a.cost + " " + (h.resource && h.resource.name || "");
+    if (a.cat === "Signature Ability") return "Signature";
+    if (a.cat === "Basic Attack") return "Free strike";
+    return "";
+  }
+  function typeLine(a) {
+    if (a.cat === "Basic Attack") return "Free Strike";
+    if (a.cat === "Common Ability") return "Standard Action";
+    if (a.cat === "Move") return "Move Action";
+    if (a.cat === "Trigger") return "Ability";
+    return a.cat || "Ability";
+  }
+  function abilityCard(a, h) {
+    const cost = a.cost ? " (" + a.cost + " " + (h.resource && h.resource.name || "") + ")" : "";
+    const kw = (a.keywords || []).join(", ");
+    let html = '<div class="c-title">' + esc(a.name) + (cost ? "<span>" + esc(cost) + "</span>" : "") + '</div><div class="c-type">' + esc(typeLine(a)) + "</div>";
+    if (a.flavor) html += '<div class="c-fl">' + esc(a.flavor) + "</div>";
+    html += '<div class="c-kw"><span>' + (kw ? "<b>" + esc(kw) + "</b>" : "No keywords") + "</span><span>" + esc(actionTag(a)) + "</span></div>";
+    const dt = [];
+    if (a.distance) dt.push("<span>Distance <b>" + esc(a.distance) + "</b></span>");
+    if (a.target) dt.push("<span>Target <b>" + esc(a.target) + "</b></span>");
+    if (dt.length) html += '<div class="c-dt">' + dt.join("") + "</div>";
+    if (a.trigger) html += '<div class="c-eff"><b>Trigger:</b> ' + esc(a.trigger) + "</div>";
+    if (a.roll) {
+      html += '<div class="c-roll">Power Roll ' + esc(a.roll.replace(/^2d10\s*\+\s*/i, "+ ")) + "</div>";
+      ["11 or lower", "12 - 16", "17 or higher"].forEach((lab, i) => { if (a.tiers && a.tiers[i]) html += '<div class="tier"><span class="tb">' + lab + "</span><span>" + esc(a.tiers[i]) + "</span></div>"; });
+    }
+    if (a.effect) html += '<div class="c-eff">' + (a.roll || a.trigger ? "<b>Effect:</b> " : "") + esc(a.effect) + "</div>";
+    if (a.impl != null && IMPL[a.impl]) html += '<div class="c-impl" style="color:' + IMPL[a.impl][1] + '">' + IMPL[a.impl][0] + "</div>";
+    return html;
+  }
+  function itemCard(it, h) {
+    const warn = itemWarn(h, it);
+    return '<div class="c-title">' + esc(it.name) + (it.qty > 1 ? "<span>x" + it.qty + "</span>" : "") + '</div><div class="c-type">' + esc(it.kind) + (it.body ? " &middot; " + esc(it.body) : "") + "</div>" +
+      '<div class="c-kw"><span>' + ((it.keywords || []).length ? "<b>" + esc(it.keywords.join(", ")) + "</b>" : "No keywords") + "</span><span>" + (it.kind !== "Consumable" && it.equipped ? "Equipped" : "Carried") + "</span></div>" +
+      '<div class="c-eff">' + esc(it.desc || "") + "</div>" + (warn ? '<div class="c-eff" style="color:var(--warn)">' + esc(warn) + ". Weapon and armor treasure only helps when your kit uses that kind of gear.</div>" : "");
+  }
+  function moreCard(kind, h) {
+    const T = treasureLists(h), c = state.caps;
+    const list = kind === "con" ? T.con.slice(c.con - 1) : kind === "trk" ? T.trk.slice(c.trk - 1) : T.lev.slice(c.lev - 1);
+    const label = kind === "con" ? "consumables" : kind === "trk" ? "trinkets" : "leveled treasures";
+    return '<div class="c-title">More ' + label + '</div><div class="c-list">' + list.map(it => "<div>" + esc(it.name) + (it.qty > 1 ? " x" + it.qty : "") + (it.equipped ? ' <span class="none">(equipped)</span>' : "") + "</div>").join("") + "</div>";
+  }
+  function cardFor(id, h) {
+    if (!id) return null;
+    const kind = id.slice(0, id.indexOf(":")), idx = id.slice(id.indexOf(":") + 1);
+    if (kind === "own") { const a = (h.abilities || [])[+idx]; return a ? abilityCard(a, h) : null; }
+    if (kind === "trg") { const a = (TRIGGERS[h.key] || [])[+idx]; return a ? abilityCard(a, h) : null; }
+    if (kind === "std") { const a = STD[+idx]; return a ? abilityCard(a, h) : null; }
+    if (kind === "it") { const it = inventoryOf(h)[+idx]; return it ? itemCard(it, h) : null; }
+    if (kind === "more") return moreCard(idx, h);
+    return null;
+  }
+  function arow(id, a, h, compact) {
+    const cost = costTag(a, h);
+    const tags = '<span class="tags"><span class="atag">' + esc(actionTag(a)) + "</span>" + (cost ? '<span class="atag cost">' + esc(cost) + "</span>" : "") + "</span>";
+    return '<div class="arow' + (state.pin === id ? " pinned" : "") + '" data-card="' + esc(id) + '" tabindex="0"><span class="an">' + esc(a.name) + "</span>" + (compact ? "" : '<span class="ak">' + esc((a.keywords || []).join(", ")) + "</span>") + tags + "</div>";
+  }
+  function grpBlock(gid, label, count, inner, note) {
+    const closed = state.closed.has(gid);
+    return '<div class="grp' + (closed ? " closed" : "") + '"><button class="grph" data-grp="' + esc(gid) + '" aria-expanded="' + (!closed) + '"><span class="car">&#9660;</span><span class="gl">' + esc(label) + '</span><span class="gc">' + count + "</span>" + (note ? '<span class="gn">' + esc(note) + "</span>" : "") + '</button><div class="gb">' + inner + "</div></div>";
+  }
+  function abilitiesBody(h) {
+    const groups = {};
+    ownAbilities(h).forEach(x => { const g = groupOf(x.a); (groups[g] = groups[g] || []).push(x); });
+    //everything from the global list is a free strike or a standard action, whatever its category says
+    STD.forEach((a, i) => { const g = a.cat === "Basic Attack" ? "Free strikes" : "Standard actions"; (groups[g] = groups[g] || []).push({ a: a, id: "std:" + i }); });
+    return GROUPS.filter(g => groups[g]).map(g => {
+      const compact = g === "Free strikes" || g === "Standard actions";
+      const rows = groups[g].map(x => arow(x.id, x.a, h, compact)).join("");
+      return grpBlock("ab-" + g, g, groups[g].length, compact ? '<div class="compact">' + rows + "</div>" : rows, g === "Standard actions" ? "Every hero can do these" : "");
+    }).join("");
+  }
+
+  /* ---------- features ---------- */
+  function allFeatures(h) { return (h.features || []).concat(EXTRA_FEATURES[h.key] || []); }
+  function shownFeatures(h) {
+    const q = state.search.trim().toLowerCase();
+    return allFeatures(h).map((f, i) => [f, i]).filter(([f]) => f.kind === "normal")
+      .filter(([f]) => !state.chips.size || (f.tags || []).some(t => state.chips.has(t)))
+      .filter(([f]) => !q || ((f.name || "") + " " + (f.desc || "")).toLowerCase().includes(q));
+  }
+  function featureCard(f, i, h) {
+    const id = h.key + ":" + i, long = (f.desc || "").length > 300, open = state.more.has(id);
+    const tags = (f.tags || []).filter(t => t !== "Core Feature").map(t => '<span class="ptag">' + esc(t) + "</span>").join("");
+    return '<div class="fcard"><div class="ft"><span class="fn">' + esc(f.name) + '</span><span class="ftags">' + tags + "</span></div>" + (f.sub ? '<div class="fsub">Chosen for ' + esc(f.sub) + "</div>" : "") +
+      (f.desc ? '<div class="fd' + (long && !open ? " clamp" : "") + '">' + esc(f.desc) + "</div>" : "") + (long ? '<button class="more" data-more="' + esc(id) + '">' + (open ? "Show less" : "Show more") + "</button>" : "") + "</div>";
+  }
+  function featuresBody(h) {
+    const groups = {};
+    shownFeatures(h).forEach(([f, i]) => { (groups[f.section] = groups[f.section] || []).push([f, i]); });
+    const order = SECTION_ORDER.concat(Object.keys(groups).filter(s => !SECTION_ORDER.includes(s))).filter(s => groups[s]);
+    if (!order.length) return '<div class="empty">No features match these filters.</div>';
+    return order.map(s => grpBlock("ft-" + s, s === "Core" ? "Core feature" : s, groups[s].length, groups[s].map(([f, i]) => featureCard(f, i, h)).join(""))).join("");
+  }
+
+  /* ---------- render ---------- */
+  const stage = document.getElementById("stage"), wrap = document.getElementById("wrap");
+  //the left column never scrolls: shrink the treasure lists behind "+N more" until the card fits
+  function render() {
+    state.caps = { lev: 4, trk: 4, con: 8 };
+    renderOnce();
+    const over = () => { const g = stage.querySelector(".gearcard"); return !!g && g.scrollHeight > g.clientHeight + 1; };
+    for (let i = 0; i < 12 && over(); i++) {
+      if (state.caps.con > 2) state.caps.con -= 2;
+      else if (state.caps.trk > 2) state.caps.trk -= 1;
+      else if (state.caps.lev > 2) state.caps.lev -= 1;
+      else break;
+      renderOnce();
+    }
+  }
+  function renderOnce() {
+    const h = byKey[state.hero] || HEROES[0];
+    if (!h) { stage.innerHTML = '<div style="padding:40px">Hero data did not load.</div>'; return; }
+    const keep = {};
+    stage.querySelectorAll("[data-keep]").forEach(el => { keep[el.dataset.keep] = el.scrollTop; });
+    const focusSearch = document.activeElement && document.activeElement.id === "fsearch";
+    const total = allFeatures(h).filter(f => f.kind === "normal").length, shown = shownFeatures(h).length;
+    const ownCount = ownAbilities(h).length;
+    const lists = '<div class="lists">' +
+      '<div class="lhead"><h3>Abilities</h3><span class="cnt">' + ownCount + " of the hero's own, " + STD.length + " every hero has</span></div>" +
+      '<div class="lhead"><h3>Features</h3><span class="cnt">' + (shown === total ? total : shown + " of " + total) + "</span>" +
+      PILLARS.map(p => '<button class="chip' + (state.chips.has(p) ? " on" : "") + '" data-chip="' + p + '">' + p + "</button>").join("") +
+      '<input class="search" id="fsearch" type="search" placeholder="Filter" aria-label="Filter features" value="' + esc(state.search) + '"></div>' +
+      '<div class="lbody" data-keep="ab">' + abilitiesBody(h) + '</div><div class="lbody" data-keep="ft">' + featuresBody(h) + "</div></div>";
+    stage.innerHTML = '<div class="lay"><aside class="left">' + heroCard(h) + gearBlk(h) + '</aside><main class="main">' + topbar(h) + statsBand(h) + lists + "</main></div>" +
+      '<div class="hcard" id="hcard" hidden><button class="x" data-unpin aria-label="Close card">&#215;</button><div id="hcbody"></div><div class="hint" id="hchint"></div></div>';
+    stage.querySelectorAll("[data-keep]").forEach(el => { if (keep[el.dataset.keep]) el.scrollTop = keep[el.dataset.keep]; });
+    if (focusSearch) { const s = document.getElementById("fsearch"); if (s) { s.focus(); const n = s.value.length; try { s.setSelectionRange(n, n); } catch (e) {} } }
+    showCard(state.pin || null, !!state.pin);
+    sync();
+  }
+  function scale() { return state.zoom === "full" ? 1 : Math.min(1, wrap.clientWidth / 1920); }
+  //position the card beside its row, in stage units (the stage is CSS-scaled)
+  function showCard(id, pinned) {
+    const card = document.getElementById("hcard");
+    if (!card) return;
+    const h = byKey[state.hero];
+    const html = id ? cardFor(id, h) : null;
+    const row = id ? stage.querySelector('[data-card="' + CSS.escape(id) + '"]') : null;
+    if (!html || !row) { card.hidden = true; return; }
+    document.getElementById("hcbody").innerHTML = html;
+    document.getElementById("hchint").textContent = pinned ? "Pinned. Click elsewhere or press Escape to close." : "Click to pin.";
+    card.classList.toggle("pinned", pinned);
+    card.hidden = false;
+    const k = scale(), sr = stage.getBoundingClientRect(), rr = row.getBoundingClientRect();
+    let x = (rr.right - sr.left) / k + 14, y = (rr.top - sr.top) / k - 10;
+    const w = card.offsetWidth, ht = card.offsetHeight;
+    if (x + w > 1900) x = (rr.left - sr.left) / k - w - 14;
+    if (y + ht > 1066) y = 1066 - ht;
+    card.style.left = Math.max(14, x) + "px"; card.style.top = Math.max(14, y) + "px";
+  }
+  function sync() {
+    document.querySelectorAll("#ctl-mp button").forEach(b => b.classList.toggle("on", b.dataset.mp === state.mp));
+    document.querySelectorAll("#ctl-zoom button").forEach(b => b.classList.toggle("on", b.dataset.zoom === state.zoom));
+    document.getElementById("ctl-hero").value = state.hero;
+    document.getElementById("ctl-stam").value = state.stam;
+    [["ctl-vet", "vet"], ["ctl-imm", "imm"], ["ctl-prog", "prog"], ["ctl-twokit", "twokit"], ["ctl-res", "res"], ["ctl-sig", "sig"]].forEach(([id, k]) => document.getElementById(id).setAttribute("aria-pressed", String(state[k])));
+  }
+  function fit() {
+    if (state.zoom === "full") { wrap.classList.add("full"); stage.style.transform = "none"; wrap.style.height = "auto"; return; }
+    wrap.classList.remove("full");
+    const s = Math.min(1, wrap.clientWidth / 1920);
+    stage.style.transform = "scale(" + s + ")"; wrap.style.height = Math.round(1080 * s) + "px";
+  }
+  function flash(btn, text) {
+    if (btn.dataset.busy) return;
+    const old = btn.innerHTML; btn.dataset.busy = "1"; btn.textContent = text;
+    setTimeout(() => { btn.innerHTML = old; delete btn.dataset.busy; }, 1400);
+  }
+
+  const heroSel = document.getElementById("ctl-hero");
+  heroSel.innerHTML = HEROES.map(h => '<option value="' + esc(h.key) + '">' + esc(h.name) + " (level " + esc(h.level) + (isMine(h) ? ")" : ", " + esc(h.owner) + "'s)") + "</option>").join("");
+  heroSel.addEventListener("change", () => { state.hero = heroSel.value; state.pin = null; render(); });
+  const stamSel = document.getElementById("ctl-stam");
+  stamSel.innerHTML = STAM_STATES.map(s => '<option value="' + s[0] + '">' + esc(s[1]) + "</option>").join("");
+  stamSel.addEventListener("change", () => { state.stam = stamSel.value; render(); });
+  document.addEventListener("input", e => { if (e.target.id === "fsearch") { state.search = e.target.value; render(); } });
+  stage.addEventListener("mouseover", e => {
+    if (state.pin) return;
+    const r = e.target.closest("[data-card]");
+    const id = r ? r.dataset.card : null;
+    if (id !== state.hover) { state.hover = id; showCard(id, false); }
+  });
+  stage.addEventListener("mouseleave", () => { if (!state.pin) { state.hover = null; showCard(null, false); } });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && state.pin) { state.pin = null; render(); } });
+  document.addEventListener("click", e => {
+    const t = e.target.closest("[data-mp],[data-zoom],[data-hero],[data-chip],[data-flash],[data-grp],[data-more],[data-melee],[data-unpin],[data-card],#ctl-vet,#ctl-imm,#ctl-prog,#ctl-twokit,#ctl-res,#ctl-sig");
+    if (!t) { if (state.pin && !e.target.closest("#hcard")) { state.pin = null; render(); } return; }
+    const toggles = { "ctl-vet": "vet", "ctl-imm": "imm", "ctl-prog": "prog", "ctl-twokit": "twokit", "ctl-res": "res", "ctl-sig": "sig" };
+    if (toggles[t.id]) { state[toggles[t.id]] = !state[toggles[t.id]]; if (t.id === "ctl-twokit") state.hero = "tactician"; if (t.id === "ctl-vet" && !isMine(byKey[state.hero])) state.hero = "fury"; state.pin = null; render(); return; }
+    if (t.dataset.mp) { state.mp = t.dataset.mp; try { localStorage.setItem("eotw-r6-mp", state.mp); } catch (err) {} render(); return; }
+    if (t.dataset.zoom) { state.zoom = t.dataset.zoom; sync(); fit(); return; }
+    if (t.dataset.hero) { state.hero = t.dataset.hero; state.pin = null; render(); return; }
+    if (t.dataset.chip) { const c = t.dataset.chip; state.chips.has(c) ? state.chips.delete(c) : state.chips.add(c); render(); return; }
+    if (t.dataset.flash) { flash(t, t.dataset.flash); return; }
+    if (t.dataset.grp) { const g = t.dataset.grp; state.closed.has(g) ? state.closed.delete(g) : state.closed.add(g); render(); return; }
+    if (t.dataset.more) { const m = t.dataset.more; state.more.has(m) ? state.more.delete(m) : state.more.add(m); render(); return; }
+    if (t.dataset.melee) { if (!t.disabled) { state.meleeFrom = t.dataset.melee; render(); } return; }
+    if (t.hasAttribute("data-unpin")) { state.pin = null; render(); return; }
+    if (t.dataset.card) { const id = t.dataset.card; state.pin = state.pin === id ? null : id; render(); }
+  });
+  stage.addEventListener("keydown", e => { const r = e.target.closest && e.target.closest("[data-card]"); if (r && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); state.pin = state.pin === r.dataset.card ? null : r.dataset.card; render(); } });
+  window.addEventListener("resize", () => { fit(); if (state.pin) showCard(state.pin, true); });
+
+  /* ---------- stamina study ---------- */
+  const STUDY_HERO = { stamina: { max: 33, winded: 16 } };
+  const VARIANTS = [
+    ["S1. Card bar as built (in use)", "Temp only gets the room left after current stamina, so at full stamina it has no width. Winded and dead values sit in the line under the bar.", barS1],
+    ["T1. Leading band", "Temp sits right after current stamina, the part damage reaches first. With no room left, it slides back over the end of the fill and an arrow marks the overflow.", barT1],
+    ["T2. Leading band and dying zone", "T1, plus a dying zone at the left end. The white line is 0; the zone's end is the dead value. While dying, red fills toward death. The zone is not to scale.", barT2],
+    ["T3. Temp past the bar", "The frame is max stamina. Temp starts at current stamina and runs out past the frame when it does not fit, so the bar is drawn shorter to leave room.", barT3],
+  ];
+  document.getElementById("study").innerHTML = '<thead><tr><th scope="col">Variant</th>' + STAM_STATES.map(s => '<th scope="col">' + esc(s[1]) + "<small>" + esc(stamText(stamOf(STUDY_HERO, s[0]))) + "</small></th>").join("") + "</tr></thead><tbody>" +
+    VARIANTS.map(v => '<tr><th scope="row"><b>' + esc(v[0]) + "</b><span>" + esc(v[1]) + "</span></th>" + STAM_STATES.map(s => { const st = stamOf(STUDY_HERO, s[0]); return "<td>" + v[2](st, false) + '<div class="cap">Sheet size</div><div class="cardsz">' + v[2](st, true) + '</div><div class="cap">Card size</div></td>'; }).join("") + "</tr>").join("") + "</tbody>";
+
+  render(); fit();
+})();
+</script>

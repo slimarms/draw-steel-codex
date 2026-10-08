@@ -1,15 +1,51 @@
 # EotW Hero Sheet - Working Brief
 
-> Status: WORKING - D1 (frame/scope) DECIDED; D2 (screen & form) partly decided, mock round 2
-> published; handed off to a fresh session 2026-10-08 (see NEXT SESSION STARTS HERE).
+> Status: WORKING - D1 frame/scope DECIDED; D2 surface + layering DECIDED; D3 layout converging
+> through mock rounds 3-8 (current = round 8); handoff refreshed 2026-10-08 session 2.
 
-## NEXT SESSION STARTS HERE (handoff 2026-10-08)
+## NEXT SESSION STARTS HERE (handoff 2026-10-08, session 2)
 
-Read this brief top to bottom first (ledger + evidence). Mock round 2:
-https://claude.ai/artifact/BjjVgkj3vYRcGynndsQgRG (source docs/eotw-hero-sheet/mock/; republish
-from that file path or pass the URL). Data regeneration: docs/eotw-hero-sheet/tools/ (Lua probes
-saved as .lua.txt, run over the bridge at localhost:19876/execute; build_data.py rebuilds
-mock/data.js; portraits were captured by rendering each portrait in-app and screenshotting).
+Read the ledger (bottom) first: it is the record of every decision, newest last. Then open the
+CURRENT MOCK: https://claude.ai/artifact/UkGYCopdu4DAiuh2P7xUb2 - version 6 = round 8 (versions
+1-5 = rounds 3-7). Source docs/eotw-hero-sheet/mock/layouts.html + data.js (pregens) + std.js
+(standard actions + free strikes, tools/probe_std.py) + vet.js (veteran inventory, real tbl-gear
+records) + art/. Older round sources kept as mock/layouts-r3..r7.html. The round 2 form mock
+(A page / B1 hero art / B2 where-you-are) is a different artifact: BjjVgkj3vYRcGynndsQgRG
+(mock/eotw-hero-sheet.html). Republish by file path to keep the URL.
+
+Where the design stands (round 8; details in the ledger):
+- LEFT COLUMN (never scrolls as a whole): the hero card at sheet size (art, name, subtitle,
+  compact level row "1 [bar] 2  Victories 0" with XP on hover, S1 stamina bar + "Winded at /
+  Dead at", recoveries ring + label, heroic resource icon + value, one surge icon per surge);
+  then a KIT card (header = Kit, or the class's Prayer | Ward, Enchantment | Ward, Augmentation;
+  the Tactician's two kits read as one kit with an inline melee choice "in town"); then a
+  TREASURES card that scrolls inside itself (Leveled treasures "N of 3 carried", Trinkets,
+  Consumables; equip CTA on its header; "No benefit" on armor the kit cannot use).
+- MAIN: top bar (roster switcher thumbnails, Change Appearance, Edit in Builder, Close with the P3
+  signal); STATS BAND = numbers row (Characteristics as big tiles; size/speed/disengage/stability
+  each self-labelled; Potency with weak/average/strong) over a words row (Skills grouped by skill
+  group inline, groups never split; Languages; Immunities; Weaknesses); then ABILITIES | FEATURES,
+  each scrolling. Abilities follow the tagging plan; rows show action type + cost; hover shows the
+  card, click pins it; free strikes + standard actions in compact two-column groups. Features:
+  pillar chips + filter on the header row, collapsible sections, Show more on long text.
+- TYPE SYSTEM: section headers white + larger (16px caps); stat headers gold small caps.
+
+Open next (in rough order):
+1. James's reaction to round 8 (headers, separate cards, level row, labelled lines).
+2. FORM (B1 hero-art scene vs B2 where-you-are vs A page) has not been revisited since round 2;
+   rounds 3-8 use a plain dark page. Decide whether the scene treatment still applies.
+3. D4 skin (motion, sound, final palette - accent theme-dependence is open), D9 states (draft,
+   away in a party, dead, video portraits, missing art), D7 equip interaction details
+   (Equip/Unequip rules, kit-match gating, kit-less treasure rules), D8 EotW-native content
+   (victory record, treasure provenance, level-up flow), copy sign-off for every [COPY] string.
+4. David conversation: see "Discussion points for David" below (stamina bar, carry-three,
+   panel bugs, route closing, Edit-in-Builder window, banner suppression, temp flaw, layering).
+5. Then the critique round (Phase 6) and lock.
+
+Tooling notes: headless Edge screenshots of the mock - the first run on a NEW --user-data-dir
+often writes nothing; rerun on the same profile. The mock reads hash tokens for screenshots:
+#<herokey>.vet.imm.prog.twokit.res.sig.pin-own-0 (load several in iframes in one page to
+capture states in one shot). The DMHub bridge (localhost:19876/execute) was up this session.
 
 David's direction (Discord, received 2026-10-08 via James; paraphrased):
 - James is in charge of the EotW character sheet.
@@ -22,35 +58,13 @@ David's direction (Discord, received 2026-10-08 via James; paraphrased):
   and equip items.
 - Implication: near-term heroes are levels 1-4 (design for that), with headroom to 10.
 
-James's latest round (2026-10-08, not yet discussed through):
-1. Q6: KEEP the character panel as the in-encounter companion for now. The Summoner
-   (Sacrifice Minions / Edit Squads) and Elementalist (end persistent ability) blocks are
-   existing bugs that should work - DO NOT TOUCH them in this project (flag to David only).
-2. PLAY vs EDIT: James is unsure about the access-level idea - DISCUSS FIRST next session.
-   Framing prepared: David's rule gives the line (rules-legal player actions allowed - move
-   and equip items, appearance, builder before first win; number manipulation blocked). The
-   new sheet is new code, so it simply builds only the allowed actions (no access-level system
-   needed there). The panel stays untouched; a "play" level would only matter if the panel bugs
-   are fixed later.
-3. C key: confirmed in code that it opens the full EDITABLE sheet for the selected token
-   (InputController.cs:1360 Bind("c","sheet") -> CoreAssets/Lua/commands.txt:249 Commands.sheet
-   -> dmhub.currentToken:ShowSheet(), no access check). Not tried live in an EotW game.
-4. PROMPTS: the mock's prompt was a STAND-IN for the existing in-game prompts (trigger prompts,
-   save prompts, roll dialogs, the AI "Waiting for" banner, the victory screen) - not a new
-   design. The proposal is z-order only: existing prompts draw above the EotW sheet. Where each
-   prompt mounts is NOT yet verified - check before designing around it. The "Your turn"
-   banner is WITHDRAWN: heroes claim turns in Draw Steel, so a player closes the sheet to claim.
-   Open: should the initiative/claim bar stay visible above an open sheet?
-5. TEAMMATES' SHEETS: James on the fence. David's spec intends it (doc 1700-1705: "another
-   player's hero"), and his HUD already opens teammates' character panels read-only. Discuss
-   pros/cons.
-6. MOCK: James LEANS B; keep exploring B1 (hero art column) vs B2 (where you are). Switching
-   between YOUR roster is liked; switching across the WHOLE PARTY is a pros/cons discussion.
-7. LAYOUT needs work (round 3): clipping, poor use of space, cramped areas next to empty ones.
+Still-true facts from the session-1 handoff:
+- Q6: the character panel stays the in-encounter companion; its Summoner/Elementalist blocks
+  are existing bugs - DO NOT TOUCH them in this project (flagged to David).
+- The C key opens the full EDITABLE sheet for the selected token (InputController.cs:1360 ->
+  commands.txt:249 Commands.sheet -> ShowSheet(), no access check); route closing is in scope
+  (D1-Q4) and on David's list.
 
-Suggested order next session: play/edit discussion -> teammates + party switcher pros/cons ->
-verify prompt mounts -> round 3 layout (levels 1-4 primary, 10 as stress) -> mock v3 exploring
-B1 vs B2 with the layout fixed.
 > Driver: James. Loop: feature-design-personal. Started 2026-10-08.
 > Predecessor (the LATEST sheet work, used as the base): docs/features-tab-design/brief.md
 > (Merge v6.2, DESIGN LOCKED 2026-08-20 for the main-game sheet; then backlogged) +
@@ -368,6 +382,155 @@ TAG STATUS
   pool), inventory (montage grants, lose-a-consumable, stage give, consumable use). Victories
   are host-only.
 
+### E10. Mock v2 layout audit (2026-10-08 session 2; headless Edge at 1920x1080)
+
+Shots: docs/eotw-hero-sheet/shots/round2/{A,B1,B2}-{town-fury,town-conduit,game-shadow}.png
+(Fury L1 mine, Conduit L6 mine, Shadow L1 teammate in game). Render recipe:
+tools/mockshot_template.html.txt (mock with page chrome hidden; hash = form,ctx,hero).
+
+- CLIPPING (B1, B2 only; A fits): the main column runs past the right edge - Close button,
+  heroic resource + surges, Skills, the Features "Show all" toggle and the feature tag chips
+  are cut. Cause: the top bar asks for roster tabs (6 x ~150px) + Change Appearance + Edit in
+  Builder + Close on one row (~1500px) inside a ~1300px column (mock CSS lets it push the
+  column wider instead of wrapping). Design cause: the top bar carries too much.
+- EMPTY NEXT TO CRAMPED: the vitals bar leaves a 600-700px gap between Recoveries and the
+  heroic resource, while the stats row under it squeezes five boxes (characteristics, kit,
+  movement, immunities/weaknesses, skills) so skills wrap to 2-3 lines and kit bonuses drive
+  the row height (Shadow: 6 bonus lines -> characteristics and immunities boxes half empty).
+- COLUMN BALANCE BY LEVEL: at L1 the Abilities column holds 3-5 own abilities and is half
+  empty (Fury: empty from ~y880), while Features is long and dense; at L6 both fill. The
+  1 : 1.15 split is fixed regardless of content.
+- IDENTITY COLUMN: in A, empty below Inventory at L1 (~200px); in B1 the art spends 560px of
+  width on one image and crowds the identity plate into the bottom corner.
+- READABILITY: feature text runs ~110 characters per line in the ~780px Features column; long
+  lore features (Conduit "Grole the One-Handed") dominate even clamped to 152px. Pillar tag
+  chips sit far right, away from the feature name.
+- SMALL: roster tab subtitles fade into the mask ("Level 6 Condu..."); the teammate owner chip
+  wraps "read-only" onto a second line; the heroic resource reads as a separate widget at the
+  far right of the vitals bar.
+- NOT YET SHOWN: free strikes and the 14 common abilities (not in the export); equip CTA.
+
+### E11. Where in-game prompts mount, and what that means for the sheet (agent 2026-10-08)
+
+Code-verified (runtime not run); spot-checked GameHud.lua:1734-1812 + CharacterSheetMain.lua:14-39.
+- HUD z-order = sibling order of one panel tree (GameHud.lua:1734-1807; no z-index). Bottom to
+  top: initiative bar (L2) ... documents layer L8 (rails incl. EotW roster/pools/corner
+  buttons, every panel window, presented dialogs incl. the montage/narrative STAGE) -> action
+  bar L9 (TRIGGER PROMPT CARDS, save prompts and countdown dice are its children) -> reaction
+  bar -> ability display L11 (ability card + embedded ROLL DIALOG, shared AI rolls) ->
+  standalone roll host -> mainDialogPanel L13 -> shop -> modal layer L15 (jumps to top once
+  used) -> popups -> legacy roll dialog -> victory screen L22 -> tip banner L23 ("Waiting
+  for..." AI banner). Tooltips, context menus and 3D dice draw above the whole HUD.
+- TODAY'S FULL SHEET mounts on mainDialogPanel (L13), so it COVERS trigger cards, save prompts,
+  roll dialogs, the stage and the initiative bar; it also hides the "Waiting for..." banner
+  (dmhub.inCharacterSheet). So "prompts above the sheet" is NOT how things work today.
+- No existing layer sits between HUD furniture and prompts. Candidates: (C) a new layer
+  between L8 and L9 - prompts, rolls, banners, victory above; initiative bar, roster, stage,
+  windows below; the action bar STRIP comes above too (trigger cards are its children).
+  (E) a new layer just above L1 - the sheet sits under the WHOLE HUD like a scene: every
+  prompt plus initiative bar, roster, pools, action bar, open windows draw over it, so the
+  sheet layout must keep clear of them. (A) mainDialogPanel = today's problem. (B) modal =
+  reject (covers everything, kills hotkeys, defers the EotW victory award). (D) sibling on
+  L8 raised on open = fragile (L8 reshuffles on window clicks/rail rebuilds) but is the only
+  one where a sheet opened DURING a stage lands above it.
+- Stages: the stage is a presented dialog on L8. With C a stage that starts while the sheet is
+  open is hidden under it; with E a sheet opened during a stage is hidden under the stage.
+  Either needs a rule (stage starts -> stage covers; opened during a stage -> sheet on top).
+- Escape: one global priority list, ignores z-order (InputController.cs:476-503; ranks in
+  input.txt). Sheet should take Escape at <= 14 (EXIT_DIALOG) so roll dialogs (15), modals
+  (16), popups (17) win.
+- A full-screen sheet with a background blocks map clicks: map-targeting prompts (retarget,
+  forced movement) cannot be answered under it.
+- Side finding (David): the "Waiting for..." banner also hides while ANY panel window is open
+  (journalViewer class, GameHud.lua:2887-2908) - including the hero-card character panel and
+  Chat in EotW.
+- Build notes: do not open via ShowSheet and do not use the journalViewer class (both hide
+  the banner); do not borrow the stage's hideactionbar trick (hides trigger cards too); C/E
+  need a core GameHud change or a runtime insert re-done on HUD rebuild.
+
+### E12. Precedent scan: where sheets put skills, vitals, abilities, gear (agent 2026-10-08)
+
+Session-scratchpad files (not kept): official sheet renders render/standard-p1..p5.png +
+expanded-p1..p6.png (from the codex's own data/pdfDocuments/ds-charactersheet-standard.yaml),
+Forge Steel / Draw Steel Plus / Compact Beyond screenshots.
+- RULES: a test = the Director names a characteristic, the player proposes a skill, +2 if it
+  applies (Heroes p.249; heroes_pages.txt ~20694); a skill can apply to ANY characteristic that
+  makes sense (p.254, ~21150-21153); skill tables carry no characteristic. => skills sit BESIDE
+  the characteristics as one test block; nesting under one characteristic (D&D) misstates DS.
+- DRAW STEEL SHEETS BURY SKILLS: official PDF = p1 one-row vitals band (characteristics + size/
+  speed/disengage/stability, stamina, recoveries, resource, surges - the paper ancestor of our
+  instrument bar), kit box, conditions, potency rail, "Your Turn" standard-action list; SKILLS ON
+  PAGE 2 with the backstory (all 57 as a diamond checklist by group). Foundry DS: skills one line
+  at the bottom of the Stats tab. Forge Steel: skills last in the right sidebar, below the fold.
+- DRAW STEEL PLUS (community Foundry re-skin) = the closest precedent to our fix: header =
+  portrait card + name + origin chips + characteristic badges; PERSISTENT LEFT COLUMN = stamina,
+  recoveries, surges/resource, 2x2 movement, immunities/weaknesses, TRAINED SKILLS AS CHIPS;
+  content beside a vertical icon tab rail.
+- PATTERNS: (1) persistent stat rail + tabs/pages by job (D&D Beyond, Compact Beyond - "No more
+  digging around through multiple tabs to ... find the skill list" - Forge Steel rail, DS Plus,
+  Diablo IV, Owlcat) - praised; hated failure = hopping tabs for something checked constantly.
+  (2) skills beside what you roll; trained-only list is short (5-11 at L1, ~10 at L10 Tactician).
+  (3) vitals ride with identity (DnDB header, Darkest Dungeon, DS Plus column, EotW hero card).
+  (4) abilities by action economy; own abilities as cards, standard actions compressed/opt-in
+  (official "Your Turn" list; Forge Steel opt-in; DnDB beginners want them listed but hideable).
+  (5) gear: paper doll in games vs category lists in TTRPG tools; DS has no body slots, so a doll
+  invents structure (official p5 = titles, trinkets, leveled treasure w/ carry-three counter,
+  consumables). (6) glance/detail split by click depth, not scrolling; roster screens want key
+  status visible without opening each hero (relevant to the 12-hero roster).
+- Owlcat lesson: fixed blocks overflow as content grows (attack block built for 4 values needed
+  6); avoid spreadsheet feel.
+
+### E13. Kits, the Tactician's two kits, and kit-equivalents (agent 2026-10-08)
+
+- TACTICIAN (Field Arsenal, Heroes p.177; extract 14880-14910): uses TWO kits incl. both signature
+  abilities; where both kits grant the same benefit you pick one and cannot change it until you
+  finish a respite; changing a kit is itself a respite activity. Codex: numKits 2
+  (tactician.yaml:4257); kitid + kitid2 (CharacterKitChoice.lua:123-140); character:Kit() returns
+  Kit.CombineKits (MCDMKit.lua:347-458): name "A/B", stamina/speed/disengage/stability/range/
+  reach/area take the MAX automatically; only the DAMAGE bonus is choosable, per type (melee/
+  ranged/supernatural), stored in levelChoices.kitBonusChoices[type] = kitId (Kit.
+  DamageBonusSelected 317-340; unset = higher tier-sum, tie -> kit 2). The toggle exists only in
+  the new builder (KitDetail.lua:136-200); the live sheet has none; the EotW builder has none, so
+  EotW tacticians get the default. (Divergence: the rules let you choose ANY overlapping benefit.)
+- Other switchable kit bonuses: Beastheart companion melee bonus (kit vs +0/+0/+4, chosen with the
+  kit; levelChoices.companionBonusChoices); Stormwight Menagerie (8th level) kit swap at respite
+  (text only in the codex).
+- KIT USERS: censor, fury (berserker/reaver martial; stormwight kits), shadow, tactician (2),
+  troubadour, beastheart. KIT-EQUIVALENTS (1-pick feature choices with ordinary modifiers):
+  Conduit = Prayer + Conduit Ward; Elementalist = Enchantment + Ward; Null = Psionic Augmentation
+  (no ward); Talent = Psionic Augmentation + Ward; Summoner = Summoner's Kit (an implement; from
+  3rd level) + 1-3 wards. Bonus types overlap kits (stamina, stability, speed/disengage, damage,
+  distance) plus saves, immunity, surges and triggers. No codex helper returns "kit or
+  equivalent"; values are stored inconsistently, so a sheet should read EVALUATED stats.
+- TREASURE GATING: a hero without a kit cannot benefit from weapon/armor treasures unless a
+  feature allows it (Heroes p.314; extract 26151-26159) - e.g. the light-armor "Battle"/"Soldier's
+  Skill" options. Relevant to the equip rules (D7).
+
+### E14. Ability preview, filtering, and action/cost labels (agent 2026-10-08)
+
+- PREVIEW CONVENTION = HOVER, everywhere: the EotW builder shows the card on hover in a fixed side
+  pane (EotwBuilder.lua:1218-1220, AbilityCard :532-534 = ability:Render, no token); the live
+  sheet's ability rows set a hover tooltip CreateAbilityTooltip(ability, {token, width=500})
+  (DrawSteelChararcterSheet.lua:479-487; click only collapses headers); the action bar's hover
+  feeds a HUD sidebar (AbilitySidebar.lua:1745-1812, HUD-only). ONE reusable card: global
+  CreateAbilityTooltip(ability, options) (ActivatedAbilityEditor.lua:4) -> ActivatedAbility:Render
+  (MCDMActivatedAbility.lua:1408); options token/width/pad/maxHeight/hideTabs/quietTitleBand/
+  cardScale; returns nil for notooltip clones; works for global standard actions and free strikes.
+  Triggered actions from GetTriggeredActions() render via TriggeredAbilityDisplay:Render.
+- FILTERING: tags and DisplayKind apply to FEATURES only; no ability list reads them. Action bar
+  drops categorization "Hidden"; the live sheet filters nothing (Life Domain Effect lands in
+  "Other Abilities"). Recommended: GetActivatedAbilities{bindCaster=true, characterSheet=true}
+  WITHOUT excludeGlobal (free strikes + standard actions are global rule mods), drop
+  categorization "Hidden", triggered actions from GetTriggeredActions(), features where
+  DisplayKind() == "normal".
+- DOMAIN EFFECTS (Conduit): real rules effects, but only used when the Prayer roll is a 3 (or as
+  a maneuver at 10th level); categorization Trigger, tag Combat, no Hidden anything
+  (subclasses/life-domain.yaml:169-255). 11 of 12 share one ability guid (do not de-dupe by guid).
+- LABELS: the DS card shows the cost in the title ("Name (3 Piety)"), the kind on the type line
+  ("Signature Ability" / "Heroic Ability" / action name), and the action type on the keyword row
+  ("Main Action", else "Free") (MCDMActivatedAbility.lua:2467, 2656, 2817-2847, 991-1012).
+  Fields: categorization, ActionResource() (nil when "none"), resourceCost + resourceNumber.
+
 ## Synthesis (2026-10-08)
 
 1. The EotW sheet is where strictness is actually missing: the mode enforces rules on the map
@@ -425,7 +588,8 @@ TAG STATUS
 - D7 Inventory & equipment: equip action vs auto-equip; slot model (worn doll by body keyword /
   wielded-from-kit / leveled "N of 3" / plain list); consumables; provenance; NO context menu.
 - D8 EotW-native content: Victories as an encounter record, treasure provenance, knack-relevant
-  hero facts (movement types etc.), anthem, death.
+  hero facts (movement types etc.), anthem, death, LEVEL-UP (where levelling happens: builder
+  vs a sheet-launched flow; David wants progression central).
 - D9 States: draft, away in a party, dead, other player's hero, live in-encounter values,
   video portraits, missing/small art.
 - D10 Hardening & regression: closing the routes and cheat paths; parity with David's spec list
@@ -455,6 +619,52 @@ TAG STATUS
 | 2026-10-08 | D2 "Your turn" banner default WITHDRAWN: turns are claimed, so the player closes the sheet to claim. Prompts-above-sheet stands as a z-order rule for EXISTING prompts (mounts unverified). | James. |
 | 2026-10-08 | D2-Q5 LEANING B (scene); B1 hero-art vs B2 where-you-are still being explored. D2-Q7: switching within your own roster liked; whole-party switching = open discussion. | James. |
 | 2026-10-08 | D2-Q6 (what the hero card opens) REOPENED by James: the character panel is still used as an in-combat reference, and he believed the class controls still work there. Code check: Beastheart Call/Select work (no read-only gate, DSBeastheart.lua:134); Summoner Sacrifice Minions + Edit Squads are hidden (editOnly) and bail on IsReadOnly (MCDMCharacterPanel.lua:7778, 7874) and the sacrifice is a Hidden standard ability with no other route; Elementalist cannot end a persistent ability (10434). Root cause: EotW returns "view" for EVERY player-controlled token, own heroes included, so play operations are blocked with edits. | Code verified 2026-10-08. |
+| 2026-10-08 | PLAY vs EDIT = option A, ALLOWED BY CONSTRUCTION: no access-level system. The EotW sheet builds only rules-legal controls (equip/unequip treasure with kit-match gate, rearrange inventory, Change Appearance, Edit in Builder pre-first-victory, Grant Treasure claim); nothing that changes numbers (stamina/resources, Give/Split/Set Quantity/Duplicate/Make Unique/Drop/Destroy, custom mods, Victories/XP/level/titles/wealth/renown). Strictness rests on closing the other routes (D1-Q4). Option B (a shared "play" level in CharacterPanel.TokenAccessLevel) is recorded as the panel's path IF David fixes the Summoner/Elementalist blocks; the sheet would need no rework. | James picked A. |
+| 2026-10-08 | CARRY-THREE (leveled treasure) = DISCUSSION POINT WITH DAVID: hard cap of three vs allow-and-warn vs automate the respite Presence test. Not decided by us. | James. |
+| 2026-10-08 | LEVEL-UP flow named as a D8 item (where levelling happens: builder vs a sheet-launched level-up flow); not solved yet. | James agreed. |
+| 2026-10-08 | TEAMMATES (Q1a): a player can open a teammate's full EotW sheet, read-only, in town AND in game. Under A this is the same sheet with the owner-only controls not built. Opening it is always deliberate (never auto-opens); Escape closes. | James. David's doc lists "another player's hero" as a LATER entry point without saying town or game (EncounterOfTheWeek.md:1700-1705, 830-834, 998-999); locked as stands. |
+| 2026-10-08 | IN-GAME LAYERING = (i) + P3, SUPERSEDING the "prompts/turn notice/victory layer ABOVE the sheet" default. The sheet mounts where today's sheet does (above HUD furniture: initiative bar, roster, pools, windows, action bar, trigger cards, roll dialogs; below modals, victory/defeat, story screens, the "Waiting for..." banner, tooltips, dice). No core GameHud layer. Instead a "you're needed" SIGNAL: when a trigger, save or roll waits on one of the viewer's heroes (or a stage starts), the sheet's close control turns gold and says so [COPY]; close is one click (top-right X) or Escape; reopening restores scroll, expanded rows and filters. Must NOT open via ShowSheet or carry the journalViewer class (both hide the banner). | James. EotW never times prompts out (EmbeddedRollDialog.lua:6465-6476 paused trigger dice; MonsterAIPanel.lua:170-177 save wait), so the extra click loses nothing once the player knows. P1 (prompts above via a new layer) = upgrade path if playtests show players resent closing to answer. |
+| 2026-10-08 | LAYERING RULES (accepted at face value; may be interrogated later): (1) a stage that starts while the sheet is open -> the signal fires (with this mount the stage would sit under the sheet); (2) a sheet opened during a stage opens above it; (3) Escape closes the sheet only after anything above it that wants Escape (roll dialogs 15, modals 16, popups 17; sheet at <= 14); (4) map-targeting prompts under an open sheet -> D9 states item. | James. |
+| 2026-10-08 | LEARNED SURFACE: the sheet shows the SAME layout and the SAME representations in town, montage and encounter; only the values change. (Withdraws my "vitals as plain numbers in town, current values only in game" idea.) | James: context-dependent display breaks Hodent consistency/learnability. |
+| 2026-10-08 | STAMINA keeps a visual full-vs-not representation (a bar, not just numbers), and stamina must look the same across surfaces (today the character panel, the hero card portrait and the mock sheet all differ). Representation choice pending (see round). | James. |
+| 2026-10-08 | STAMINA = S1: the sheet reuses the hero card's stamina bar (EotwHeroCard.CreateStaminaBar, exported; the card calls it "the character panel's health bar in miniature"), winded threshold as a label. ALSO mock S2 (a better shared bar) for comparison: a bar study at full / full+temp / hurt+temp / winded / dying. Working rule for mocks: anything on the hero card looks the same on the sheet (stamina bar, recoveries ring, resource icon+value, surge pips, characteristic chips). | James (S1 + mock S2). TEMP FLAW found: the card sizes temp as min(1 - fill, temp/max) (EotwHeroCard.lua:597-601), so temp is INVISIBLE at full stamina (only "+N" text) and clipped near full - the common case. |
+| 2026-10-08 | ROUND 3 WIREFRAMES published for reaction: https://claude.ai/artifact/UkGYCopdu4DAiuh2P7xUb2 (source docs/eotw-hero-sheet/mock/layouts.html, reuses mock/data.js + art/). Concept 1 STAT SPINE (identity col | one stats column: stamina, tests, combat, gear | abilities + features); 2 BIG CARD (the hero card enlarged as the left column, characteristics + skills + vitals on the art | abilities | features | details col); 3 RAIL AND PAGES (rail: portrait, stamina, tests, combat | one page at a time: Abilities, Features, Gear, Story). All vertical, skills beside characteristics. Plus the stamina bar study: S1 card bar as built vs S2a temp strip / S2b stretched bar / S2c temp overlay, at sheet and card size. Structural reason: a row of unequal blocks is as tall as its tallest, so short blocks sit half empty and narrow ones get squeezed; columns let each block take its own height. | Awaiting James. |
+| 2026-10-08 | ROUND 3 VERDICTS. REJECTED Concept 3 Rail and pages: clicking across to different sections is a failure mode of the current sheets. REJECTED Concept 1 Stat spine: abilities column felt empty, the spine felt cramped, block contents had inconsistent spacing with empty right-hand sides. BIG CARD is the direction ("cool"), but movement and gear felt tacked onto the side, not considered. | James. |
+| 2026-10-08 | CHARACTERISTICS on the sheet use FULL NAMES (Might, Agility, Reason, Intuition, Presence), not letters - which strains putting them on the card art. (The hero card itself may keep letters for space; the card-to-sheet rule bends for labels, not values.) SKILLS GROUPED by skill group = decided. JOB COLOURS dropped. Show PROGRESS TOWARD THE NEXT LEVEL. | James. |
+| 2026-10-08 | STAMINA BAR must also show the DEAD threshold (a hero dies at the negative of their winded value; Heroes p.~674 of extract) - "a fairly important number". S2c (temp overlay) liked as the basis, but temp is drained FIRST, and S2c's "Hurt, 10 temp" did not read that way; next round must show drained-first. | James. |
+| 2026-10-08 | QUALITY BAR for round 4 blocks: consistent internal spacing; blocks fill their width (no empty right-hand sides); label/value pairs on a shared grid. | From James's spine critique. |
+| 2026-10-08 | ROUND 4 ARRANGEMENT = "TESTS ACROSS THE TOP": left = the big card (art, name, stamina) then level progress and gear; main = one tests block across the top (full-name characteristics + skills by group + languages), then Abilities (combat stats at its head) | Features. No side column. | James picked option 1 of 3 (others: tests under the card + Gear list; characteristics on the card art). |
+| 2026-10-08 | STANDARD ACTIONS + FREE STRIKES are listed in Abilities as COMPACT groups after the hero's own abilities (names only, click to read). | James. A real L1 hero has 22-25 abilities (E5); round 3 showed only own abilities, hence the empty column. |
+| 2026-10-08 | LEVEL PROGRESS = XP to next level (DS default: Victories convert to XP at a respite, 16 XP per level; Heroes Heroic Advancement table), shown as a bar with Victories beside it. EotW's own progression rules stay open with David. | James. |
+| 2026-10-08 | ROUND 4 MOCK published as version 2 of the same artifact (https://claude.ai/artifact/UkGYCopdu4DAiuh2P7xUb2; source mock/layouts.html + std.js; round 3 source kept as mock/layouts-r3.html). Big card plate = name, subtitle, recoveries ring + stamina bar, "Winded at 16 / Dead at -16" line, Recovery value / resource / surges row; left = card, Level + XP bar (16 per level) + Victories, Gear (kit + bonuses grid, treasure, leveled N of 3, equip CTA); main = topbar, tests block (full-name characteristic tiles + "A test is 2d10 plus a characteristic, +2 when one of your skills applies" [COPY], five fixed skill-group columns, languages), Abilities (combat strip: size/speed/disengage/stability/potency + immunities/weaknesses; own abilities; Free strikes + 17 Standard actions as compact two-column groups, real data from the live app via tools/probe_std.py) | Features. Bar study: S1 vs T1 leading band (temp right after current stamina, slides back over the fill with an overflow arrow when it does not fit) / T2 T1 + fixed dying zone (0 line, red fills toward death, not to scale) / T3 temp past the bar (frame = max, cap runs out past it), 7 states incl. winded + temp, dying, near death. | Awaiting James. |
+| 2026-10-08 | ROUND 4 VERDICTS (James): KEEP level + gear where they are (left column under the card). DROP the characteristics explainer line. Size/speed/disengage/stability/potency/immunities/weaknesses must NOT sit under the Abilities header ("makes no sense"); James floats stretching them horizontally like characteristics + skills - OPTIONS TO DISCUSS. Skills and languages take too much space for what they are. Potency label sat over Weak only and pushed values down - confusing which values are potency. Recoveries COUNT not shown (ring only) - must be explicit. Standard-action inline expand in the two-column grid "isn't great"; James wonders about hover preview cards instead of click-to-expand - ASKED what the EotW builder uses. Feature filter input goes beside the pillar chips; every feature SECTION header collapsible; long features need click to expand/collapse. Rows must show BOTH the action type (main action, maneuver...) and the cost (Signature, N Piety) - one label is not enough. Gear: "Kit" as the header (not "<name> kit"). | James. |
+| 2026-10-08 | STAMINA BAR = S1 (as built) FOR NOW; the representation is UNDECIDED and goes to David (temp invisible at full, drained-first semantics, dead threshold). T1-T3 stay in the study for that conversation. | James. |
+| 2026-10-08 | OPEN from round 4: (a) the Conduit's "Life Domain Effect" / "War Domain Effect" show as triggered actions - does Abilities honour the tagging (Hidden display kind)? (b) Tacticians can change their kit damage bonus - Gear must account for it. (c) Non-kit classes: show their ward (or equivalent) with its bonuses in the Kit slot? (d) Show multiple immunities/weaknesses and a veteran inventory (trinkets, consumables, leveled treasure). | James; research before proposing. |
+| 2026-10-08 | ABILITY CARD = HOVER SHOWS, CLICK PINS: hovering any ability row (own, free strike, standard action) shows the same card the live sheet and action bar use (CreateAbilityTooltip); click pins it until you click elsewhere or press Escape. Replaces click-to-expand. | James (recommended option). Codex convention is hover (E14); pinning gives keyboard/touch a path and keeps the card while reading. |
+| 2026-10-08 | KIT SLOT for kit-less classes = the EQUIVALENT under its rules name (Conduit: Prayer + Ward; Elementalist: Enchantment + Ward; Null: Augmentation; Talent: Augmentation + Ward; Summoner: Summoner's Kit + Wards) with the bonuses it grants; they also stay in Features. | James (recommended option). |
+| 2026-10-08 | TACTICIAN: Gear shows BOTH kits; where both have a damage bonus, both values show with the active one marked; the player can switch it IN TOWN (a respite - rules-legal, so allowed under option A); in an encounter it shows but cannot switch. Note the EotW builder has no toggle today (E13). | James (recommended option). |
+| 2026-10-08 | STATS BAND: James asked to SEE all three options in the mock before choosing - (1) numbers row + words row, (2) tests half + combat half, (3) statblock lines. | James. |
+| 2026-10-08 | ROUND 5 MOCK published as version 3 (same URL; source mock/layouts.html + vet.js; round 4 kept as mock/layouts-r4.html). Stats band toggle (1 numbers row/words row, 2 tests half/combat half, 3 statblock lines); skills + languages inline, grouped; explainer dropped; card plate spells out "Recoveries 10/10 +11 each" (ring dropped on the sheet - a deviation from the card rule, flagged); ability rows show action + cost; hover card + click pin (Escape/click-away closes) on abilities AND items; Conduit domain effects in their own "Domain effects" group ("Used when your prayer roll is a 3" [COPY]) - MY DEFAULT, flagged; jump chips over Abilities; feature sections collapsible, filter beside the chips, long features Show more/less; Gear: "Kit" header with armor/weapon line from kit data; kit-equivalents by rules name (Conduit Prayer + Ward, Elementalist Enchantment + Ward, Talent Augmentation, Null "None chosen" - the pregen has no augmentation); Tactician both kits, lower duplicates struck, melee bonus chooser "Change at a respite" when both kits give melee (simulated with Panther); treasure split Worn and wielded / Carried / Consumables with Equip/Unequip, "No benefit" flag on armor the kit cannot use (Panther has no armor); simulate toggles: veteran inventory (real tbl-gear records), many immunities, some progress, two melee kits. | Awaiting James. |
+| 2026-10-08 | ROUND 5 VERDICTS (James): STATS BAND leaning option 1 (numbers row + words row) but a skill group must never break across lines, and movement + potency should be LESS prominent than characteristics yet more than statblock lines. LEFT COLUMN MUST NOT SCROLL. Tactician kits: find a more elegant combined view than stacking. JUMP CHIPS rejected. Recoveries text OK but he misses the card's ring - make it more in line with the card. | James. |
+| 2026-10-08 | ABILITIES FOLLOW THE TAGGING PLAN (docs/feature-metadata-incremental/hero-tagging-plan.md, James's 2026-08-15 rulings): a feature tagged Ability/Trigger IS an ability card (row hidden in Features, card shown in Abilities); prose features the codex implements as abilities stay VISIBLE FEATURES (domain effects = visible Combat). So the Abilities list = abilities from Ability/Trigger-tagged features + kit signature abilities + core-feature actions (Mark, Judgment) + free strikes + standard actions; it drops abilities whose source is a visible or Hidden feature. BUILD NOTE: no codex ability list reads tags today (E14) - the sheet needs an ability-to-source-feature lookup. Triggered actions come from GetTriggeredActions() (the round 2-5 export missed them). OPEN for James: the same rule would also move Light (Dwarf Runic Carving) and the respite rituals out of Abilities into Features - confirm. | James's recollection, confirmed against the plan. |
+| 2026-10-08 | ROUND 6 MOCK published as version 4 (same URL; round 5 kept as mock/layouts-r5.html): level + XP + Victories moved onto the card plate (no separate level block); card 400x520; gear compact with "+N more" caps (worn 5, carried 3, consumables 6) and NEVER scrolls (veteran inventory fits); stats band = option 1 only, characteristics as big tiles, movement + potency as LABELLED LINES (default) or SMALL TILES (toggle); skill groups nowrap; recoveries = the card's ring + "Recoveries / of 10 - +11 each"; Tactician = ONE combined kit (two kit names with filled/hollow markers, each bonus shows the better value + its marker, the other kit's value on hover, inline melee chooser "pick one in town (a respite)" when both kits give melee); abilities per the tagging plan (Conduit domain effects -> Features as Combat, Word of Guidance + Elementalist's Explosive Assistance added as Triggered actions; Censor's two custom test abilities left off); global abilities always grouped as free strikes / standard actions; jump chips removed; feature chips + filter on the header row. | Awaiting James. |
+| 2026-10-08 | ROUND 6 VERDICTS (James): movement + potency treatment (labelled lines vs small tiles) NOT YET DECIDED - keep both. APPLY the tagging rule to Light (Dwarf Runic Carving) and the respite rituals too. Tactician filled-dot markers rejected (and they made the bonuses wrap differently). The gear card's header is not "Gear": split it into KIT (or Ward / Prayer / Enchantment / Augmentation - whatever the class uses) and TREASURES, with Leveled treasures / Trinkets / Consumables as sub-headers. REVERT the card plate's heroic resource and surges to the current hero-card frame, keeping the other plate changes. The capped gear card rendered some content off screen - must never clip. | James. |
+| 2026-10-08 | ROUND 7 MOCK published as version 5 (same URL; round 6 kept as mock/layouts-r6.html): card plate resource = the card's icon + value (name on hover), surges = one icon per surge, none at 0 (EotwHeroCard CreateResourceRow / CreateSurgeCorner), recoveries ring + label kept; the gear card = KIT section (single kit; Tactician as ONE kit "Shining Armor + Rapid-Fire" laid out exactly like a single kit, source on hover, inline melee chooser when both kits give melee; kit-less classes show their equivalent's rules name as the header, two-up when there are two: Prayer | Ward, Enchantment | Ward) + a split + TREASURES (Leveled treasures "N of 3 carried", Trinkets, Consumables chips; equip CTA on the Treasures header); lists cap behind "+N more" and the caps shrink automatically until the card fits (never clips); Light, Revitalizing Ritual and the Ritualist perk's blessing ritual moved from Abilities to Features (Ancestry/Exploration, Class/Respite, Perks/Exploration+Montage). | Awaiting James. |
+| 2026-10-08 | ROUND 7 VERDICTS (James): "+N more" hides items you cannot act on - TREASURES SCROLL inside their own card like Abilities and Features. KIT and TREASURES become SEPARATE stacked cards. LEVEL ROW smaller: progress bar not full width, current level and next level at the bar's ends, Victories on the same line, the "X of X XP" text moves to a hover tooltip on the bar. "Movement" is the wrong header (size and stability are not movement): each stat gets its own label next to its number. ONE HEADER SYSTEM: section headers (white, larger - Skills must outrank the skill-group labels) vs stat headers (gold), used the same way everywhere. Movement + potency = LABELLED LINES (decided). | James. Surge check: the current hero card draws ONE SURGE ICON PER AVAILABLE SURGE, no number, nothing at 0, capped at 9 icons (EotwHeroCard.lua:860-893 CreateSurgeCorner). |
+| 2026-10-08 | ROUND 8 MOCK published as version 6 (same URL; round 7 kept as mock/layouts-r7.html): Kit card + Treasures card (scrolling body, no caps); level row "1 [bar] 2  Victories 0" with XP on hover; header system (section = 16px white caps: Characteristics, Skills, Languages, Immunities, Weaknesses, Abilities, Features, Kit/Prayer/Ward..., Treasures; stat = gold small caps: characteristic names, skill groups, size/speed/disengage/stability, Potency, list groups, treasure types, kit bonus names); size/speed/disengage/stability self-labelled, Potency + weak/average/strong; the movement/potency toggle removed. Brief handoff section rewritten for the next session. | Awaiting James. |
+| 2026-10-08 | PRECEDENT IS CONTEXT, NOT AUTHORITY: nobody has done a Draw Steel character sheet well; solving that is the aim. Layout reasoning rests on the DS rules (a test = characteristic + skill) and EotW's own surfaces, not on other sheets. | James. |
+| 2026-10-08 | SWITCHER (Q2c) = BY CONTEXT: in town it cycles your roster; in game it cycles the heroes in this encounter, yours first, others marked by the card's border ladder (own = 2px blue), never colour alone. Ours, not in David's doc. | James. Mirrors the surrounding roster (Guild vs HUD), so ownership stays legible. |
+
+## Discussion points for David
+
+- Carry-three leveled treasure in a directorless mode: hard cap / allow + warn / automated respite test.
+- Panel class-control blocks (Summoner Sacrifice/Edit Squads, Elementalist end persistent) are bugs under EotW's blanket "view" access; a "play" access level is one fix path.
+- Closing the core routes to the full sheet (c/i keys, radial, search, macros) touches core code - needs his OK (D1-Q4).
+- Edit in Builder window: his doc says "only before its first encounter" (EncounterOfTheWeek.md:1707-1709); the code (CanRebuildHero) allows it until the first recorded VICTORY, so a hero who lost or died stays rebuildable. Which does he intend?
+- Teammates' sheets: we locked read-only in town AND in game (his doc lists "another player's hero" as a later entry point without saying where). Confirm.
+- Hero card stamina bar hides temp stamina at full stamina and clips it near full (EotwHeroCard.lua:597-601: temp width = min(1 - fill, temp/max)); only the "+N" text shows it. The sheet reuses this bar (S1), so a fix would land on both.
+- Side finding (E11): the AI "Waiting for..." banner hides whenever ANY panel window is open (journalViewer class, GameHud.lua:2887-2908), including the hero-card character panel and Chat. Intended?
+- FYI (E11): today's full sheet (ShowSheet, mainDialogPanel) covers trigger prompts and roll dialogs and hides the "Waiting for..." banner - relevant while the c/i keys still open it in EotW. Our sheet avoids a core layer change (P3) but will want his eyes on the signal.
 
 ## Out of scope / rejected
 

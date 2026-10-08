@@ -1,0 +1,686 @@
+<title>EotW Sheet Layouts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap">
+<style>
+  /* Layout: review page (controls, a 1920x1080 stage scaled to fit, notes, a stamina bar study).
+     One deliberate dark look: the product is EotW's fixed-dark builder palette. */
+  :root {
+    color-scheme: dark;
+    --page: #0e0e0d; --page-fg: #d9d3c7; --page-mut: #8f897e; --page-line: #2a2926; --ctl: #1a1a18;
+    --screen: #0b0c0b; --column: #121311; --card: #1a1b18; --card-hover: #262722; --border: #3a3833;
+    --cream: #DFCFC0; --cream-light: #F3EDE7; --tan: #BC9B7B; --muted: #9a9188; --lab: #A6A096; --ink: #10110F;
+    --mine: #6fa8ff; --gold: #ffd66b;
+    --st-ok: #4DB88C; --st-winded: #E8A030; --st-dying: #C94040; --temp: #E4DDD0;
+    --j-id: #b39a6b; --j-test: #7fa7d9; --j-combat: #d07a66; --j-gear: #c9a94d; --j-ab: #8fbf8a; --j-ft: #a991cf;
+    --slab: "Bitter", "Roboto Slab", Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--page); color: var(--page-fg); }
+  body { margin: 0; font-family: var(--slab); }
+  .page { max-width: 1960px; margin: 0 auto; padding-block: 22px 60px; padding-inline: 20px; }
+  button, select { font: inherit; }
+  button:focus-visible, select:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  /* review chrome */
+  .intro h1 { font-size: 26px; font-weight: 800; margin: 0; color: #f1ece2; text-wrap: balance; }
+  .intro p { margin: 8px 0 0; color: var(--page-mut); font-size: 14px; line-height: 1.55; max-width: 1000px; }
+  .intro p b { color: #f1ece2; font-weight: 600; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; margin: 18px 0 12px; }
+  .ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ctl > span { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--page-mut); font-weight: 700; }
+  .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--page-line); border-radius: 8px; overflow: hidden; }
+  .seg button { font-size: 13px; color: var(--page-fg); background: var(--ctl); border: 0; padding: 7px 12px; cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--page-line); }
+  .seg button:hover { background: #24231f; }
+  .seg button.on { background: var(--cream); color: var(--ink); font-weight: 700; }
+  .ctl select { font-size: 13px; color: var(--page-fg); background: var(--ctl); border: 1px solid var(--page-line); border-radius: 8px; padding: 6px 10px; }
+  .tog { font-size: 13px; color: var(--page-fg); background: var(--ctl); border: 1px solid var(--page-line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  .tog[aria-pressed="true"] { border-color: var(--tan); color: #f1ece2; background: #24231f; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--page-mut); margin: 0 0 10px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+  .stage-wrap { position: relative; width: 100%; overflow: hidden; border-radius: 10px; border: 1px solid #000; background: #000; }
+  .stage-wrap.full { overflow-x: auto; }
+  .stage { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; transform-origin: 0 0; overflow: hidden;
+    background: var(--screen); color: var(--cream); font-family: var(--slab); }
+  .stage-wrap.full .stage { position: relative; }
+
+  .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; margin-top: 20px; }
+  .note { min-width: 0; border: 1px solid var(--page-line); border-radius: 10px; padding: 14px 16px; background: #121210; }
+  .note.cur { border-color: var(--tan); }
+  .note h2 { font-size: 16px; margin: 0 0 6px; color: #f1ece2; }
+  .note p, .note li { font-size: 14px; line-height: 1.55; }
+  .note p { margin: 0 0 8px; }
+  .note ul { margin: 0; padding-left: 18px; }
+  .note li + li { margin-top: 4px; }
+  .note .k { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan); font-weight: 700; margin: 10px 0 4px; }
+  h2.sec { font-size: 20px; color: #f1ece2; margin: 36px 0 6px; }
+  p.sec { margin: 0 0 14px; color: var(--page-mut); font-size: 14px; line-height: 1.55; max-width: 1000px; }
+
+  /* ---------- stage: shared pieces ---------- */
+  .lay { position: absolute; inset: 0; padding: 24px; display: grid; gap: 20px; animation: in 0.25s ease-out; }
+  @keyframes in { from { opacity: 0; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .lay { animation: none; } }
+  .c1 { grid-template-columns: 340px 330px minmax(0, 1fr); }
+  .c2 { grid-template-columns: 420px minmax(0, 1fr); }
+  .c3 { grid-template-columns: 400px minmax(0, 1fr); }
+  .col { min-height: 0; min-width: 0; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #3a3833 transparent; }
+  .mainc { min-height: 0; min-width: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 14px; }
+  .lists { min-height: 0; min-width: 0; display: grid; gap: 18px; }
+  .lists.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); }
+  .lists.three { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) 300px; }
+  .lcol { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; min-width: 0; }
+  .lbody { overflow-y: auto; min-height: 0; padding: 8px 4px 0 0; scrollbar-width: thin; scrollbar-color: #4a4740 transparent; }
+
+  .blk { position: relative; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; min-width: 0; flex-shrink: 0; }
+  .bh { font-size: 14px; color: var(--lab); margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .sub-h { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tan); margin: 10px 0 4px; }
+  .sub-h:first-child { margin-top: 0; }
+  .jt { display: none; margin-left: auto; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 1px 7px; border-radius: 9px; }
+  .jobs .jt { display: inline-block; }
+  .jobs [data-job="id"] { background: rgba(179,154,107,0.09); border-color: rgba(179,154,107,0.6); }
+  .jobs [data-job="test"] { background: rgba(127,167,217,0.09); border-color: rgba(127,167,217,0.6); }
+  .jobs [data-job="combat"] { background: rgba(208,122,102,0.09); border-color: rgba(208,122,102,0.6); }
+  .jobs [data-job="gear"] { background: rgba(201,169,77,0.09); border-color: rgba(201,169,77,0.6); }
+  .jt.id { color: var(--j-id); border: 1px solid var(--j-id); } .jt.test { color: var(--j-test); border: 1px solid var(--j-test); }
+  .jt.combat { color: var(--j-combat); border: 1px solid var(--j-combat); } .jt.gear { color: var(--j-gear); border: 1px solid var(--j-gear); }
+  .jt.ab { color: var(--j-ab); border: 1px solid var(--j-ab); } .jt.ft { color: var(--j-ft); border: 1px solid var(--j-ft); }
+
+  .portrait { border-radius: 8px; border: 1px solid #000000cc; background-color: #151515; background-size: cover; background-position: 50% 15%; flex-shrink: 0; position: relative; overflow: hidden; }
+  .nm { font-size: 30px; font-weight: 800; color: var(--cream-light); line-height: 1.1; text-wrap: balance; }
+  .ln { font-size: 15px; color: var(--muted); margin-top: 4px; }
+  .sc { font-size: 13px; color: var(--tan); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; margin-top: 4px; }
+  .center { text-align: center; }
+  .units { display: flex; justify-content: space-between; gap: 6px; }
+  .unit .lab { font-size: 14px; color: var(--lab); white-space: nowrap; }
+  .unit .val { font-size: 26px; font-weight: 700; color: var(--cream-light); font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; }
+  .grid2 .val { font-size: 20px; }
+  .pot { display: flex; gap: 16px; font-size: 14px; color: var(--lab); flex-wrap: wrap; }
+  .pot b { color: var(--cream-light); font-size: 17px; margin-left: 4px; }
+  .dl { font-size: 14px; color: var(--cream); line-height: 1.45; }
+  .none { color: var(--muted); font-style: italic; }
+  .skg { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 3px 10px; font-size: 14px; line-height: 1.45; }
+  .skg .g { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); padding-top: 2px; }
+  .skg .s { color: var(--cream); }
+  .idl { display: grid; grid-template-columns: auto 1fr; gap: 5px 14px; font-size: 14px; margin: 0; }
+  .idl dt { color: var(--muted); }
+  .idl dd { margin: 0; color: var(--cream); text-align: right; }
+  .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { font-size: 14px; color: var(--cream); background: var(--card); border: 1px solid var(--border); border-radius: 6px; height: 36px; padding: 0 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .btn:hover { background: var(--card-hover); border-color: var(--tan); }
+  .btn.primary { border-color: var(--gold); color: var(--gold); }
+  .btn kbd { font: inherit; font-size: 11px; color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 0 5px; }
+  .ownerchip { font-size: 14px; color: var(--cream); border: 1px solid rgba(111,168,255,0.55); background: rgba(111,168,255,0.10); border-radius: 18px; padding: 5px 14px; white-space: nowrap; }
+  .ownerchip i { color: var(--muted); }
+  .prog { display: flex; align-items: baseline; gap: 12px; }
+  .prog .val { font-size: 22px; font-weight: 700; color: var(--cream-light); }
+  .prog .sub { margin-left: auto; font-size: 12px; font-style: italic; color: var(--muted); }
+
+  /* vitals: the hero card's grammar */
+  .vit { display: flex; flex-direction: column; gap: 10px; }
+  .vrow { display: flex; align-items: center; gap: 14px; }
+  .ring { width: 46px; height: 46px; border-radius: 50%; border: 2px solid rgba(223,207,192,0.55); background: #000000a0; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 800; color: var(--cream-light); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .vcell .lab { font-size: 13px; color: var(--lab); }
+  .vcell .val { font-size: 20px; font-weight: 700; color: var(--cream-light); }
+  .vcell .val small { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .res .val::before { content: ""; display: inline-block; width: 12px; height: 12px; transform: rotate(45deg); border: 2px solid var(--tan); margin-right: 8px; vertical-align: 1px; }
+  .pips { display: inline-flex; gap: 4px; margin-left: 6px; vertical-align: 2px; }
+  .pips i { width: 9px; height: 9px; border-radius: 50%; background: var(--gold); }
+  .bnote { font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 10px; }
+
+  .bar { position: relative; display: flex; align-items: center; width: 100%; height: 20px; border: 1px solid var(--st-ok); border-radius: 3px; background: #00000066; overflow: hidden; }
+  .bar.st-winded { border-color: var(--st-winded); } .bar.st-dying { border-color: var(--st-dying); }
+  .bar .f { height: calc(100% - 2px); margin-left: 1px; background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(0,0,0,0.18)), var(--st-ok); }
+  .bar.st-winded .f { background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(0,0,0,0.18)), var(--st-winded); }
+  .bar.st-dying .f { background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(0,0,0,0.18)), var(--st-dying); }
+  .bar .t { height: calc(100% - 2px); background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(0,0,0,0.2)), var(--temp); }
+  .bar b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; text-shadow: 0 1px 2px #000, 0 0 3px #000; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .bar.sm { height: 14px; } .bar.sm b { font-size: 10px; }
+  .bar .tick { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.85); box-shadow: 0 0 0 1px rgba(0,0,0,0.6); }
+  .bar .mx { position: absolute; top: 0; bottom: 0; width: 2px; background: #000; }
+  .bar .ov { position: absolute; top: 2px; bottom: 2px; border: 2px solid var(--temp); border-radius: 2px;
+    background: repeating-linear-gradient(135deg, rgba(228,221,208,0.38) 0 4px, rgba(228,221,208,0.10) 4px 8px); }
+  .tstrip { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.06); margin-bottom: 3px; overflow: hidden; }
+  .tstrip.sm { height: 3px; margin-bottom: 2px; }
+  .tstrip i { display: block; height: 100%; background: var(--temp); border-radius: 3px; }
+
+  /* top bar */
+  .topbar { display: flex; align-items: center; gap: 12px; min-height: 60px; min-width: 0; }
+  .sw { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 auto; overflow: hidden; }
+  .sw .grp { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-right: 2px; white-space: nowrap; }
+  .sw .sep { width: 1px; align-self: stretch; background: var(--border); margin: 6px 4px; }
+  .th { width: 40px; height: 56px; border-radius: 6px; background-size: cover; background-position: 50% 15%; border: 1px solid #000; cursor: pointer; flex-shrink: 0; padding: 0; }
+  .th.mine { box-shadow: 0 0 0 2px rgba(111,168,255,0.8); }
+  .th.cur { outline: 2px solid var(--cream-light); outline-offset: 3px; }
+  .close { margin-left: auto; flex-shrink: 0; }
+  .close.sig { border: 2px solid var(--gold); color: var(--gold); animation: pulse 1.6s ease-in-out infinite; }
+  .close .sigt { font-weight: 700; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 4px rgba(255,214,107,0.25); } }
+  @media (prefers-reduced-motion: reduce) { .close.sig { animation: none; } }
+
+  /* lists */
+  .lhead { display: flex; flex-direction: column; justify-content: flex-end; gap: 7px; padding-bottom: 8px; border-bottom: 1px solid rgba(188,155,123,0.4); min-height: 76px; }
+  .lhead .r { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .lhead h3 { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cream-light); }
+  .lhead .cnt { font-size: 13px; color: var(--muted); }
+  .chip { font-size: 13px; height: 28px; padding: 0 12px; border-radius: 14px; border: 1px solid var(--border); background: transparent; color: var(--cream); cursor: pointer; }
+  .chip:hover { border-color: var(--tan); }
+  .chip.on { background: var(--cream); color: var(--ink); border-color: var(--cream); font-weight: 700; }
+  .grp { margin-top: 12px; } .grp:first-child { margin-top: 2px; }
+  .grph { display: flex; align-items: baseline; gap: 8px; padding: 3px 0; }
+  .grph .gl { font-size: 13px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan); }
+  .grph .gc { font-size: 13px; color: var(--muted); }
+  .arow { border: 1px solid var(--border); border-radius: 8px; background: rgba(26,27,24,0.85); margin-top: 6px; }
+  .art { display: flex; align-items: baseline; gap: 10px; padding: 9px 12px; cursor: pointer; min-width: 0; }
+  .art .an { font-size: 16px; font-weight: 700; color: var(--cream-light); }
+  .art .ak { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .art .ac { margin-left: auto; font-size: 14px; color: var(--tan); white-space: nowrap; font-weight: 600; }
+  .ab { padding: 0 14px 12px; }
+  .ab .fl { font-style: italic; color: var(--muted); font-size: 14px; }
+  .ab .meta { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13px; color: var(--lab); margin-top: 6px; }
+  .ab .meta b { color: var(--cream); font-weight: 600; }
+  .ab .roll { font-size: 14px; font-weight: 700; color: var(--cream-light); margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.07); }
+  .tier { display: flex; gap: 10px; font-size: 14px; color: var(--cream); margin-top: 5px; line-height: 1.4; }
+  .tier .tb { flex-shrink: 0; width: 82px; font-size: 12px; font-weight: 700; color: var(--tan); border: 1px solid rgba(188,155,123,0.45); border-radius: 4px; text-align: center; padding: 1px 0; height: fit-content; }
+  .ab .eff { font-size: 14px; color: var(--cream); margin-top: 8px; line-height: 1.5; white-space: pre-line; }
+  .fcard { border: 1px solid var(--border); border-radius: 8px; background: rgba(26,27,24,0.85); padding: 10px 14px; margin-top: 7px; break-inside: avoid; }
+  .ft { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .ft .fn { font-size: 16px; font-weight: 700; color: var(--cream-light); }
+  .ft .tags { margin-left: auto; display: flex; gap: 5px; }
+  .ptag { font-size: 12px; color: var(--muted); border: 1px solid var(--border); border-radius: 9px; padding: 0 7px; white-space: nowrap; }
+  .fsub { font-size: 13px; font-style: italic; color: var(--muted); margin-top: 1px; }
+  .fd { font-size: 14px; color: var(--cream); line-height: 1.55; margin-top: 6px; white-space: pre-line; max-height: 132px; overflow: hidden;
+    -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent); mask-image: linear-gradient(180deg, #000 72%, transparent); }
+  .fd.short { -webkit-mask-image: none; mask-image: none; }
+
+  /* gear */
+  .gear .it { display: flex; align-items: center; gap: 10px; font-size: 14px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: rgba(26,27,24,0.7); margin-top: 6px; }
+  .gear .it .tg { margin-left: auto; font-size: 12px; color: var(--muted); font-style: italic; white-space: nowrap; }
+  .gear .it.todo { border-color: var(--gold); }
+  .gear .it .eq { height: 28px; font-size: 13px; padding: 0 10px; }
+  .cta { font-size: 12px; font-weight: 700; color: var(--ink); background: var(--gold); border-radius: 9px; padding: 1px 8px; }
+  .kb { display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 13px; color: var(--lab); margin-top: 4px; }
+  .kb b { color: var(--cream-light); }
+  .cnt3 { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  /* concept 2: the hero card, enlarged */
+  .bigcard { width: 420px; height: 600px; }
+  .bigcard .cchips { position: absolute; right: 12px; top: 40px; display: flex; flex-direction: column; gap: 8px; }
+  .cchip { width: 76px; height: 30px; background: #000000b8; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-weight: 700; font-size: 15px; }
+  .cchip span { color: var(--muted); } .cchip b { color: var(--cream-light); }
+  .bigcard .plate { position: absolute; left: 10px; right: 10px; bottom: 10px; background: #000000c4; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .plate .pn { font-size: 26px; font-weight: 800; color: #fff; line-height: 1.1; }
+  .plate .ps { font-size: 13px; color: #c6d0da; }
+  .plate .pk { font-size: 13px; color: var(--cream); line-height: 1.4; }
+
+  /* concept 3: rail + pages */
+  .who { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 14px; align-items: start; }
+  .who .nm { font-size: 26px; }
+  .tabs { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .tab { height: 42px; padding: 0 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--cream); font-size: 15px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+  .tab:hover { border-color: var(--tan); }
+  .tab.on { background: var(--cream); color: var(--ink); font-weight: 700; border-color: var(--cream); }
+  .pageb { min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #4a4740 transparent; padding-right: 6px; }
+  .cols2 { column-count: 2; column-gap: 18px; }
+  .sb { border: 1px solid var(--border); border-radius: 8px; background: rgba(26,27,24,0.85); padding: 12px 14px 4px; margin-bottom: 14px; break-inside: avoid; }
+  .sb .art { padding: 0 0 4px; cursor: default; }
+  .sb .ab { padding: 0 0 10px; }
+  .pgh { column-span: all; font-size: 13px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan); margin: 4px 0 8px; }
+
+  /* stamina study */
+  .study-wrap { overflow-x: auto; border: 1px solid var(--page-line); border-radius: 10px; }
+  table.study { border-collapse: collapse; width: 100%; min-width: 1100px; background: #0b0c0b; }
+  .study th, .study td { border-bottom: 1px solid var(--page-line); padding: 12px 14px; vertical-align: top; text-align: left; }
+  .study thead th { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--page-mut); font-weight: 700; }
+  .study th[scope="row"] { width: 250px; font-weight: 400; }
+  .study th[scope="row"] b { display: block; color: #f1ece2; font-size: 15px; margin-bottom: 4px; }
+  .study th[scope="row"] span { font-size: 13px; color: var(--page-mut); line-height: 1.45; display: block; }
+  .study td .cardsz { width: 132px; margin-top: 10px; }
+  .study td .cap { font-size: 11px; color: var(--page-mut); margin-top: 4px; }
+  .foot { margin-top: 26px; font-size: 13px; color: var(--page-mut); line-height: 1.6; }
+</style>
+
+<div class="page">
+  <header class="intro">
+    <h1>EotW sheet layouts</h1>
+    <p>Round 3 wireframes: three ways to arrange the hero sheet, drawn at 1920x1080 with the same pregen data as the round 2 mock. All three follow the rules agreed so far. <b>The sheet looks the same in town, montages and encounters.</b> <b>Skills sit beside the characteristics.</b> <b>Anything on the hero card looks the same here.</b> <b>The abilities and features lists keep their shape.</b></p>
+    <p>Why columns: the August top zone was a row of blocks holding different amounts of content. A row is as tall as its tallest block, so short blocks sat half empty while narrow ones got squeezed. A column lets each block take its own height. Each concept stacks the blocks differently.</p>
+  </header>
+
+  <div class="controls" role="toolbar" aria-label="Wireframe controls">
+    <div class="ctl"><span>Concept</span>
+      <div class="seg" id="ctl-concept">
+        <button data-concept="1">1. Stat spine</button>
+        <button data-concept="2">2. Big card</button>
+        <button data-concept="3">3. Rail and pages</button>
+      </div>
+    </div>
+    <div class="ctl"><span>Hero</span><select id="ctl-hero" aria-label="Hero"></select></div>
+    <div class="ctl"><span>Stamina</span>
+      <select id="ctl-stam" aria-label="Stamina state">
+        <option value="full">Full</option>
+        <option value="fulltemp">Full, 8 temporary</option>
+        <option value="hurttemp">Hurt, 10 temporary</option>
+        <option value="winded">Winded</option>
+        <option value="dying">Dying</option>
+      </select>
+    </div>
+    <div class="ctl"><span>Simulate</span>
+      <button class="tog" id="ctl-won" aria-pressed="false">Won treasure to equip</button>
+      <button class="tog" id="ctl-sig" aria-pressed="false">A trigger is waiting</button>
+    </div>
+    <div class="ctl"><span>Show</span>
+      <button class="tog" id="ctl-jobs" aria-pressed="true">Job colours</button>
+      <div class="seg" id="ctl-zoom"><button data-zoom="fit">Fit</button><button data-zoom="full">100%</button></div>
+    </div>
+  </div>
+  <div class="legend" aria-label="Job colours">
+    <span><i style="background:var(--j-id)"></i>Identity and progression</span>
+    <span><i style="background:var(--j-test)"></i>Tests: characteristics, skills, languages</span>
+    <span><i style="background:var(--j-combat)"></i>Combat: stamina, movement, potency, defences</span>
+    <span><i style="background:var(--j-gear)"></i>Gear: kit and treasure</span>
+    <span><i style="background:var(--j-ab)"></i>Abilities</span>
+    <span><i style="background:var(--j-ft)"></i>Features</span>
+  </div>
+
+  <div class="stage-wrap" id="wrap"><div class="stage" id="stage"></div></div>
+
+  <div class="notes" id="notes">
+    <section class="note" data-note="1">
+      <h2>1. Stat spine</h2>
+      <p>Everything is on screen at once. Every number lives in one column read top to bottom: stamina, then tests, then combat stats, then gear. The left column is who the hero is.</p>
+      <div class="k">Strengths</div>
+      <ul><li>Skills are always in the same place, right under the characteristics.</li><li>Nothing is behind a click.</li><li>The spine has room to grow at higher levels (more immunities, more treasure).</li></ul>
+      <div class="k">Failure modes</div>
+      <ul><li>Four columns can read as busy.</li><li>The two lists get narrower, so long ability rows wrap sooner.</li><li>On a narrower screen the spine would have to fold away.</li></ul>
+    </section>
+    <section class="note" data-note="2">
+      <h2>2. Big card</h2>
+      <p>The left column is the EotW hero card, enlarged: characteristics down the art's edge, skills under the name, stamina, recoveries, resource and surges on the bottom plate. Players see the same card on the HUD and the montage stage. Movement, potency, defences and gear sit in a narrow details column.</p>
+      <div class="k">Strengths</div>
+      <ul><li>Learned once, read everywhere: card and sheet match by construction.</li><li>The art is the frame, not a separate box.</li><li>Characteristics and skills sit together on the card, where montages already use them.</li></ul>
+      <div class="k">Failure modes</div>
+      <ul><li>Text over art depends on the plate's contrast.</li><li>The card holds a fixed amount, so a long skill list crowds it.</li><li>Combat stats are split away from stamina.</li></ul>
+    </section>
+    <section class="note" data-note="3">
+      <h2>3. Rail and pages</h2>
+      <p>A rail holds what you check constantly: portrait, stamina, tests and combat stats. The rest of the screen shows one page at a time: Abilities, Features, Gear or Story. Pages get the full width, so abilities show as full statblocks with no clicking.</p>
+      <div class="k">Strengths</div>
+      <ul><li>No cramping: each page answers one question.</li><li>Gear and the equip call to action get a whole page, and the tab shows a count.</li><li>Room for EotW-only content (victories record, story) without squeezing anything.</li></ul>
+      <div class="k">Failure modes</div>
+      <ul><li>Abilities and features are no longer side by side.</li><li>One click to switch pages.</li><li>At level 1 the Abilities page is sparse, and the rail is already full (it scrolls).</li></ul>
+    </section>
+  </div>
+
+  <h2 class="sec">Stamina bar study</h2>
+  <p class="sec">S1 is the hero card's bar as built; the sheet reuses it. S2a to S2c are candidates for a better shared bar, so each is shown at sheet size and at card size. On the current bar, temporary stamina only gets the room left over after current stamina, so a full hero's temp shows only as text.</p>
+  <div class="study-wrap"><table class="study" id="study"></table></div>
+
+  <p class="foot">Stand-ins: Bitter replaces Berlingske Slab; the diamond replaces the heroic resource icon; "Lightning Treads" is a sample treasure for the equip prompt. Free strikes and the standard abilities are not in the data export, so Abilities lists each hero's own abilities only. All on-screen wording is placeholder copy for sign-off later.</p>
+</div>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  "use strict";
+  const HEROES = window.HEROES || [];
+  const byKey = Object.fromEntries(HEROES.map(h => [h.key, h]));
+  const ROSTER_TOWN = ["fury", "tactician", "censor", "null", "elementalist", "conduit"];
+  const PARTY_GAME = ["fury", "tactician", "censor", "null", "talent", "shadow", "troubadour"];
+  const PILLARS = ["Combat", "Exploration", "Montage", "Negotiation", "Respite"];
+  const SECTION_ORDER = ["Core", "Class", "Ancestry", "Complication", "Kit", "Titles", "Perks", "Career", "Culture", "Treasures"];
+  const ACTION_ORDER = ["Main Actions", "Maneuvers", "Triggered Actions", "Respite Activities", "Other"];
+  const IMPL = { 4: ["Fully automated", "#8fd18f"], 3: ["Mostly automated", "#c9bfa9"], 2: ["Partly automated", "#e9b86f"], 1: ["Not automated", "#e07a5f"], 0: ["Narrative", "#9a9188"] };
+  const SKILL_GROUPS = {"crafting": ["Alchemy", "Architecture", "Blacksmithing", "Carpentry", "Cooking", "Fletching", "Forgery", "Jewelry", "Mechanics", "Tailoring"], "exploration": ["Climb", "Drive", "Endurance", "Gymnastics", "Heal", "Jump", "Lift", "Navigate", "Ride", "Swim"], "interpersonal": ["Brag", "Empathize", "Flirt", "Gamble", "Handle Animals", "Interrogate", "Intimidate", "Lead", "Lie", "Music", "Perform", "Persuade", "Read Person"], "intrigue": ["Alertness", "Conceal Object", "Disguise", "Eavesdrop", "Escape Artist", "Hide", "Pick Lock", "Pick Pocket", "Sabotage", "Search", "Sneak", "Track"], "lore": ["Criminal Underworld", "Culture", "History", "Magic", "Monsters", "Nature", "Psionics", "Religion", "Rumors", "Society", "Strategy", "Timescape"]};
+  const GROUP_ORDER = ["crafting", "exploration", "interpersonal", "intrigue", "lore"];
+  const GROUP_LABEL = { crafting: "Crafting", exploration: "Exploration", interpersonal: "Interpersonal", intrigue: "Intrigue", lore: "Lore", other: "Other" };
+  const SAMPLE_TREASURE = { name: "Lightning Treads", qty: 1, equipped: false, leveled: true, keyword: "Feet", won: true };
+
+  const state = { concept: "1", hero: "fury", stam: "full", won: false, sig: false, jobs: true, zoom: "fit", page: "abilities", chips: new Set(), open: new Set() };
+  try { const c = localStorage.getItem("eotw-layouts-concept"); if (c === "1" || c === "2" || c === "3") state.concept = c; } catch (e) {}
+  const hashConcept = (location.hash || "").replace("#c", "");
+  if (hashConcept === "1" || hashConcept === "2" || hashConcept === "3") state.concept = hashConcept;
+
+  const esc = s => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const isMine = h => h.owner === "You";
+  const jt = (job, label) => '<span class="jt ' + job + '">' + label + "</span>";
+
+  /* ---------- data helpers ---------- */
+  function stamOf(h) {
+    const max = h.stamina.max, w = h.stamina.winded;
+    switch (state.stam) {
+      case "fulltemp": return { cur: max, max: max, w: w, temp: 8 };
+      case "hurttemp": return { cur: max - 3, max: max, w: w, temp: 10 };
+      case "winded": return { cur: Math.max(1, w - 4), max: max, w: w, temp: 0 };
+      case "dying": return { cur: -3, max: max, w: w, temp: 0 };
+      default: return { cur: max, max: max, w: w, temp: 0 };
+    }
+  }
+  function stamState(s) { return s.cur <= 0 ? "dying" : s.cur <= s.w ? "winded" : "ok"; }
+  function inventoryOf(h) {
+    const inv = (h.inventory || []).slice();
+    if (state.won && isMine(h)) inv.push(SAMPLE_TREASURE);
+    return inv;
+  }
+  function toEquip(h) { return isMine(h) ? inventoryOf(h).filter(it => it.won && !it.equipped).length : 0; }
+  function skillGroups(h) {
+    const out = {};
+    (h.skills || []).forEach(s => {
+      let g = "other";
+      for (const k of GROUP_ORDER) if (SKILL_GROUPS[k].includes(s)) { g = k; break; }
+      (out[g] = out[g] || []).push(s);
+    });
+    return GROUP_ORDER.concat(["other"]).filter(g => out[g]).map(g => [g, out[g]]);
+  }
+
+  /* ---------- the stamina bar: S1 = the hero card's bar as built ---------- */
+  function barS1(s, small) {
+    const pct = Math.max(0, Math.min(1, s.cur / s.max));
+    const tempPct = (s.max > 0 && s.temp > 0) ? Math.min(1 - pct, s.temp / s.max) : 0;
+    const text = s.cur + "/" + s.max + (s.temp > 0 ? " +" + s.temp : "");
+    return '<div class="bar st-' + stamState(s) + (small ? " sm" : "") + '"><span class="f" style="width:' + (pct * 98).toFixed(2) + '%"></span><span class="t" style="width:' + (tempPct * 98).toFixed(2) + '%"></span><b>' + esc(text) + "</b></div>";
+  }
+  function tick(pos) { return '<span class="tick" style="left:calc(' + (pos * 100).toFixed(2) + '% - 1px)"></span>'; }
+  function barS2a(s, small) {
+    const pct = Math.max(0, Math.min(1, s.cur / s.max));
+    const tp = s.temp > 0 ? Math.min(1, s.temp / s.max) : 0;
+    const text = s.cur + "/" + s.max + (s.temp > 0 ? " +" + s.temp : "");
+    return '<div class="tstrip' + (small ? " sm" : "") + '"><i style="width:' + (tp * 100).toFixed(2) + '%"></i></div>' +
+      '<div class="bar st-' + stamState(s) + (small ? " sm" : "") + '"><span class="f" style="width:' + (pct * 98).toFixed(2) + '%"></span>' + tick(s.w / s.max) + "<b>" + esc(text) + "</b></div>";
+  }
+  function barS2b(s, small) {
+    const cur = Math.max(0, s.cur), scale = Math.max(s.max, cur + s.temp);
+    const fp = cur / scale, tp = s.temp / scale;
+    const text = s.cur + "/" + s.max + (s.temp > 0 ? " +" + s.temp : "");
+    const mx = scale > s.max ? '<span class="mx" style="left:calc(' + (s.max / scale * 100).toFixed(2) + '% - 1px)"></span>' : "";
+    return '<div class="bar st-' + stamState(s) + (small ? " sm" : "") + '"><span class="f" style="width:' + (fp * 98).toFixed(2) + '%"></span><span class="t" style="width:' + (tp * 98).toFixed(2) + '%"></span>' + mx + tick(s.w / scale) + "<b>" + esc(text) + "</b></div>";
+  }
+  function barS2c(s, small) {
+    const pct = Math.max(0, Math.min(1, s.cur / s.max));
+    const tp = s.temp > 0 ? Math.min(1, s.temp / s.max) : 0;
+    const right = Math.min(1, pct + tp), left = Math.max(0, right - tp);
+    const ov = tp > 0 ? '<span class="ov" style="left:' + (left * 100).toFixed(2) + '%;width:' + ((right - left) * 100).toFixed(2) + '%"></span>' : "";
+    const text = s.cur + "/" + s.max + (s.temp > 0 ? " +" + s.temp : "");
+    return '<div class="bar st-' + stamState(s) + (small ? " sm" : "") + '"><span class="f" style="width:' + (pct * 98).toFixed(2) + '%"></span>' + ov + tick(s.w / s.max) + "<b>" + esc(text) + "</b></div>";
+  }
+
+  /* ---------- shared blocks ---------- */
+  function portrait(h, w, ht, inner) {
+    return '<div class="portrait" role="img" aria-label="' + esc(h.name) + ' portrait" style="width:' + w + "px;height:" + ht + "px;background-image:url(art/" + esc(h.key) + '.jpg)">' + (inner || "") + "</div>";
+  }
+  function nameBlock(h, center) {
+    return '<div class="' + (center ? "center" : "") + '"><div class="nm">' + esc(h.name) + '</div><div class="ln">Level ' + esc(h.level) + " " + esc(h.ancestry) + " " + esc(h.className) + '</div><div class="sc">' + esc(h.subclass || "") + "</div></div>";
+  }
+  function progressBlk(h) {
+    return '<div class="blk" data-job="id"><div class="prog"><span class="bh" style="margin:0">Victories</span><span class="val">' + esc(h.victories) + '</span><span class="sub">No encounters won yet</span></div>' + jt("id", "Identity") + "</div>";
+  }
+  function actions(h) {
+    if (!isMine(h)) return '<div class="acts"><span class="ownerchip">' + esc(h.owner) + "'s hero <i>(read-only)</i></span></div>";
+    let html = '<div class="acts"><button class="btn" data-flash="Opens the builder\'s Appearance page">Change Appearance</button>';
+    if (h.victories === 0) html += '<button class="btn" data-flash="Opens the builder (before the first win)">Edit in Builder</button>';
+    return html + "</div>";
+  }
+  function idLines(h, withLangs) {
+    const rows = [["Culture", (h.culture || []).filter(Boolean).join(", ") || "-"], ["Career", h.career || "-"], ["Complication", h.complication || "None"]];
+    if (withLangs) rows.push(["Languages", (h.languages || []).join(", ") || "None"]);
+    return '<div class="blk" data-job="id"><div class="bh">Background' + jt("id", "Identity") + '</div><dl class="idl">' + rows.map(r => "<dt>" + esc(r[0]) + "</dt><dd>" + esc(r[1]) + "</dd>").join("") + "</dl></div>";
+  }
+  function vitalsInner(h) {
+    const s = stamOf(h);
+    const st = stamState(s);
+    const left = st === "dying" ? "Dying" : st === "winded" ? "Winded" : (s.temp > 0 ? "+" + s.temp + " temporary" : "");
+    return '<div class="vit"><div>' + barS1(s, false) + '<div class="bnote" style="margin-top:4px"><span>' + esc(left) + "</span><span>Winded at " + esc(s.w) + "</span></div></div>" +
+      '<div class="vrow"><span class="ring" title="Recoveries">' + esc(h.recoveries.cur) + '</span><div class="vcell"><div class="lab">Recoveries</div><div class="val">' + esc(h.recoveries.cur) + "<small>/" + esc(h.recoveries.max) + " &middot; +" + esc(h.recoveries.value) + " each</small></div></div></div>" +
+      '<div class="vrow"><div class="vcell res"><div class="lab">' + esc(h.resource.name || "Heroic Resource") + '</div><div class="val">' + esc(h.resource.value) + '</div></div><div class="vcell" style="margin-left:auto"><div class="lab">Surges</div><div class="val">' + esc(h.surges) + (h.surges > 0 ? '<span class="pips">' + "<i></i>".repeat(Math.min(6, h.surges)) + "</span>" : "") + "</div></div></div></div>";
+  }
+  function vitalsBlk(h) { return '<div class="blk" data-job="combat"><div class="bh">Stamina' + jt("combat", "Combat") + "</div>" + vitalsInner(h) + "</div>"; }
+  function charsInner(h) { return '<div class="units">' + h.chars.map(c => '<div class="unit"><div class="lab">' + esc(c.name) + '</div><div class="val">' + esc(c.v) + "</div></div>").join("") + "</div>"; }
+  function skillsInner(h) {
+    const gs = skillGroups(h);
+    if (!gs.length) return '<div class="dl none">No skills</div>';
+    return '<div class="skg">' + gs.map(([g, list]) => '<span class="g">' + esc(GROUP_LABEL[g]) + '</span><span class="s">' + esc(list.join(", ")) + "</span>").join("") + "</div>";
+  }
+  function testsBlk(h, withLangs) {
+    return '<div class="blk" data-job="test"><div class="sub-h">Characteristics' + jt("test", "Tests") + "</div>" + charsInner(h) +
+      '<div class="sub-h">Skills</div>' + skillsInner(h) +
+      (withLangs ? '<div class="sub-h">Languages</div><div class="dl">' + esc((h.languages || []).join(", ") || "None") + "</div>" : "") + "</div>";
+  }
+  function combatBlk(h) {
+    const p = h.potency || {};
+    const imm = (h.immunities || []).join(", "), weak = (h.weaknesses || []).join(", ");
+    return '<div class="blk" data-job="combat"><div class="sub-h">Movement' + jt("combat", "Combat") + '</div><div class="grid2">' +
+      ["Size", "Speed", "Disengage", "Stability"].map(n => '<div class="unit"><div class="lab">' + n + '</div><div class="val">' + esc(h[n.toLowerCase()]) + "</div></div>").join("") + "</div>" +
+      '<div class="sub-h">Potency</div><div class="pot"><span>Weak<b>' + esc(p.weak) + "</b></span><span>Average<b>" + esc(p.average) + "</b></span><span>Strong<b>" + esc(p.strong) + "</b></span></div>" +
+      '<div class="sub-h">Immunities</div><div class="dl' + (imm ? "" : " none") + '">' + esc(imm || "None") + "</div>" +
+      '<div class="sub-h">Weaknesses</div><div class="dl' + (weak ? "" : " none") + '">' + esc(weak || "None") + "</div></div>";
+  }
+  function gearBlk(h) {
+    const inv = inventoryOf(h), n = toEquip(h);
+    const kit = h.kit;
+    let html = '<div class="blk gear" data-job="gear"><div class="bh">Gear' + (n ? ' <span class="cta">' + n + " to equip</span>" : "") + jt("gear", "Gear") + "</div>";
+    html += kit ? '<div class="dl"><b style="color:var(--cream-light)">' + esc(kit.name) + "</b> kit &middot; " + esc(kit.gear || "") + '</div><div class="kb">' + (kit.bonuses || []).map(b => "<span>" + esc(b.label) + " <b>" + esc(b.value) + "</b></span>").join("") + "</div>" : '<div class="dl none">No kit</div>';
+    html += '<div class="sub-h">Treasure</div>';
+    if (!inv.length) html += '<div class="dl none">Nothing carried</div>';
+    inv.forEach(it => {
+      const todo = it.won && !it.equipped && isMine(h);
+      html += '<div class="it' + (todo ? " todo" : "") + '"><span>' + esc(it.name) + (it.qty > 1 ? " x" + esc(it.qty) : "") + (it.keyword ? ' <span class="none">(' + esc(it.keyword) + ")</span>" : "") + "</span>" +
+        (todo ? '<button class="btn primary eq" data-flash="Equips if the rules allow it" style="margin-left:auto">Equip</button>' : '<span class="tg">' + (it.equipped ? "Equipped" : "Carried") + "</span>") + "</div>";
+    });
+    const leveled = inv.filter(it => it.leveled).length;
+    html += '<div class="cnt3">Leveled treasure carried: ' + leveled + " of 3</div></div>";
+    return html;
+  }
+
+  /* ---------- top bar ---------- */
+  function switcher(h) {
+    const mine = isMine(h);
+    const keys = (mine ? ROSTER_TOWN : PARTY_GAME).filter(k => byKey[k]);
+    const th = k => {
+      const x = byKey[k];
+      return '<button class="th' + (isMine(x) && !mine ? " mine" : "") + (k === h.key ? " cur" : "") + '" data-hero="' + esc(k) + '" title="' + esc(x.name + (isMine(x) ? ", level " + x.level : ", " + x.owner + "'s hero")) + '" aria-label="' + esc(x.name) + '" style="background-image:url(art/' + esc(k) + '.jpg)"></button>';
+    };
+    if (mine) return '<div class="sw"><span class="grp">Your roster</span>' + keys.map(th).join("") + "</div>";
+    const ours = keys.filter(k => isMine(byKey[k])), theirs = keys.filter(k => !isMine(byKey[k]));
+    return '<div class="sw"><span class="grp">This encounter</span>' + ours.map(th).join("") + '<span class="sep"></span>' + theirs.map(th).join("") + "</div>";
+  }
+  function closeBtn() {
+    return '<button class="btn close' + (state.sig ? " sig" : "") + '" data-flash="Closes the sheet">' + (state.sig ? '<span class="sigt">A trigger is waiting</span> &middot; ' : "") + "Close <kbd>Esc</kbd></button>";
+  }
+  function topbar(h) { return '<div class="topbar">' + switcher(h) + closeBtn() + "</div>"; }
+
+  /* ---------- lists ---------- */
+  function actionGroup(a) {
+    if (a.cat === "Trigger" || (a.trigger && a.trigger.length)) return "Triggered Actions";
+    const act = a.action || "";
+    if (act === "Main Action") return "Main Actions";
+    if (/Maneuver/.test(act)) return "Maneuvers";
+    if (/Respite/.test(act)) return "Respite Activities";
+    return "Other";
+  }
+  function costLabel(a, h) {
+    if (a.cost) return a.cost + " " + (h.resource && h.resource.name || "");
+    if (a.cat === "Signature Ability") return "Signature";
+    if (a.cat === "Basic Attack") return "Free strike";
+    return a.action || "";
+  }
+  function abBody(a) {
+    const kw = (a.keywords || []).join(", ");
+    let body = "";
+    if (a.flavor) body += '<div class="fl">' + esc(a.flavor) + "</div>";
+    const meta = [];
+    if (kw) meta.push("<span>Keywords <b>" + esc(kw) + "</b></span>");
+    if (a.distance) meta.push("<span>Distance <b>" + esc(a.distance) + "</b></span>");
+    if (a.target) meta.push("<span>Target <b>" + esc(a.target) + "</b></span>");
+    if (meta.length) body += '<div class="meta">' + meta.join("") + "</div>";
+    if (a.trigger) body += '<div class="eff"><b>Trigger:</b> ' + esc(a.trigger) + "</div>";
+    if (a.roll) {
+      body += '<div class="roll">Power Roll ' + esc(a.roll.replace(/^2d10\s*\+\s*/i, "+ ")) + "</div>";
+      const labels = ["11 or lower", "12 - 16", "17 or higher"];
+      (a.tiers || []).forEach((t, i) => { body += '<div class="tier"><span class="tb">' + labels[i] + "</span><span>" + esc(t) + "</span></div>"; });
+    }
+    if (a.effect) body += '<div class="eff"><b>Effect:</b> ' + esc(a.effect) + "</div>";
+    if (a.impl != null && IMPL[a.impl]) body += '<div class="eff" style="font-size:12px;font-style:italic;color:' + IMPL[a.impl][1] + '">' + IMPL[a.impl][0] + "</div>";
+    return body;
+  }
+  function groupedAbilities(h) {
+    const groups = {};
+    (h.abilities || []).forEach((a, i) => { const g = actionGroup(a); (groups[g] = groups[g] || []).push([a, i]); });
+    return ACTION_ORDER.filter(g => groups[g]).map(g => [g, groups[g]]);
+  }
+  function abilitiesCol(h) {
+    const gs = groupedAbilities(h);
+    const counts = gs.map(([g, l]) => l.length + " " + g.toLowerCase()).join(", ");
+    let body = "";
+    gs.forEach(([g, list]) => {
+      body += '<div class="grp"><div class="grph"><span class="gl">' + esc(g) + '</span><span class="gc">' + list.length + "</span></div>" + list.map(([a, i]) => {
+        const id = h.key + ":" + i, open = state.open.has(id);
+        return '<div class="arow" data-ab="' + esc(id) + '"><div class="art"><span class="an">' + esc(a.name) + '</span><span class="ak">' + esc((a.keywords || []).join(", ")) + '</span><span class="ac">' + esc(costLabel(a, h)) + "</span></div>" + (open ? '<div class="ab">' + abBody(a) + "</div>" : "") + "</div>";
+      }).join("") + "</div>";
+    });
+    return '<div class="lcol" data-job="ab"><div class="lhead"><div class="r"><h3>Abilities</h3>' + jt("ab", "Abilities") + '</div><div class="r"><span class="cnt">' + esc(counts) + '</span></div></div><div class="lbody">' + body + "</div></div>";
+  }
+  function shownFeatures(h) {
+    return (h.features || []).map((f, i) => [f, i]).filter(([f]) => f.kind === "normal").filter(([f]) => !state.chips.size || (f.tags || []).some(t => state.chips.has(t)));
+  }
+  function featureCard(f) {
+    const tags = (f.tags || []).filter(t => t !== "Core Feature").map(t => '<span class="ptag">' + esc(t) + "</span>").join("");
+    const short = (f.desc || "").length < 260;
+    return '<div class="fcard"><div class="ft"><span class="fn">' + esc(f.name) + '</span><span class="tags">' + tags + "</span></div>" + (f.sub ? '<div class="fsub">Chosen for ' + esc(f.sub) + "</div>" : "") + (f.desc ? '<div class="fd' + (short ? " short" : "") + '">' + esc(f.desc) + "</div>" : "") + "</div>";
+  }
+  function chipsRow() { return PILLARS.map(p => '<button class="chip' + (state.chips.has(p) ? " on" : "") + '" data-chip="' + p + '">' + p + "</button>").join(""); }
+  function featuresGroups(h) {
+    const groups = {};
+    shownFeatures(h).forEach(([f]) => { (groups[f.section] = groups[f.section] || []).push(f); });
+    return SECTION_ORDER.concat(Object.keys(groups).filter(s => !SECTION_ORDER.includes(s))).filter(s => groups[s]).map(s => [s, groups[s]]);
+  }
+  function featuresCol(h) {
+    let body = "";
+    featuresGroups(h).forEach(([s, list]) => {
+      body += '<div class="grp"><div class="grph"><span class="gl">' + esc(s === "Core" ? "Core feature" : s) + '</span><span class="gc">' + list.length + "</span></div>" + list.map(featureCard).join("") + "</div>";
+    });
+    if (!body) body = '<div class="dl none" style="padding:20px 4px">No features match these filters.</div>';
+    return '<div class="lcol" data-job="ft"><div class="lhead"><div class="r"><h3>Features</h3>' + jt("ft", "Features") + '</div><div class="r">' + chipsRow() + '</div></div><div class="lbody">' + body + "</div></div>";
+  }
+  function detailsCol(h) {
+    return '<div class="col">' + combatBlk(h) + gearBlk(h) + "</div>";
+  }
+
+  /* ---------- concepts ---------- */
+  function concept1(h) {
+    const colA = '<aside class="col">' + portrait(h, 340, 486) + nameBlock(h, true) + progressBlk(h) + actions(h) + idLines(h, false) + "</aside>";
+    const spine = '<section class="col" aria-label="Stats">' + vitalsBlk(h) + testsBlk(h, true) + combatBlk(h) + gearBlk(h) + "</section>";
+    const main = '<main class="mainc">' + topbar(h) + '<div class="lists two">' + abilitiesCol(h) + featuresCol(h) + "</div></main>";
+    return '<div class="lay c1">' + colA + spine + main + "</div>";
+  }
+  function bigCard(h) {
+    const s = stamOf(h);
+    const skills = (h.skills || []).join(", ");
+    const chips = '<div class="cchips" data-job="test">' + h.chars.map(c => '<div class="cchip"><span>' + esc(c.k) + "</span><b>" + esc(c.v) + "</b></div>").join("") + "</div>";
+    const plate = '<div class="plate"><div><div class="pn">' + esc(h.name) + '</div><div class="ps">Level ' + esc(h.level) + " " + esc(h.ancestry) + " " + esc(h.className) + " &middot; " + esc(h.subclass || "") + '</div></div><div class="pk" data-job="test">' + esc(skills) + "</div>" +
+      '<div class="vrow" data-job="combat" style="gap:10px"><span class="ring" title="Recoveries ' + esc(h.recoveries.cur) + "/" + esc(h.recoveries.max) + '">' + esc(h.recoveries.cur) + '</span><div style="flex:1;min-width:0">' + barS1(s, false) + '<div class="bnote" style="margin-top:3px"><span>' + esc(h.resource.name || "") + " " + esc(h.resource.value) + " &middot; Surges " + esc(h.surges) + "</span><span>Winded at " + esc(s.w) + "</span></div></div></div></div>";
+    return '<div class="portrait bigcard" role="img" aria-label="' + esc(h.name) + ' hero card" style="background-image:url(art/' + esc(h.key) + '.jpg)">' + chips + plate + "</div>";
+  }
+  function concept2(h) {
+    const colA = '<aside class="col">' + bigCard(h) + progressBlk(h) + actions(h) + idLines(h, true) + "</aside>";
+    const main = '<main class="mainc">' + topbar(h) + '<div class="lists three">' + abilitiesCol(h) + featuresCol(h) + detailsCol(h) + "</div></main>";
+    return '<div class="lay c2">' + colA + main + "</div>";
+  }
+  function page3(h) {
+    if (state.page === "abilities") {
+      let html = '<div class="cols2" data-job="ab">';
+      groupedAbilities(h).forEach(([g, list]) => {
+        html += '<div class="pgh">' + esc(g) + " &middot; " + list.length + "</div>" + list.map(([a]) => '<div class="sb"><div class="art"><span class="an">' + esc(a.name) + '</span><span class="ac">' + esc(costLabel(a, h)) + '</span></div><div class="ab">' + abBody(a) + "</div></div>").join("");
+      });
+      return html + "</div>";
+    }
+    if (state.page === "features") {
+      let html = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">' + chipsRow() + '</div><div class="cols2" data-job="ft">';
+      featuresGroups(h).forEach(([s, list]) => { html += '<div class="pgh">' + esc(s === "Core" ? "Core feature" : s) + " &middot; " + list.length + "</div>" + list.map(featureCard).join(""); });
+      return html + "</div>";
+    }
+    if (state.page === "gear") return '<div style="max-width:720px">' + gearBlk(h) + "</div>";
+    return '<div style="max-width:720px;display:flex;flex-direction:column;gap:12px">' + idLines(h, true) +
+      '<div class="blk" data-job="id"><div class="bh">Victories' + jt("id", "Identity") + '</div><div class="dl none">No encounters won yet. Each win will be listed here with its encounter and treasure.</div></div>' +
+      '<div class="blk" data-job="id"><div class="bh">Standing</div><div class="pot"><span>Wealth<b>' + esc(h.wealth) + "</b></span><span>Renown<b>" + esc(h.renown) + "</b></span></div></div></div>";
+  }
+  function concept3(h) {
+    const n = toEquip(h);
+    const who = '<div class="who">' + portrait(h, 200, 286) + '<div style="display:flex;flex-direction:column;gap:10px;min-width:0">' + nameBlock(h, false) +
+      '<div class="prog"><span class="bh" style="margin:0">Victories</span><span class="val">' + esc(h.victories) + "</span></div>" + actions(h) + "</div></div>";
+    const rail = '<aside class="col">' + who + vitalsBlk(h) + testsBlk(h, true) + combatBlk(h) + "</aside>";
+    const tab = (id, label, badge) => '<button class="tab' + (state.page === id ? " on" : "") + '" data-page="' + id + '">' + label + (badge ? ' <span class="cta">' + badge + "</span>" : "") + "</button>";
+    const head = '<div class="topbar"><div class="tabs">' + tab("abilities", "Abilities") + tab("features", "Features") + tab("gear", "Gear", n || "") + tab("story", "Story") + '</div><span style="width:18px"></span>' + switcher(h) + closeBtn() + "</div>";
+    return '<div class="lay c3">' + rail + '<main class="mainc">' + head + '<div class="pageb">' + page3(h) + "</div></main></div>";
+  }
+
+  /* ---------- render ---------- */
+  const stage = document.getElementById("stage"), wrap = document.getElementById("wrap");
+  function render() {
+    const h = byKey[state.hero] || HEROES[0];
+    if (!h) { stage.innerHTML = '<div style="padding:40px">Hero data did not load.</div>'; return; }
+    const scroll = {};
+    stage.querySelectorAll(".lbody,.pageb,.col").forEach((el, i) => { scroll[i] = el.scrollTop; });
+    stage.className = "stage" + (state.jobs ? " jobs" : "");
+    stage.innerHTML = state.concept === "2" ? concept2(h) : state.concept === "3" ? concept3(h) : concept1(h);
+    stage.querySelectorAll(".lbody,.pageb,.col").forEach((el, i) => { if (scroll[i]) el.scrollTop = scroll[i]; });
+    sync();
+  }
+  function sync() {
+    document.querySelectorAll("#ctl-concept button").forEach(b => b.classList.toggle("on", b.dataset.concept === state.concept));
+    document.querySelectorAll("#ctl-zoom button").forEach(b => b.classList.toggle("on", b.dataset.zoom === state.zoom));
+    document.querySelectorAll(".note").forEach(n => n.classList.toggle("cur", n.dataset.note === state.concept));
+    document.getElementById("ctl-hero").value = state.hero;
+    document.getElementById("ctl-stam").value = state.stam;
+    document.getElementById("ctl-won").setAttribute("aria-pressed", String(state.won));
+    document.getElementById("ctl-sig").setAttribute("aria-pressed", String(state.sig));
+    document.getElementById("ctl-jobs").setAttribute("aria-pressed", String(state.jobs));
+  }
+  function fit() {
+    if (state.zoom === "full") { wrap.classList.add("full"); stage.style.transform = "none"; wrap.style.height = "auto"; return; }
+    wrap.classList.remove("full");
+    const s = Math.min(1, wrap.clientWidth / 1920);
+    stage.style.transform = "scale(" + s + ")"; wrap.style.height = Math.round(1080 * s) + "px";
+  }
+  function flash(btn, text) {
+    if (btn.dataset.busy) return;
+    const old = btn.innerHTML; btn.dataset.busy = "1"; btn.textContent = text;
+    setTimeout(() => { btn.innerHTML = old; delete btn.dataset.busy; }, 1400);
+  }
+
+  const sel = document.getElementById("ctl-hero");
+  sel.innerHTML = HEROES.map(h => '<option value="' + esc(h.key) + '">' + esc(h.name) + " (level " + esc(h.level) + (isMine(h) ? ")" : ", " + esc(h.owner) + "'s)") + "</option>").join("");
+  sel.addEventListener("change", () => { state.hero = sel.value; state.open = new Set(); render(); });
+  document.getElementById("ctl-stam").addEventListener("change", e => { state.stam = e.target.value; render(); });
+  document.addEventListener("click", e => {
+    const t = e.target.closest("[data-concept],[data-zoom],[data-hero],[data-ab],[data-chip],[data-page],[data-flash],#ctl-won,#ctl-sig,#ctl-jobs");
+    if (!t) return;
+    if (t.id === "ctl-won") { state.won = !state.won; render(); return; }
+    if (t.id === "ctl-sig") { state.sig = !state.sig; render(); return; }
+    if (t.id === "ctl-jobs") { state.jobs = !state.jobs; render(); return; }
+    if (t.dataset.concept) { state.concept = t.dataset.concept; try { localStorage.setItem("eotw-layouts-concept", state.concept); } catch (err) {} render(); return; }
+    if (t.dataset.zoom) { state.zoom = t.dataset.zoom; sync(); fit(); return; }
+    if (t.dataset.hero) { state.hero = t.dataset.hero; state.open = new Set(); render(); return; }
+    if (t.dataset.page) { state.page = t.dataset.page; render(); return; }
+    if (t.dataset.chip) { const c = t.dataset.chip; state.chips.has(c) ? state.chips.delete(c) : state.chips.add(c); render(); return; }
+    if (t.dataset.flash) { flash(t, t.dataset.flash); return; }
+    if (t.dataset.ab && e.target.closest(".art")) { const id = t.dataset.ab; state.open.has(id) ? state.open.delete(id) : state.open.add(id); render(); }
+  });
+  window.addEventListener("resize", fit);
+
+  /* ---------- stamina study table ---------- */
+  const STATES = [["Full", { cur: 33, max: 33, w: 16, temp: 0 }], ["Full, 8 temp", { cur: 33, max: 33, w: 16, temp: 8 }], ["Hurt, 10 temp", { cur: 30, max: 33, w: 16, temp: 10 }], ["Winded", { cur: 12, max: 33, w: 16, temp: 0 }], ["Dying", { cur: -3, max: 33, w: 16, temp: 0 }]];
+  const VARIANTS = [
+    ["S1. Card bar as built", "Temp gets only the room left after current stamina. At full stamina it has no width; only the +N text shows it.", barS1],
+    ["S2a. Temp strip", "Temp gets its own thin strip above the bar, measured against max stamina. The stamina fill never changes because of temp. Adds a winded mark.", barS2a],
+    ["S2b. Stretched bar", "The bar stretches to hold stamina plus temp, with a dark mark at max. Adds a winded mark. A full hero with temp no longer looks full.", barS2b],
+    ["S2c. Temp overlay", "Temp is drawn as an outlined band over the end of the bar. Adds a winded mark. The band covers part of the stamina fill.", barS2c],
+  ];
+  const study = document.getElementById("study");
+  study.innerHTML = '<thead><tr><th scope="col">Variant</th>' + STATES.map(s => '<th scope="col">' + esc(s[0]) + "</th>").join("") + "</tr></thead><tbody>" +
+    VARIANTS.map(v => '<tr><th scope="row"><b>' + esc(v[0]) + "</b><span>" + esc(v[1]) + "</span></th>" + STATES.map(s => "<td>" + v[2](s[1], false) + '<div class="cap">Sheet size</div><div class="cardsz">' + v[2](s[1], true) + '</div><div class="cap">Card size</div></td>').join("") + "</tr>").join("") + "</tbody>";
+
+  render(); fit();
+})();
+</script>
