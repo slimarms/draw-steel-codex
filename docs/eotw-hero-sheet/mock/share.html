@@ -1,4 +1,4 @@
-<title>EotW Sheet Layouts</title>
+<title>EotW Hero Sheet Proposal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap">
@@ -48,6 +48,12 @@
   .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; margin-top: 20px; }
   .note { min-width: 0; border: 1px solid var(--page-line); border-radius: 10px; padding: 14px 16px; background: #121210; }
   .note h2 { font-size: 16px; margin: 0 0 6px; color: #f1ece2; }
+  .share { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); margin-top: 24px; }
+  .share .note { padding: 18px 20px; }
+  .share .note h2 { font-size: 19px; margin-bottom: 10px; }
+  .share li { font-size: 14.5px; line-height: 1.6; }
+  .share li + li { margin-top: 8px; }
+  .share li b { color: #f1ece2; }
   .note li { font-size: 14px; line-height: 1.55; }
   .note ul { margin: 0; padding-left: 18px; }
   .note li + li { margin-top: 4px; }
@@ -317,11 +323,11 @@
 
 <div class="page">
   <header class="intro">
-    <h1>EotW sheet layouts</h1>
-    <p>Round 10 mock. <b>Backdrop:</b> "Where you are" is decided, so the Where toggle now switches between the Hero's Guild in town and the battle map in an encounter (the roster switcher follows). <b>Size to potency:</b> three ways to keep potency with its values: two groups (the default), centred lines, or round 9's grid for comparison.</p>
+    <h1>EotW hero sheet</h1>
+    <p>A read-only hero sheet for Encounter of the Week, shown with two real pregens: a <b>level 1 Dwarf Fury</b> fresh from the builder, and a <b>level 6 Orc Conduit</b> who has been playing for a while, with treasure, immunities and XP. Hover any ability or item to see its card, and click to pin it. Use Where to see the sheet in town or during an encounter.</p>
   </header>
 
-  <div class="controls" role="toolbar" aria-label="Mock controls">
+  <div class="controls" role="toolbar" aria-label="Preview controls">
     <div class="ctl"><span>Hero</span><select id="ctl-hero" aria-label="Hero"></select></div>
     <div class="ctl"><span>Where</span>
       <div class="seg" id="ctl-where">
@@ -329,62 +335,46 @@
         <button data-where="game">In an encounter</button>
       </div>
     </div>
-    <div class="ctl"><span>Size to potency</span>
-      <div class="seg" id="ctl-sp">
-        <button data-sp="groups">Two groups</button>
-        <button data-sp="centred">Centred lines</button>
-        <button data-sp="grid">Round 9 grid</button>
-      </div>
-    </div>
-    <div class="ctl"><span>Simulate</span>
-      <button class="tog" id="ctl-vet" aria-pressed="false">Veteran inventory</button>
-      <button class="tog" id="ctl-imm" aria-pressed="false">Many immunities</button>
-      <button class="tog" id="ctl-prog" aria-pressed="false">Some progress</button>
-      <button class="tog" id="ctl-twokit" aria-pressed="false">Tactician: two melee kits</button>
-      <button class="tog" id="ctl-res" aria-pressed="false">Resource and surges</button>
+    <div class="ctl"><span>Show</span>
       <button class="tog" id="ctl-sig" aria-pressed="false">A trigger is waiting</button>
     </div>
-    <div class="ctl"><span>Stamina</span><select id="ctl-stam" aria-label="Stamina state"></select></div>
     <div class="ctl"><span>Zoom</span><div class="seg" id="ctl-zoom"><button data-zoom="fit">Fit</button><button data-zoom="full">100%</button></div></div>
   </div>
 
   <div class="stage-wrap" id="wrap"><div class="stage" id="stage"></div></div>
 
-  <div class="notes">
+  <div class="notes share">
     <section class="note">
-      <h2>What changed from round 9</h2>
+      <h2>What is different for EotW, and why</h2>
       <ul>
-        <li>The backdrop is always "where you are", with frosted translucent panels. Use Where to compare town and encounter for the same hero.</li>
-        <li>In an encounter the switcher lists the heroes in this encounter, yours first and marked; in town it is your roster.</li>
-        <li>Two groups: size, speed, disengage and stability as a 2 by 2 block, then potency captioned over its three values, split by a hairline.</li>
-        <li>Centred lines: two tight lines centred in the block, with potency and its values wrapped in one outlined pill.</li>
+        <li><b>Read-only by design.</b> The sheet only has the actions the rules allow: equip or unequip treasure, change appearance, and edit in the builder before the first win. Nothing can edit stamina or other numbers, so EotW's "enforce everything" holds.</li>
+        <li><b>One sheet everywhere.</b> The Guild, the town strip and the in-game hero card all open this sheet, and teammates' heroes open read-only. The other ways into the old editable sheet (the C key, the token menu, search, chat commands) would point here.</li>
+        <li><b>It looks like EotW.</b> The hero card, enlarged, anchors the sheet with the same stamina bar, recoveries ring, resource and surge icons as the HUD card, so players learn it once. Panels are frosted glass over where you are: the Hero's Guild in town, the battle map in an encounter.</li>
+        <li><b>Everything on one screen.</b> No tabs: abilities and features sit side by side, and the left column never scrolls. Hovering shows the same ability card the action bar uses; clicking pins it.</li>
+        <li><b>Laid out the way you use it.</b> Characteristics sit with skills, grouped by skill group, because a test is a characteristic plus a skill. Size, speed, disengage, stability and potency sit beside them.</li>
+        <li><b>Abilities follow the feature tags.</b> Only real abilities show, plus the standard actions and free strikes every hero has, which helps newer players. Features the book writes as prose stay in Features.</li>
+        <li><b>Kit, or what the class uses instead.</b> Prayer and ward for a Conduit, enchantment and ward for an Elementalist, and so on. A Tactician's two kits read as one kit, with the damage bonus choice made in town.</li>
+        <li><b>Treasure by type, with an equip prompt.</b> Leveled treasure (with the carry-three count), trinkets and consumables. Won treasure currently arrives unequipped and does nothing until it is equipped, so the sheet flags it.</li>
+        <li><b>Progress on the card.</b> Level, the bar to the next level (XP on hover) and Victories.</li>
+        <li><b>Safe to open mid-encounter.</b> The sheet sits over the map. If a trigger, save or roll is waiting on you, the Close button turns gold and says so; EotW prompts wait rather than time out, so nothing is lost.</li>
       </ul>
     </section>
     <section class="note">
-      <h2>Abilities follow the tagging plan</h2>
+      <h2>Open questions</h2>
       <ul>
-        <li>A feature tagged Ability or Trigger shows as an ability card here; its feature row stays hidden.</li>
-        <li>Prose features that the codex implements as an ability stay visible features. The Conduit's Life and War Domain Effects are now in Features (Combat), not Abilities.</li>
-        <li>Kit signature abilities, core-feature actions such as Mark, free strikes and standard actions have no tagged feature, so they always show.</li>
-        <li>Triggered actions come from a separate list in the codex; round 5's data had missed them.</li>
-      </ul>
-    </section>
-    <section class="note">
-      <h2>Stand-ins</h2>
-      <ul>
-        <li>Bitter replaces Berlingske Slab. The hover card imitates the codex ability card; the real one is CreateAbilityTooltip.</li>
-        <li>The Human Censor's two test abilities ("Halt Miscreant! - Copy", "Test custom trigger") are left off: they are custom test content on that pregen.</li>
-        <li>The veteran inventory, many immunities, progress and second melee kit are simulated with real item and kit records.</li>
-        <li>All on-screen wording is placeholder copy for sign-off later.</li>
+        <li><b>Progression.</b> Is levelling done with XP (victories become XP at a respite, 16 XP per level), or something else in EotW? Where does a level-up happen?</li>
+        <li><b>Moving items.</b> Can players move items between their own heroes, share them within a party, or trade with other players? Today Give To, Set Quantity and Duplicate can inflate won treasure.</li>
+        <li><b>Carrying three leveled treasures.</b> Hard cap, allow it with a warning, or automate the respite Presence test?</li>
+        <li><b>Edit in Builder.</b> Your doc says before a hero's first encounter; the code allows it until the first victory, so a hero who lost stays rebuildable. Which do you want?</li>
+        <li><b>Teammates' sheets.</b> OK to open them read-only during an encounter as well as in town?</li>
+        <li><b>Closing the other routes.</b> Pointing the C key, token menu, search and chat commands at this sheet touches core code. OK to do?</li>
+        <li><b>Noticed along the way.</b> The AI's "Waiting for..." banner hides whenever any panel window is open, including the character panel the HUD card opens. Intended?</li>
+        <li><b>Also noticed.</b> In EotW every hero's character panel is view-only, which also blocks play actions such as the Summoner's Sacrifice Minions and ending an Elementalist's persistent ability.</li>
       </ul>
     </section>
   </div>
 
-  <h2 class="sec">Stamina bar study (for the David conversation)</h2>
-  <p class="sec">The sheet uses S1, the hero card's bar as built, for now. The T variants are kept for the conversation with David: temporary stamina is lost first, so each draws temp as the part of the bar damage reaches first. Every variant shows the winded mark and the dead value.</p>
-  <div class="study-wrap"><table class="study" id="study"></table></div>
-
-  <p class="foot">Earlier rounds are in this artifact's version history. Data: real pregens from the running app.</p>
+  <p class="foot">Built with real pregen data from the Codex. The typeface stands in for Berlingske Slab, the heroic resource icon is a placeholder, and all wording is draft.</p>
 </div>
 
 <script src="data.js"></script>
@@ -446,9 +436,9 @@
     ["neardeath", "Near death", (m, w) => ({ cur: -(w - 3), temp: 0 })],
   ];
 
-  const state = { hero: "fury", bd: "place", where: "town", sp: "groups", mp: "lines", stam: "full", vet: false, imm: false, prog: false, twokit: false, res: false, sig: false, zoom: "fit", caps: { lev: 4, trk: 4, con: 8 },
+  const state = { hero: "fury", bd: "place", where: "town", sp: "centred", mp: "lines", stam: "full", vet: false, imm: false, prog: false, twokit: false, res: false, sig: false, zoom: "fit", caps: { lev: 4, trk: 4, con: 8 },
     chips: new Set(), search: "", closed: new Set(), more: new Set(), hover: null, pin: null, meleeFrom: "Shining Armor" };
-  try { const b = localStorage.getItem("eotw-r10-sp"); if (b === "groups" || b === "centred" || b === "grid") state.sp = b; } catch (e) {}
+
   (location.hash || "").replace("#", "").split(".").forEach(t => {
     if (t === "tiles" || t === "lines") state.mp = t;
     else if (t === "place" || t === "nobd" || t === "herobd") state.bd = t === "nobd" ? "none" : t === "herobd" ? "hero" : "place";
@@ -473,16 +463,18 @@
   }
   const stamState = s => s.cur <= 0 ? "dying" : s.cur <= s.w ? "winded" : "ok";
   const stamText = s => s.cur + "/" + s.max + (s.temp > 0 ? " +" + s.temp : "");
-  const immOf = h => state.imm ? MANY_IMM : (h.immunities || []);
-  const weakOf = h => state.imm ? MANY_WEAK : (h.weaknesses || []);
+  const VETERAN_KEY = "conduit";
+  const immOf = h => h.key === VETERAN_KEY ? MANY_IMM : (h.immunities || []);
+  const weakOf = h => h.key === VETERAN_KEY ? MANY_WEAK : (h.weaknesses || []);
   function progressOf(h) {
+    if (h.key === VETERAN_KEY) return { vic: 2, into: 9, need: XP_PER_LEVEL, next: h.level + 1 };
     const xp = state.prog ? 11 : (parseInt(h.xp, 10) || 0);
     const vic = state.prog ? 2 : (h.victories || 0);
     return { vic: vic, into: Math.max(0, xp - (h.level - 1) * XP_PER_LEVEL), need: XP_PER_LEVEL, next: h.level + 1 };
   }
   function inventoryOf(h) {
     const base = (h.inventory || []).map(it => ({ name: it.name, kind: "Trinket", body: null, equipped: it.equipped, qty: it.qty || 1, desc: "An item from the hero's ancestry.", keywords: [] }));
-    if (!(state.vet && isMine(h))) return base;
+    if (h.key !== VETERAN_KEY) return base;
     return base.concat(VETERAN.map(it => Object.assign({}, it)));
   }
   const toEquip = h => isMine(h) ? inventoryOf(h).filter(it => it.won && !it.equipped).length : 0;
@@ -550,7 +542,7 @@
   /* ---------- left column: the card, then kit and treasures ---------- */
   //the card draws one surge icon per available surge (EotwHeroCard CreateSurgeCorner); stand-in glyph
   const SURGE_ICON = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7 0 2 7h3.5L4.5 12 10 4.8H6.6Z" fill="currentColor"/></svg>';
-  const resOf = h => state.res ? { v: 3, s: 2 } : { v: h.resource.value, s: h.surges };
+  const resOf = h => h.key === VETERAN_KEY ? { v: 4, s: 2 } : { v: 2, s: 1 };
   function heroCard(h) {
     const s = stamOf(h), st = stamState(s), p = progressOf(h), r = resOf(h);
     const left = st === "dying" ? "<b>Dying</b>" : st === "winded" ? "<b>Winded</b> at " + esc(s.w) : "Winded at <b>" + esc(s.w) + "</b>";
@@ -855,8 +847,7 @@
     document.querySelectorAll("#ctl-where button").forEach(b => b.classList.toggle("on", b.dataset.where === state.where));
     document.querySelectorAll("#ctl-sp button").forEach(b => b.classList.toggle("on", b.dataset.sp === state.sp));
     document.getElementById("ctl-hero").value = state.hero;
-    document.getElementById("ctl-stam").value = state.stam;
-    [["ctl-vet", "vet"], ["ctl-imm", "imm"], ["ctl-prog", "prog"], ["ctl-twokit", "twokit"], ["ctl-res", "res"], ["ctl-sig", "sig"]].forEach(([id, k]) => document.getElementById(id).setAttribute("aria-pressed", String(state[k])));
+    [["ctl-sig", "sig"]].forEach(([id, k]) => { const el = document.getElementById(id); if (el) el.setAttribute("aria-pressed", String(state[k])); });
   }
   function fit() {
     if (state.zoom === "full") { wrap.classList.add("full"); stage.style.transform = "none"; wrap.style.height = "auto"; return; }
@@ -871,11 +862,9 @@
   }
 
   const heroSel = document.getElementById("ctl-hero");
-  heroSel.innerHTML = HEROES.map(h => '<option value="' + esc(h.key) + '">' + esc(h.name) + " (level " + esc(h.level) + (isMine(h) ? ")" : ", " + esc(h.owner) + "'s)") + "</option>").join("");
+  heroSel.innerHTML = HEROES.filter(h => h.key === "fury" || h.key === VETERAN_KEY).map(h => '<option value="' + esc(h.key) + '">' + esc(h.name) + " (level " + esc(h.level) + (isMine(h) ? ")" : ", " + esc(h.owner) + "'s)") + "</option>").join("");
   heroSel.addEventListener("change", () => { state.hero = heroSel.value; state.pin = null; render(); });
-  const stamSel = document.getElementById("ctl-stam");
-  stamSel.innerHTML = STAM_STATES.map(s => '<option value="' + s[0] + '">' + esc(s[1]) + "</option>").join("");
-  stamSel.addEventListener("change", () => { state.stam = stamSel.value; render(); });
+
   document.addEventListener("input", e => { if (e.target.id === "fsearch") { state.search = e.target.value; render(); } });
   stage.addEventListener("mouseover", e => {
     if (state.pin) return;
@@ -905,17 +894,6 @@
   });
   stage.addEventListener("keydown", e => { const r = e.target.closest && e.target.closest("[data-card]"); if (r && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); state.pin = state.pin === r.dataset.card ? null : r.dataset.card; render(); } });
   window.addEventListener("resize", () => { fit(); if (state.pin) showCard(state.pin, true); });
-
-  /* ---------- stamina study ---------- */
-  const STUDY_HERO = { stamina: { max: 33, winded: 16 } };
-  const VARIANTS = [
-    ["S1. Card bar as built (in use)", "Temp only gets the room left after current stamina, so at full stamina it has no width. Winded and dead values sit in the line under the bar.", barS1],
-    ["T1. Leading band", "Temp sits right after current stamina, the part damage reaches first. With no room left, it slides back over the end of the fill and an arrow marks the overflow.", barT1],
-    ["T2. Leading band and dying zone", "T1, plus a dying zone at the left end. The white line is 0; the zone's end is the dead value. While dying, red fills toward death. The zone is not to scale.", barT2],
-    ["T3. Temp past the bar", "The frame is max stamina. Temp starts at current stamina and runs out past the frame when it does not fit, so the bar is drawn shorter to leave room.", barT3],
-  ];
-  document.getElementById("study").innerHTML = '<thead><tr><th scope="col">Variant</th>' + STAM_STATES.map(s => '<th scope="col">' + esc(s[1]) + "<small>" + esc(stamText(stamOf(STUDY_HERO, s[0]))) + "</small></th>").join("") + "</tr></thead><tbody>" +
-    VARIANTS.map(v => '<tr><th scope="row"><b>' + esc(v[0]) + "</b><span>" + esc(v[1]) + "</span></th>" + STAM_STATES.map(s => { const st = stamOf(STUDY_HERO, s[0]); return "<td>" + v[2](st, false) + '<div class="cap">Sheet size</div><div class="cardsz">' + v[2](st, true) + '</div><div class="cap">Card size</div></td>'; }).join("") + "</tr>").join("") + "</tbody>";
 
   render(); fit();
 })();

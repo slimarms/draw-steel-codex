@@ -1,0 +1,55 @@
+<div class="page">
+  <header class="intro">
+    <h1>EotW hero sheet</h1>
+    <p>A read-only hero sheet for Encounter of the Week, shown with two real pregens: a <b>level 1 Dwarf Fury</b> fresh from the builder, and a <b>level 6 Orc Conduit</b> who has been playing for a while, with treasure, immunities and XP. Hover any ability or item to see its card, and click to pin it. Use Where to see the sheet in town or during an encounter.</p>
+  </header>
+
+  <div class="controls" role="toolbar" aria-label="Preview controls">
+    <div class="ctl"><span>Hero</span><select id="ctl-hero" aria-label="Hero"></select></div>
+    <div class="ctl"><span>Where</span>
+      <div class="seg" id="ctl-where">
+        <button data-where="town">Town (Hero's Guild)</button>
+        <button data-where="game">In an encounter</button>
+      </div>
+    </div>
+    <div class="ctl"><span>Show</span>
+      <button class="tog" id="ctl-sig" aria-pressed="false">A trigger is waiting</button>
+    </div>
+    <div class="ctl"><span>Zoom</span><div class="seg" id="ctl-zoom"><button data-zoom="fit">Fit</button><button data-zoom="full">100%</button></div></div>
+  </div>
+
+  <div class="stage-wrap" id="wrap"><div class="stage" id="stage"></div></div>
+
+  <div class="notes share">
+    <section class="note">
+      <h2>What is different for EotW, and why</h2>
+      <ul>
+        <li><b>Read-only by design.</b> The sheet only has the actions the rules allow: equip or unequip treasure, change appearance, and edit in the builder before the first win. Nothing can edit stamina or other numbers, so EotW's "enforce everything" holds.</li>
+        <li><b>One sheet everywhere.</b> The Guild, the town strip and the in-game hero card all open this sheet, and teammates' heroes open read-only. The other ways into the old editable sheet (the C key, the token menu, search, chat commands) would point here.</li>
+        <li><b>It looks like EotW.</b> The hero card, enlarged, anchors the sheet with the same stamina bar, recoveries ring, resource and surge icons as the HUD card, so players learn it once. Panels are frosted glass over where you are: the Hero's Guild in town, the battle map in an encounter.</li>
+        <li><b>Everything on one screen.</b> No tabs: abilities and features sit side by side, and the left column never scrolls. Hovering shows the same ability card the action bar uses; clicking pins it.</li>
+        <li><b>Laid out the way you use it.</b> Characteristics sit with skills, grouped by skill group, because a test is a characteristic plus a skill. Size, speed, disengage, stability and potency sit beside them.</li>
+        <li><b>Abilities follow the feature tags.</b> Only real abilities show, plus the standard actions and free strikes every hero has, which helps newer players. Features the book writes as prose stay in Features.</li>
+        <li><b>Kit, or what the class uses instead.</b> Prayer and ward for a Conduit, enchantment and ward for an Elementalist, and so on. A Tactician's two kits read as one kit, with the damage bonus choice made in town.</li>
+        <li><b>Treasure by type, with an equip prompt.</b> Leveled treasure (with the carry-three count), trinkets and consumables. Won treasure currently arrives unequipped and does nothing until it is equipped, so the sheet flags it.</li>
+        <li><b>Progress on the card.</b> Level, the bar to the next level (XP on hover) and Victories.</li>
+        <li><b>Safe to open mid-encounter.</b> The sheet sits over the map. If a trigger, save or roll is waiting on you, the Close button turns gold and says so; EotW prompts wait rather than time out, so nothing is lost.</li>
+      </ul>
+    </section>
+    <section class="note">
+      <h2>Open questions</h2>
+      <ul>
+        <li><b>Progression.</b> Is levelling done with XP (victories become XP at a respite, 16 XP per level), or something else in EotW? Where does a level-up happen?</li>
+        <li><b>Moving items.</b> Can players move items between their own heroes, share them within a party, or trade with other players? Today Give To, Set Quantity and Duplicate can inflate won treasure.</li>
+        <li><b>Carrying three leveled treasures.</b> Hard cap, allow it with a warning, or automate the respite Presence test?</li>
+        <li><b>Edit in Builder.</b> Your doc says before a hero's first encounter; the code allows it until the first victory, so a hero who lost stays rebuildable. Which do you want?</li>
+        <li><b>Teammates' sheets.</b> OK to open them read-only during an encounter as well as in town?</li>
+        <li><b>Closing the other routes.</b> Pointing the C key, token menu, search and chat commands at this sheet touches core code. OK to do?</li>
+        <li><b>Noticed along the way.</b> The AI's "Waiting for..." banner hides whenever any panel window is open, including the character panel the HUD card opens. Intended?</li>
+        <li><b>Also noticed.</b> In EotW every hero's character panel is view-only, which also blocks play actions such as the Summoner's Sacrifice Minions and ending an Elementalist's persistent ability.</li>
+      </ul>
+    </section>
+  </div>
+
+  <p class="foot">Built with real pregen data from the Codex. The typeface stands in for Berlingske Slab, the heroic resource icon is a placeholder, and all wording is draft.</p>
+</div>
