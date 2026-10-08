@@ -172,20 +172,7 @@
   .tile.sm { padding: 4px 4px 3px; border-color: rgba(58,56,51,0.7); background: rgba(0,0,0,0.12); }
   .tile.sm .lab { font-size: 12.5px; }
   .tile.sm .val { font-size: 19px; font-weight: 700; }
-  .lines { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-content: center; row-gap: 16px; column-gap: 12px; padding-left: 24px; border-left: 1px solid rgba(255,255,255,0.08); }
-  .lines > span { display: flex; align-items: baseline; justify-content: center; gap: 8px; white-space: nowrap; font-size: 14px; color: var(--lab); }
-  .lines > span:nth-child(4n+1) { justify-content: flex-start; }
-  .lines > span b { color: var(--cream-light); font-size: 21px; font-variant-numeric: tabular-nums; }
-  .lines .st { font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); }
-  /* the scene behind the sheet: where you are (town or encounter) or a wash of the hero's own art */
-  .bd { position: absolute; inset: -24px; background-size: cover; background-position: center; }
-  .bd.map { filter: blur(3px) saturate(0.85); }
-  .bd.hero { filter: blur(30px) saturate(1.25) brightness(0.62); transform: scale(1.12); background-position: 50% 20%; }
-  .bd-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.30) 45%, rgba(0,0,0,0.42) 100%); }
-  .scene .blk { background: rgba(17,16,14,0.66); border-color: rgba(255,255,255,0.10); backdrop-filter: blur(6px); }
-  .scene .lists { background: rgba(14,13,11,0.62); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; padding: 12px 14px 0; backdrop-filter: blur(6px); }
-  .scene .arow, .scene .fcard { background: rgba(28,27,24,0.76); }
-  .scene .topbar .sw .grp { color: #d9d0c0; text-shadow: 0 1px 2px #000; }
+  .lines { display: flex; flex-direction: column; justify-content: center; gap: 14px; padding-left: 24px; border-left: 1px solid rgba(255,255,255,0.08); }
   .lrow { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: baseline; gap: 10px; }
   .lrow .glab { margin: 0; }
   .pairs { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 24px; font-size: 14px; color: var(--lab); }
@@ -303,18 +290,11 @@
 <div class="page">
   <header class="intro">
     <h1>EotW sheet layouts</h1>
-    <p>Round 9 mock. <b>Backdrop:</b> the scene is back behind the sheet: the Hero's Guild for your heroes in town, the blurred battle map for a teammate's hero in an encounter, or a wash of the hero's own art. Panels go translucent over it. <b>Stats band:</b> size, speed, disengage, stability and potency now sit in an aligned grid that fills their block.</p>
+    <p>Round 8 mock. <b>Left column:</b> Kit and Treasures are separate cards, and Treasures scroll inside their card like Abilities and Features. The level row on the card is smaller, with XP on hover. <b>Headers:</b> section headers are white and larger everywhere; stat headers are gold small caps. Size, speed, disengage and stability each carry their own label.</p>
   </header>
 
   <div class="controls" role="toolbar" aria-label="Mock controls">
     <div class="ctl"><span>Hero</span><select id="ctl-hero" aria-label="Hero"></select></div>
-    <div class="ctl"><span>Backdrop</span>
-      <div class="seg" id="ctl-bd">
-        <button data-bd="place">Where you are</button>
-        <button data-bd="hero">Hero art</button>
-        <button data-bd="none">None</button>
-      </div>
-    </div>
     <div class="ctl"><span>Simulate</span>
       <button class="tog" id="ctl-vet" aria-pressed="false">Veteran inventory</button>
       <button class="tog" id="ctl-imm" aria-pressed="false">Many immunities</button>
@@ -331,12 +311,13 @@
 
   <div class="notes">
     <section class="note">
-      <h2>What changed from round 8</h2>
+      <h2>What changed from round 7</h2>
       <ul>
-        <li>Backdrop toggle: Where you are (the round 2 B2 scene), Hero art (a blurred wash of the hero's own illustration) or None (round 8).</li>
-        <li>Over a backdrop, every panel is a dark translucent plate, and Abilities and Features share one plate.</li>
-        <li>The body stats and potency form one four-column grid, so the block is filled edge to edge.</li>
-        <li>The engine already supports blurred panel backgrounds (CreateAbilityTooltip's blurBackground option), so the frosted plates are buildable.</li>
+        <li>Kit and Treasures are two cards. Treasures scroll inside their card, so every item stays reachable; "+N more" is gone.</li>
+        <li>The level row reads current level, bar, next level, then Victories. Hover the bar for the XP count.</li>
+        <li>One header system: section headers (Characteristics, Skills, Languages, Immunities, Weaknesses, Abilities, Features, Kit, Treasures) are white and larger; stat headers (skill groups, stat names, list groups, treasure types) are gold small caps.</li>
+        <li>Movement is no longer a heading: size, speed, disengage and stability are labelled individually. Potency keeps its label with weak, average and strong beside it.</li>
+        <li>Labelled lines are the decided treatment, so the toggle is gone.</li>
       </ul>
     </section>
     <section class="note">
@@ -425,12 +406,11 @@
     ["neardeath", "Near death", (m, w) => ({ cur: -(w - 3), temp: 0 })],
   ];
 
-  const state = { hero: "fury", bd: "place", mp: "lines", stam: "full", vet: false, imm: false, prog: false, twokit: false, res: false, sig: false, zoom: "fit", caps: { lev: 4, trk: 4, con: 8 },
+  const state = { hero: "fury", mp: "lines", stam: "full", vet: false, imm: false, prog: false, twokit: false, res: false, sig: false, zoom: "fit", caps: { lev: 4, trk: 4, con: 8 },
     chips: new Set(), search: "", closed: new Set(), more: new Set(), hover: null, pin: null, meleeFrom: "Shining Armor" };
-  try { const b = localStorage.getItem("eotw-r9-bd"); if (b === "place" || b === "hero" || b === "none") state.bd = b; } catch (e) {}
+  try { const b = localStorage.getItem("eotw-r6-mp"); if (b === "lines" || b === "tiles") state.mp = b; } catch (e) {}
   (location.hash || "").replace("#", "").split(".").forEach(t => {
     if (t === "tiles" || t === "lines") state.mp = t;
-    else if (t === "place" || t === "nobd" || t === "herobd") state.bd = t === "nobd" ? "none" : t === "herobd" ? "hero" : "place";
     else if (["vet", "imm", "prog", "twokit", "res", "sig"].includes(t)) state[t] = true;
     else if (/^pin-/.test(t)) state.pin = t.slice(4).replace("-", ":");
     else if (t) state.hero = t;
@@ -639,9 +619,9 @@
   function statsBand(h) {
     const p = h.potency || {};
     const stat = (l, v) => '<span><span class="st">' + esc(l) + "</span><b>" + esc(v) + "</b></span>";
-    const tier = (l, v) => "<span>" + esc(l) + "<b>" + esc(v) + "</b></span>";
-    const right = '<div class="lines">' + ["Size", "Speed", "Disengage", "Stability"].map(n => stat(n, h[n.toLowerCase()])).join("") +
-      '<span><span class="st">Potency</span></span>' + tier("Weak", p.weak) + tier("Average", p.average) + tier("Strong", p.strong) + "</div>";
+    const tier = (l, v) => '<span class="tier">' + esc(l) + "<b>" + esc(v) + "</b></span>";
+    const right = '<div class="lines"><div class="pairs">' + ["Size", "Speed", "Disengage", "Stability"].map(n => stat(n, h[n.toLowerCase()])).join("") + "</div>" +
+      '<div class="pairs"><span class="st">Potency</span>' + tier("Weak", p.weak) + tier("Average", p.average) + tier("Strong", p.strong) + "</div></div>";
     return '<div class="blk band"><div class="nums"><div><div class="glab">Characteristics</div><div class="tiles" style="grid-template-columns:repeat(5,1fr)">' + h.chars.map(c => tile(c.name, c.v)).join("") + "</div></div>" + right + "</div>" +
       '<div class="hr"></div><div class="wrow">' +
       '<div><div class="wl">Skills</div><div class="words">' + skillsInline(h) + "</div></div>" +
@@ -793,10 +773,7 @@
       PILLARS.map(p => '<button class="chip' + (state.chips.has(p) ? " on" : "") + '" data-chip="' + p + '">' + p + "</button>").join("") +
       '<input class="search" id="fsearch" type="search" placeholder="Filter" aria-label="Filter features" value="' + esc(state.search) + '"></div>' +
       '<div class="lbody" data-keep="ab">' + abilitiesBody(h) + '</div><div class="lbody" data-keep="ft">' + featuresBody(h) + "</div></div>";
-    const bdImg = state.bd === "hero" ? h.key : (isMine(h) ? "guild" : "battlemap");
-    const scene = state.bd === "none" ? "" : '<div class="bd ' + (state.bd === "hero" ? "hero" : isMine(h) ? "" : "map") + '" style="background-image:url(art/' + esc(bdImg) + '.jpg)"></div><div class="bd-shade"></div>';
-    stage.className = "stage" + (state.bd === "none" ? "" : " scene");
-    stage.innerHTML = scene + '<div class="lay"><aside class="left">' + heroCard(h) + gearBlk(h) + '</aside><main class="main">' + topbar(h) + statsBand(h) + lists + "</main></div>" +
+    stage.innerHTML = '<div class="lay"><aside class="left">' + heroCard(h) + gearBlk(h) + '</aside><main class="main">' + topbar(h) + statsBand(h) + lists + "</main></div>" +
       '<div class="hcard" id="hcard" hidden><button class="x" data-unpin aria-label="Close card">&#215;</button><div id="hcbody"></div><div class="hint" id="hchint"></div></div>';
     stage.querySelectorAll("[data-keep]").forEach(el => { if (keep[el.dataset.keep]) el.scrollTop = keep[el.dataset.keep]; });
     if (focusSearch) { const s = document.getElementById("fsearch"); if (s) { s.focus(); const n = s.value.length; try { s.setSelectionRange(n, n); } catch (e) {} } }
@@ -825,7 +802,6 @@
   }
   function sync() {
     document.querySelectorAll("#ctl-zoom button").forEach(b => b.classList.toggle("on", b.dataset.zoom === state.zoom));
-    document.querySelectorAll("#ctl-bd button").forEach(b => b.classList.toggle("on", b.dataset.bd === state.bd));
     document.getElementById("ctl-hero").value = state.hero;
     document.getElementById("ctl-stam").value = state.stam;
     [["ctl-vet", "vet"], ["ctl-imm", "imm"], ["ctl-prog", "prog"], ["ctl-twokit", "twokit"], ["ctl-res", "res"], ["ctl-sig", "sig"]].forEach(([id, k]) => document.getElementById(id).setAttribute("aria-pressed", String(state[k])));
@@ -858,13 +834,12 @@
   stage.addEventListener("mouseleave", () => { if (!state.pin) { state.hover = null; showCard(null, false); } });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && state.pin) { state.pin = null; render(); } });
   document.addEventListener("click", e => {
-    const t = e.target.closest("[data-bd],[data-mp],[data-zoom],[data-hero],[data-chip],[data-flash],[data-grp],[data-more],[data-melee],[data-unpin],[data-card],#ctl-vet,#ctl-imm,#ctl-prog,#ctl-twokit,#ctl-res,#ctl-sig");
+    const t = e.target.closest("[data-mp],[data-zoom],[data-hero],[data-chip],[data-flash],[data-grp],[data-more],[data-melee],[data-unpin],[data-card],#ctl-vet,#ctl-imm,#ctl-prog,#ctl-twokit,#ctl-res,#ctl-sig");
     if (!t) { if (state.pin && !e.target.closest("#hcard")) { state.pin = null; render(); } return; }
     const toggles = { "ctl-vet": "vet", "ctl-imm": "imm", "ctl-prog": "prog", "ctl-twokit": "twokit", "ctl-res": "res", "ctl-sig": "sig" };
     if (toggles[t.id]) { state[toggles[t.id]] = !state[toggles[t.id]]; if (t.id === "ctl-twokit") state.hero = "tactician"; if (t.id === "ctl-vet" && !isMine(byKey[state.hero])) state.hero = "fury"; state.pin = null; render(); return; }
     if (t.dataset.mp) { state.mp = t.dataset.mp; try { localStorage.setItem("eotw-r6-mp", state.mp); } catch (err) {} render(); return; }
     if (t.dataset.zoom) { state.zoom = t.dataset.zoom; sync(); fit(); return; }
-    if (t.dataset.bd) { state.bd = t.dataset.bd; try { localStorage.setItem("eotw-r9-bd", state.bd); } catch (err) {} render(); return; }
     if (t.dataset.hero) { state.hero = t.dataset.hero; state.pin = null; render(); return; }
     if (t.dataset.chip) { const c = t.dataset.chip; state.chips.has(c) ? state.chips.delete(c) : state.chips.add(c); render(); return; }
     if (t.dataset.flash) { flash(t, t.dataset.flash); return; }
