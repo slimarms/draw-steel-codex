@@ -1,0 +1,17 @@
+local wanted = { ["Dwarf Fury"]="fury", ["High Elf Tactician"]="tactician", ["Human Censor"]="censor", ["Human Null"]="null",
+  ["Human Talent"]="talent", ["Polder Shadow"]="shadow", ["Wode Elf Troubadour"]="troubadour", ["Polder Elementalist"]="elementalist", ["Orc Conduit"]="conduit" }
+for _, tok in ipairs(dmhub.allTokens) do
+  local key = wanted[tok.name or ""]
+  if key ~= nil then
+    local imm, weak = {}, {}
+    pcall(function()
+      for _, e in ipairs(tok.properties:ResistanceEntries()) do
+        local dr = e.entry:try_get("dr", 0)
+        local txt = TacPanel.CleanResistanceText(e.text) .. " " .. math.abs(dr)
+        if dr < 0 then weak[#weak+1] = txt else imm[#imm+1] = txt end
+      end
+    end)
+    pcall(function() local c = tok.properties:ConditionImmunityDescription(); if c ~= "" then imm[#imm+1] = TacPanel.CleanResistanceText(c) end end)
+    print(key .. "|" .. table.concat(imm, ";") .. "|" .. table.concat(weak, ";"))
+  end
+end

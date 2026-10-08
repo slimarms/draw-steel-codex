@@ -1,0 +1,122 @@
+local wanted = { ["Dwarf Fury"]="fury", ["High Elf Tactician"]="tactician", ["Human Censor"]="censor", ["Human Null"]="null",
+  ["Human Talent"]="talent", ["Polder Shadow"]="shadow", ["Wode Elf Troubadour"]="troubadour", ["Polder Elementalist"]="elementalist", ["Orc Conduit"]="conduit" }
+local tpl = nil
+for _, v in pairs(CharSheetPDFExport.GetTemplates()) do if v.id == "mcdm-hero-sheet" then tpl = v end end
+local function clean(s)
+  if s == nil then return nil end
+  s = tostring(s)
+  s = string.gsub(s, "<[^>]*>", "")
+  s = string.gsub(s, "%*%*(.-)%*%*", "%1")
+  return s
+end
+local resTable = dmhub.GetTable(CharacterResource.tableName)
+local skillsTable = dmhub.GetTable("Skills") or {}
+local gear = dmhub.GetTable("tbl_Gear") or {}
+for _, tok in ipairs(dmhub.allTokens) do
+  local key = wanted[tok.name or ""]
+  if key ~= nil then
+    local p = tok.properties
+    local rec = { key = key, name = tok.name }
+    local okf, fields = pcall(function() return CharSheetPDFExport.BuildFields(tpl, tok) end)
+    if okf and type(fields) == "table" then
+      local f = {}
+      for k, v in pairs(fields) do
+        if type(v) ~= "table" and not string.find(k, "^Ability") and not string.find(k, "Condition") then f[k] = clean(v) end
+      end
+      rec.fields = f
+      local skills = {}
+      for _, sk in pairs(skillsTable) do
+        local nm = sk.name
+        if nm ~= nil and fields[nm] == true then skills[#skills+1] = nm end
+      end
+      table.sort(skills)
+      rec.skills = skills
+    end
+    pcall(function() rec.heroic = p:GetHeroicOrMaliceResources() end)
+    pcall(function() rec.victories = p:GetVictories() end)
+    pcall(function()
+      local ids = EotwBuild.hero.ComplicationIds(p)
+      local names = {}
+      for _, id in ipairs(ids) do local c = dmhub.GetTable(CharacterComplication.tableName)[id]; if c then names[#names+1] = c.name end end
+      rec.complications = names
+    end)
+    -- abilities (hero's own; the 14 global ones excluded, same as the PDF export)
+    local abilities = {}
+    pcall(function()
+      for _, ability in ipairs(p:GetActivatedAbilities{ bindCaster = true, characterSheet = true, excludeGlobal = true }) do
+        local a = { name = ability.name, cat = ability:try_get("categorization") }
+        pcall(function() local rid = ability:ActionResource(); a.action = rid and resTable[rid] and resTable[rid].name or "Free" end)
+        pcall(function()
+          if ability:has_key("resourceCost") and resTable[ability.resourceCost] ~= nil then a.cost = tonumber(ability:try_get("resourceNumber", 1)) end
+        end)
+        local kws = {}
+        for kw, _ in pairs(ability:try_get("keywords", {})) do kws[#kws+1] = ActivatedAbility.CanonicalKeyword(kw) end
+        table.sort(kws); a.keywords = kws
+        pcall(function() a.distance = clean(ability:DescribeRange(p)) end)
+        pcall(function() a.target = clean(ability:DescribeTarget(tok)) end)
+        a.flavor = clean(ability:try_get("flavor"))
+        for _, b in ipairs(ability:try_get("behaviors", {})) do
+          if b.typeName == "ActivatedAbilityPowerRollBehavior" then
+            a.roll = clean(b:try_get("roll"))
+            local tiers = {}
+            for i, t in ipairs(b:try_get("tiers") or {}) do
+              local r = t
+              pcall(function() r = ActivatedAbilityDrawSteelCommandBehavior.DisplayRuleTextForCreature(p, t, {}, true) end)
+              tiers[i] = clean(r)
+            end
+            a.tiers = tiers
+          end
+        end
+        local eff = {}
+        for _, k in ipairs({"preDescription", "description"}) do
+          local text = ability:try_get(k)
+          if text ~= nil and text ~= "" then
+            local s = text
+            pcall(function() s = StringInterpolateGoblinScript(text, p) end)
+            eff[#eff+1] = clean(s)
+          end
+        end
+        a.effect = table.concat(eff, "\n")
+        a.trigger = clean(ability:try_get("triggerDescription") or ability:try_get("trigger"))
+        pcall(function() a.impl = ability:try_get("implementation") end)
+        abilities[#abilities+1] = a
+      end
+    end)
+    rec.abilities = abilities
+    -- features (tagged index)
+    local feats = {}
+    pcall(function()
+      local idx = FeatureCategoriser.BuildIndex(p)
+      for _, e in ipairs(idx.features) do
+        local fr = { name = e.name, sub = e.subName, bucket = e.bucket, origin = e.originName, level = e.level, kind = e.displayKind }
+        pcall(function()
+          local tags = {}
+          for t, on in pairs(e.feature:try_get("tags") or {}) do if on then tags[#tags+1] = t end end
+          table.sort(tags); fr.tags = tags
+        end)
+        pcall(function() fr.desc = clean(e.feature:GetDescription()) end)
+        if fr.desc == nil then pcall(function() fr.desc = clean(e.feature.description) end) end
+        feats[#feats+1] = fr
+      end
+    end)
+    rec.features = feats
+    -- inventory + equipment
+    local inv = {}
+    pcall(function()
+      for itemid, entry in pairs(p:try_get("inventory") or {}) do
+        local it = gear[itemid]
+        inv[#inv+1] = { name = it and it.name or itemid, qty = entry.quantity }
+      end
+    end)
+    local eq = {}
+    pcall(function()
+      for slot, itemid in pairs(p:try_get("equipment") or {}) do
+        local it = gear[itemid]
+        eq[#eq+1] = { slot = slot, name = it and it.name or tostring(itemid) }
+      end
+    end)
+    rec.inventory = inv
+    rec.equipment = eq
+    print("JSON:" .. dmhub.ToJson(rec))
+  end
+end

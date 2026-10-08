@@ -1,0 +1,39 @@
+local wanted = { ["Dwarf Fury"]="fury", ["High Elf Tactician"]="tactician", ["Human Censor"]="censor", ["Human Null"]="null",
+  ["Human Talent"]="talent", ["Polder Shadow"]="shadow", ["Wode Elf Troubadour"]="troubadour", ["Polder Elementalist"]="elementalist", ["Orc Conduit"]="conduit" }
+local function clean(s)
+  if s == nil then return nil end
+  s = tostring(s); s = string.gsub(s, "<[^>]*>", ""); s = string.gsub(s, "%*%*(.-)%*%*", "%1"); return s
+end
+for _, tok in ipairs(dmhub.allTokens) do
+  local key = wanted[tok.name or ""]
+  if key ~= nil then
+    local out = { key = key, features = {} }
+    pcall(function()
+      local idx = FeatureCategoriser.BuildIndex(tok.properties)
+      for _, e in ipairs(idx.features) do
+        local fr = { name = e.name, kind = e.kind, isChoice = false }
+        pcall(function() fr.levelStr = e.levels end)
+        local ch = e.chosen
+        if ch ~= nil then
+          local list = {}
+          for _, c in ipairs(ch) do
+            local item = { }
+            pcall(function() item.name = c.name end)
+            pcall(function() item.desc = clean(c:GetDescription()) end)
+            pcall(function()
+              local tags = {}
+              for t, on in pairs(c:try_get("tags") or {}) do if on then tags[#tags+1] = t end end
+              table.sort(tags); item.tags = tags
+            end)
+            pcall(function() item.kind = c:DisplayKind() end)
+            list[#list+1] = item
+          end
+          fr.chosen = list
+        end
+        pcall(function() fr.isChoice = e.kind == "choice" end)
+        out.features[#out.features+1] = fr
+      end
+    end)
+    print("JSON:" .. dmhub.ToJson(out))
+  end
+end
