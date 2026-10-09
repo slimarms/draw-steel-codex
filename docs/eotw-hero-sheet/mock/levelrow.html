@@ -1,0 +1,267 @@
+<title>EotW Level Row Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<style>
+  /* Layout: a review grid - hero moments down, options across - each cell the card plate exactly as
+     the sheet draws it (round 10 grammar). One deliberate dark look: the EotW builder palette the
+     sheet mocks already use. */
+  :root {
+    color-scheme: dark;
+    --page: #0e0e0d; --page-fg: #d9d3c7; --page-mut: #8f897e; --page-line: #2a2926;
+    --cream: #DFCFC0; --cream-light: #F3EDE7; --tan: #BC9B7B; --ink: #10110F;
+    --gold: #ffd66b; --plate-fg: #c6d0da; --white: #ffffff;
+    --st-ok: #4DB88C; --st-winded: #E8A030;
+    --slab: "Bitter", "Roboto Slab", Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--page); color: var(--page-fg); }
+  body { margin: 0; font-family: var(--slab); }
+  .page { max-width: 1500px; margin: 0 auto; padding-block: 24px 64px; padding-inline: 20px; }
+
+  .intro h1 { font-size: 26px; font-weight: 800; margin: 0; color: var(--cream-light); text-wrap: balance; }
+  .intro p { margin: 8px 0 0; color: var(--page-mut); font-size: 14px; line-height: 1.55; max-width: 980px; }
+  .intro p b { color: var(--cream-light); font-weight: 600; }
+
+  /* the grid: a moment label column, then one column per option */
+  .grid { display: grid; grid-template-columns: 210px repeat(3, minmax(0, 400px)); gap: 18px 22px; margin-top: 22px; align-items: start; }
+  .colh { font-size: 15px; font-weight: 800; color: var(--cream-light); line-height: 1.3; }
+  .colh small { display: block; font-size: 12.5px; font-weight: 400; color: var(--page-mut); margin-top: 3px; line-height: 1.45; }
+  .colh .rec { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); background: var(--gold); border-radius: 8px; padding: 0 7px; margin-left: 6px; vertical-align: 2px; }
+  .rowh { font-size: 14px; font-weight: 700; color: var(--cream-light); line-height: 1.35; padding-top: 6px; }
+  .rowh small { display: block; font-size: 12.5px; font-weight: 400; color: var(--page-mut); margin-top: 4px; line-height: 1.45; }
+  .cell { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+
+  /* the card, cropped: art above, the plate anchored to the bottom (EotwHeroCard grammar) */
+  .card { position: relative; width: 100%; max-width: 400px; height: 330px; border-radius: 10px; border: 1px solid #000000cc; background: #151515 center / cover; background-position: 50% 14%; overflow: hidden; }
+  .plate { position: absolute; left: 10px; right: 10px; bottom: 10px; background: #000000c4; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; }
+  .pn { font-size: 24px; font-weight: 800; color: var(--white); line-height: 1.08; }
+  .ps { font-size: 13.5px; color: var(--plate-fg); margin-top: 2px; }
+
+  /* the level row */
+  .xprow { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--plate-fg); }
+  .lvn { font-size: 14px; font-weight: 800; color: var(--white); font-variant-numeric: tabular-nums; }
+  .lvn.next { color: var(--plate-fg); font-weight: 700; }
+  .lvn.next.reach { color: var(--cream-light); }
+  .lvn.ready { color: var(--gold); }
+  .xpbar { position: relative; flex: 1 1 auto; height: 7px; border-radius: 4px; background: rgba(255,255,255,0.12); overflow: hidden; cursor: help; }
+  .xpbar i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 4px; background: linear-gradient(90deg, var(--tan), var(--cream)); }
+  /* Victories waiting to become XP: hatched after the fill, so it differs by pattern, not only colour */
+  .xpbar s { position: absolute; top: 0; bottom: 0; border-radius: 0 4px 4px 0; text-decoration: none;
+    background: repeating-linear-gradient(135deg, rgba(223,207,192,0.9) 0 2px, rgba(223,207,192,0.25) 2px 4px); }
+  .xpbar.ready i { background: var(--gold); }
+  .tag { white-space: nowrap; cursor: help; margin-left: 10px; }
+  .tag b { color: var(--white); }
+  .maxl { flex: 1 1 auto; font-style: italic; color: var(--plate-fg); }
+  .ready-line { font-size: 13px; font-weight: 700; color: var(--gold); margin-top: -3px; }
+
+  /* stamina + the recoveries row, as round 10 */
+  .bar { position: relative; display: flex; align-items: center; width: 100%; height: 22px; border: 1px solid var(--st-ok); border-radius: 3px; background: #00000066; }
+  .bar.st-winded { border-color: var(--st-winded); }
+  .bar .f { height: calc(100% - 2px); margin-left: 1px; background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(0,0,0,0.18)), var(--st-ok); }
+  .bar.st-winded .f { background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(0,0,0,0.18)), var(--st-winded); }
+  .bar b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--white); font-size: 13px; font-weight: 700; text-shadow: 0 1px 2px #000, 0 0 3px #000; font-variant-numeric: tabular-nums; }
+  .bnote { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--plate-fg); margin-top: 5px; font-variant-numeric: tabular-nums; }
+  .bnote b { color: var(--white); }
+  .rrow { display: flex; gap: 10px; align-items: center; border-top: 1px solid rgba(255,255,255,0.10); padding-top: 9px; }
+  .ring { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; border: 2px solid rgba(223,207,192,0.6); background: #000000a0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: var(--cream-light); font-variant-numeric: tabular-nums; }
+  .ring.low { border-color: var(--st-winded); }
+  .rcell { flex: 1 1 auto; font-size: 12.5px; color: var(--plate-fg); min-width: 0; line-height: 1.25; }
+  .rcell b { color: var(--white); font-size: 14px; }
+  .vcell { display: flex; align-items: baseline; gap: 6px; padding-left: 10px; border-left: 1px solid rgba(255,255,255,0.10); font-size: 12.5px; color: var(--plate-fg); cursor: help; white-space: nowrap; }
+  .vcell b { font-size: 20px; color: var(--white); font-variant-numeric: tabular-nums; }
+  .res { display: inline-flex; align-items: center; gap: 7px; padding-left: 10px; border-left: 1px solid rgba(255,255,255,0.10); }
+  .res i { width: 12px; height: 12px; transform: rotate(45deg); border: 2px solid var(--tan); }
+  .res b { font-size: 20px; color: var(--white); font-variant-numeric: tabular-nums; }
+
+  /* surges: one icon per surge (the hero card's rule), stand-in bolt glyph */
+  .sg { display: inline-flex; gap: 2px; color: var(--gold); cursor: help; }
+  .sg svg { width: 13px; height: 13px; display: block; }
+  /* Corner: a cluster just above the plate's right edge, on a dark backing so any art reads */
+  .sg.corner { position: absolute; right: 6px; bottom: 100%; margin-bottom: 7px; padding: 4px 6px; border-radius: 7px; background: #000000c4; }
+  /* Count: one icon and a number inside the resource cell */
+  .res .sgc { display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; color: var(--gold); font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums; cursor: help; }
+  .res .sgc svg { width: 13px; height: 13px; }
+  /* Own line: under the row, only while the hero has surges */
+  .sgline { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--plate-fg); margin-top: -2px; }
+  .colh .chosen { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); background: var(--cream); border-radius: 8px; padding: 0 7px; margin-left: 6px; vertical-align: 2px; }
+  h2.part { font-size: 20px; color: var(--cream-light); margin: 44px 0 4px; text-wrap: balance; }
+  p.part { margin: 0; color: var(--page-mut); font-size: 14px; line-height: 1.55; max-width: 980px; }
+  p.part b { color: var(--cream-light); font-weight: 600; }
+
+  /* what hovering shows, written out under the card for review */
+  .hov { font-size: 12.5px; line-height: 1.45; color: var(--page-mut); border-left: 2px solid var(--page-line); padding-left: 9px; }
+  .hov b { color: var(--page-fg); font-weight: 600; }
+  .hov .copy { color: var(--cream); }
+
+  .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 34px; }
+  .note { min-width: 0; border: 1px solid var(--page-line); border-radius: 10px; padding: 14px 16px; background: #121210; }
+  .note h2 { font-size: 16px; margin: 0 0 6px; color: var(--cream-light); }
+  .note ul { margin: 0; padding-left: 18px; }
+  .note li { font-size: 14px; line-height: 1.55; }
+  .note li + li { margin-top: 4px; }
+  .note li b { color: var(--cream-light); font-weight: 600; }
+
+  @media (max-width: 1100px) {
+    .grid { grid-template-columns: minmax(0, 1fr); }
+    .colh-row { display: none; }
+    .cell::before { content: attr(data-opt); font-size: 13px; font-weight: 700; color: var(--tan); }
+    .rowh { padding-top: 22px; border-top: 1px solid var(--page-line); }
+  }
+</style>
+
+<div class="page">
+  <div class="intro">
+    <h1>The level row on the hero card</h1>
+    <p>Version 2, after David's answer: heroes level as in Draw Steel. <b>Victories become XP at a respite, and taking a respite is the player's choice</b>, so a hero can set out again with high Victories and low Recoveries. Victories therefore now drive a decision (extra heroic resource at the start of every combat versus fewer Recoveries) and have to be visible. Each column is one option and each row a moment in a hero's life. Hover any bar or number for its tooltip; the tooltip text is also written out under each card. Every gold or cream sentence is a <b>[COPY]</b> draft for sign-off, and "Training Grounds" is a placeholder name.</p>
+  </div>
+  <div class="grid" id="grid"></div>
+  <h2 class="part">Surges, now that Victories sit beside Recoveries</h2>
+  <p class="part">The row now holds Recoveries, Victories and the heroic resource. Surges only exist in combat, and on the real hero card they are not in a row at all: they float in the card's corner, one icon per surge, none at 0, up to 9. With 9 surges the row has room for about two of them, so they need a place of their own. <b>Corner</b> keeps the hero card's rule; <b>Count</b> trades the icons for one icon and a number; <b>Own line</b> adds a line to the plate during a fight.</p>
+  <div class="grid" id="grid2"></div>
+  <div class="notes">
+    <div class="note"><h2>What differs between the options</h2><ul>
+      <li><b>Victories beside Recoveries</b> puts the two numbers a player weighs before setting out side by side: what they have banked against what they have left. The level row keeps only progress, with the hatched stretch showing how far the next respite will take them.</li>
+      <li><b>Victories on the level row</b> is round 10 plus the hatched stretch. Victories sit with XP, the thing they turn into; the trade-off with Recoveries is two rows apart.</li>
+      <li><b>Round 10 as it was</b>: the number only. Nothing shows whether a respite would level the hero.</li>
+    </ul></div>
+    <div class="note"><h2>The same in every option</h2><ul>
+      <li><b>Ready to level</b> turns the bar and the next level gold and adds one line pointing to the town place that does it. The sheet never levels a hero.</li>
+      <li>When a respite would be enough to level, the hatched stretch reaches the end of the bar and the next level brightens.</li>
+      <li><b>Level 10</b> drops the bar and says it is the highest level.</li>
+      <li>16 XP per level (Heroic Advancement). Numbers are illustrative.</li>
+    </ul></div>
+    <div class="note"><h2>Not settled here</h2><ul>
+      <li><b>Encounters won</b> is left off every option. You asked David whether the sheet should count them and he has not answered; candidates are the Guild row, the sheet's header, or the level row's free end in the first option.</li>
+      <li>Where the respite itself happens, and the Training Grounds' real name.</li>
+      <li>Recoveries carrying home is my reading of David's answer; confirm with him (and whether used consumables carry home too).</li>
+    </ul></div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+  const XP_PER_LEVEL = 16;
+  const HEROES = window.HEROES || [];
+  const fury = HEROES.find(h => h.key === "fury") || HEROES[0] || { key: "fury", name: "Dwarf Fury", ancestry: "Dwarf", className: "Fury", subclass: "Berserker", stamina: { max: 33, winded: 16 }, recoveries: { max: 10, value: 11 }, resource: { name: "Ferocity" } };
+  const conduit = HEROES.find(h => h.key === "conduit") || fury;
+  const esc = s => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const pc = x => (Math.max(0, Math.min(1, x)) * 100).toFixed(2) + "%";
+
+  // One moment in a hero's life: level, XP already earned, Victories not yet turned into XP,
+  // Recoveries left, Stamina now. rec/stam are fractions of the hero's own maximums.
+  const MOMENTS = [
+    { hero: fury, level: 1, xp: 0, vic: 0, rec: 1, stam: 1, label: "A new hero", sub: "Just built, no encounters yet." },
+    { hero: fury, level: 1, xp: 0, vic: 1, rec: 0.7, stam: 1, label: "Back from a win, no respite yet", sub: "One Victory banked; three Recoveries spent." },
+    { hero: fury, level: 1, xp: 0, vic: 3, rec: 0.2, stam: 0.45, label: "Pushing on", sub: "Three encounters without a respite: lots of Victories, two Recoveries left." },
+    { hero: fury, level: 1, xp: 14, vic: 3, rec: 0.4, stam: 1, label: "A respite would level them", sub: "14 XP plus 3 Victories passes 16." },
+    { hero: fury, level: 1, xp: 17, vic: 0, rec: 1, stam: 1, label: "Ready to level", sub: "After that respite. Levelling happens at a town place." },
+    { hero: conduit, level: 10, xp: 999, vic: 2, rec: 1, stam: 1, label: "Level 10", sub: "The highest level. Victories still matter in combat." },
+  ];
+
+  // Part 2: the chosen row in a fight. res = heroic resource now, sg = surges now.
+  const FIGHTS = [
+    { hero: fury, level: 1, xp: 3, vic: 2, rec: 0.6, stam: 1, res: 0, sg: 0, label: "In town", sub: "No surges outside combat, so nothing shows." },
+    { hero: fury, level: 1, xp: 3, vic: 2, rec: 0.6, stam: 0.7, res: 5, sg: 2, label: "In a fight: 2 surges", sub: "The usual case." },
+    { hero: fury, level: 1, xp: 3, vic: 3, rec: 0.2, stam: 0.4, res: 12, sg: 9, label: "In a fight: 9 surges", sub: "The cap, with a two-digit resource and low Recoveries." },
+  ];
+  const SURGE_MODES = [
+    { id: "corner", title: "Corner", sub: "The hero card's rule: icons in a corner of the art, just above the plate.", rec: true },
+    { id: "count", title: "Count", sub: "One surge icon and a number, beside the resource." },
+    { id: "line", title: "Own line", sub: "A line of surge icons under the row, only while there are surges." },
+  ];
+  const BOLT = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7 0 2 7h3.5L4.5 12 10 4.8H6.6Z" fill="currentColor"/></svg>';
+
+  const OPTIONS = [
+    { id: "split", title: "Victories beside Recoveries", sub: "Progress on the level row; the trade-off pair together below.", chosen: true },
+    { id: "row", title: "Victories on the level row", sub: "Round 10 plus the hatched stretch.", },
+    { id: "r10", title: "Round 10 as it was", sub: "The number only.", },
+  ];
+
+  const into = m => Math.max(0, m.xp - (m.level - 1) * XP_PER_LEVEL);
+  const isMax = m => m.level >= 10;
+  const isReady = m => !isMax(m) && into(m) >= XP_PER_LEVEL;
+  const reaches = m => !isMax(m) && !isReady(m) && into(m) + m.vic >= XP_PER_LEVEL;
+  const resName = m => (m.hero.resource && m.hero.resource.name) || "Heroic Resource";
+  const recMax = m => (m.hero.recoveries && m.hero.recoveries.max) || 10;
+  const recCur = m => Math.round(recMax(m) * m.rec);
+  const vicWord = n => n === 1 ? "Victory" : "Victories";
+
+  // [COPY] drafts in one place so they can be signed off together. "Training Grounds" is a placeholder.
+  const COPY = {
+    bar: m => into(m) + " of " + XP_PER_LEVEL + " XP to level " + (m.level + 1) + ".",
+    hatch: m => m.vic + " " + vicWord(m.vic) + ": at your next respite " + (m.vic === 1 ? "it becomes" : "they become") + " " + m.vic + " XP." + (reaches(m) ? " That is enough for level " + (m.level + 1) + "." : ""),
+    victories: m => "You start each combat with " + m.vic + " extra " + resName(m) + ". At your next respite your Victories become XP.",
+    ready: m => "Level " + (m.level + 1) + " is ready. Level up at the Training Grounds.",
+    readyTip: m => "You have " + into(m) + " XP, enough for level " + (m.level + 1) + ". Level up at the Training Grounds.",
+    max: "Highest level",
+    surges: n => n + (n === 1 ? " surge" : " surges") + ".",
+  };
+
+  function barHtml(m, opt) {
+    const ready = isReady(m), fill = ready ? 1 : into(m) / XP_PER_LEVEL;
+    let seg = "", tip = ready ? COPY.readyTip(m) : COPY.bar(m);
+    if (opt !== "r10" && m.vic > 0 && !ready) {
+      seg = '<s style="left:' + pc(fill) + ";width:" + pc(Math.min(1, (into(m) + m.vic) / XP_PER_LEVEL) - fill) + '"></s>';
+      tip += " " + COPY.hatch(m);
+    }
+    return '<div class="xpbar' + (ready ? " ready" : "") + '" title="' + esc(tip) + '"><i style="width:' + pc(fill) + '"></i>' + seg + "</div>";
+  }
+
+  function levelRow(m, opt) {
+    const vic = opt === "split" ? "" : '<span class="tag" title="' + esc(COPY.victories(m)) + '">Victories <b>' + m.vic + "</b></span>";
+    if (isMax(m)) return '<div class="xprow"><span class="lvn">10</span><span class="maxl">' + esc(COPY.max) + "</span>" + vic + "</div>";
+    const next = "lvn next" + (isReady(m) ? " ready" : opt !== "r10" && reaches(m) ? " reach" : "");
+    let row = '<div class="xprow"><span class="lvn">' + m.level + "</span>" + barHtml(m, opt) + '<span class="' + next + '">' + (m.level + 1) + "</span>" + vic + "</div>";
+    if (isReady(m)) row += '<div class="ready-line">' + esc(COPY.ready(m)) + "</div>";
+    return row;
+  }
+
+  function recRow(m, opt, mode) {
+    const h = m.hero, cur = recCur(m), max = recMax(m), value = (h.recoveries && h.recoveries.value) || 11, sg = m.sg || 0;
+    const vic = opt === "split" ? '<span class="vcell" title="' + esc(COPY.victories(m)) + '"><b>' + m.vic + "</b>" + vicWord(m.vic) + "</span>" : "";
+    const count = mode === "count" && sg > 0 ? '<span class="sgc" title="' + esc(COPY.surges(sg)) + '">' + BOLT + sg + "</span>" : "";
+    let row = '<div class="rrow"><span class="ring' + (m.rec <= 0.3 ? " low" : "") + '" title="Recoveries">' + cur + '</span><div class="rcell"><b>Recoveries</b><br>of ' + max + " &middot; +" + value + " each</div>" + vic +
+      '<span class="res" title="' + esc(resName(m)) + '"><i></i><b>' + (m.res || 0) + "</b>" + count + "</span></div>";
+    if (mode === "line" && sg > 0) row += '<div class="sgline">Surges <span class="sg" title="' + esc(COPY.surges(sg)) + '">' + BOLT.repeat(Math.min(9, sg)) + "</span></div>";
+    return row;
+  }
+
+  function hoverHtml(m, opt) {
+    const lines = [];
+    if (isMax(m)) lines.push("<b>Level:</b> no tooltip; the words say it.");
+    else if (isReady(m)) lines.push('<b>Bar:</b> <span class="copy">' + esc(COPY.readyTip(m)) + "</span>");
+    else lines.push('<b>Bar:</b> <span class="copy">' + esc(COPY.bar(m) + (opt !== "r10" && m.vic > 0 ? " " + COPY.hatch(m) : "")) + "</span>");
+    if (m.vic > 0 || opt !== "split") lines.push('<b>Victories:</b> <span class="copy">' + esc(COPY.victories(m)) + "</span>");
+    return '<div class="hov">' + lines.join("<br>") + "</div>";
+  }
+
+  function cardHtml(m, opt, mode) {
+    const h = m.hero, max = (h.stamina && h.stamina.max) || 33, w = (h.stamina && h.stamina.winded) || 16;
+    const cur = Math.round(max * m.stam), winded = cur <= w;
+    const sub = "Level " + m.level + " " + esc(h.ancestry || "") + " " + esc(h.className || "") + (h.subclass ? " &middot; " + esc(h.subclass) : "");
+    return '<div class="card" role="img" aria-label="' + esc(h.name) + ", level " + m.level + '" style="background-image:url(art/' + esc(h.key) + '.jpg)">' +
+      '<div class="plate">' + (mode === "corner" && m.sg > 0 ? '<span class="sg corner" title="' + esc(COPY.surges(m.sg)) + '">' + BOLT.repeat(Math.min(9, m.sg)) + "</span>" : "") + '<div><div class="pn">' + esc(h.name) + '</div><div class="ps">' + sub + "</div></div>" +
+      levelRow(m, opt) +
+      '<div><div class="bar' + (winded ? " st-winded" : "") + '"><span class="f" style="width:' + pc(0.98 * cur / max) + '"></span><b>' + cur + "/" + max + "</b></div>" +
+      '<div class="bnote"><span>' + (winded ? "<b>Winded</b> at " + w : "Winded at <b>" + w + "</b>") + "</span><span>Dead at <b>-" + w + "</b></span></div></div>" +
+      recRow(m, opt, mode) + "</div></div>";
+  }
+
+  let html = '<div class="colh-row"></div>' + OPTIONS.map(o => '<div class="colh colh-row">' + esc(o.title) + (o.rec ? '<span class="rec">Recommended</span>' : o.chosen ? '<span class="chosen">Chosen</span>' : "") + "<small>" + esc(o.sub) + "</small></div>").join("");
+  MOMENTS.forEach(m => {
+    html += '<div class="rowh">' + esc(m.label) + "<small>" + esc(m.sub) + "</small></div>";
+    OPTIONS.forEach(o => { html += '<div class="cell" data-opt="' + esc(o.title) + '">' + cardHtml(m, o.id) + hoverHtml(m, o.id) + "</div>"; });
+  });
+  document.getElementById("grid").innerHTML = html;
+
+  let html2 = '<div class="colh-row"></div>' + SURGE_MODES.map(o => '<div class="colh colh-row">' + esc(o.title) + (o.rec ? '<span class="rec">Recommended</span>' : "") + "<small>" + esc(o.sub) + "</small></div>").join("");
+  FIGHTS.forEach(m => {
+    html2 += '<div class="rowh">' + esc(m.label) + "<small>" + esc(m.sub) + "</small></div>";
+    SURGE_MODES.forEach(o => {
+      const hov = m.sg > 0 ? '<div class="hov"><b>Surges:</b> <span class="copy">' + esc(COPY.surges(m.sg)) + "</span></div>" : "";
+      html2 += '<div class="cell" data-opt="' + esc(o.title) + '">' + cardHtml(m, "split", o.id) + hov + "</div>";
+    });
+  });
+  document.getElementById("grid2").innerHTML = html2;
+</script>

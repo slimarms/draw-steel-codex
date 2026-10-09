@@ -1,0 +1,288 @@
+<title>EotW Sheet Copy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<style>
+  /* Layout: a single review column - voice rules, then every sheet string grouped by where it appears,
+     each with its draft, a suggestion and a three-way choice that saves as you go.
+     One deliberate dark look: the EotW sheet's own palette, so strings are read in their world. */
+  :root {
+    color-scheme: dark;
+    --bg: #0e0e0d; --panel: #161614; --panel-2: #1d1c19; --line: #2e2c28;
+    --fg: #e4ddd2; --hi: #F3EDE7; --cream: #DFCFC0; --tan: #BC9B7B; --mut: #948d82;
+    --gold: #ffd66b; --ok: #6fc49a; --bad: #e07a5f; --ink: #10110F;
+    --slab: "Bitter", "Roboto Slab", Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); color: var(--fg); }
+  body { margin: 0; font-family: var(--slab); }
+  .page { max-width: 980px; margin: 0 auto; padding-block: 28px 80px; padding-inline: 20px; }
+  h1 { font-size: 28px; font-weight: 800; color: var(--hi); margin: 0; text-wrap: balance; }
+  .lede { color: var(--mut); font-size: 15px; line-height: 1.6; margin: 8px 0 0; max-width: 68ch; }
+  .lede b { color: var(--hi); font-weight: 600; }
+
+  .bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+    margin: 20px -20px 0; padding: 12px 20px; background: rgba(14,14,13,0.94); border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); }
+  .prog { font-size: 14px; color: var(--fg); font-variant-numeric: tabular-nums; }
+  .prog b { color: var(--hi); }
+  .meter { flex: 1 1 160px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.08); overflow: hidden; min-width: 120px; }
+  .meter i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--tan), var(--cream)); transition: width 200ms; }
+  .tg { font: inherit; font-size: 13px; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  .tg[aria-pressed="true"] { border-color: var(--tan); color: var(--hi); }
+  .tg:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .mode { font-size: 12.5px; color: var(--mut); }
+  .mode.warn { color: var(--gold); }
+
+  h2 { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan); margin: 34px 0 10px; }
+  h2 span { letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--mut); margin-left: 8px; font-size: 13px; }
+
+  .item { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-top: 10px; display: grid; gap: 9px; min-width: 0; }
+  .item.done { border-color: rgba(111,196,154,0.35); }
+  .item[hidden] { display: none; }
+  .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+  .id { font-size: 11.5px; font-weight: 700; color: var(--ink); background: var(--cream); border-radius: 6px; padding: 1px 6px; font-variant-numeric: tabular-nums; }
+  .what { font-size: 15.5px; font-weight: 700; color: var(--hi); }
+  .where { font-size: 13px; color: var(--mut); flex-basis: 100%; }
+  .flag { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); border: 1px solid rgba(255,214,107,0.5); border-radius: 8px; padding: 0 7px; }
+  .saved { margin-left: auto; font-size: 12px; color: var(--ok); }
+  .saved.err { color: var(--bad); }
+
+  .lines { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 6px 12px; align-items: baseline; }
+  .lab { font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mut); }
+  .str { font-size: 15px; color: var(--cream); line-height: 1.5; min-width: 0; overflow-wrap: anywhere; }
+  .str.sug { color: var(--hi); }
+  .str .ph { color: var(--gold); font-size: 13.5px; }
+  .str.same { color: var(--mut); font-style: italic; font-size: 14px; }
+  .why { font-size: 13.5px; color: var(--mut); line-height: 1.5; }
+
+  .choice { display: flex; flex-wrap: wrap; gap: 8px; }
+  .choice label { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 11px; cursor: pointer; }
+  .choice input { accent-color: #DFCFC0; margin: 0; }
+  .choice label:has(input:checked) { border-color: var(--cream); color: var(--hi); }
+  .custom { display: grid; gap: 6px; }
+  .custom[hidden] { display: none; }
+  textarea, input[type="text"] { font: inherit; font-size: 14.5px; color: var(--hi); background: #0f0f0e; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; resize: vertical; }
+  .note { font-size: 13.5px; }
+  .copyout { margin-top: 40px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .copyout p { margin: 0; font-size: 13px; color: var(--mut); flex-basis: 100%; }
+  @media (max-width: 560px) { .lines { grid-template-columns: minmax(0, 1fr); gap: 2px; } .lab { margin-top: 6px; } }
+  @media (prefers-reduced-motion: reduce) { .meter i { transition: none; } }
+</style>
+
+<div class="page">
+  <h1>EotW sheet copy</h1>
+  <p class="lede">Every string the EotW hero sheet shows, grouped by where it appears. For each one: the <b>draft</b> from the mocks, my <b>suggestion</b> and why, and your choice. Choices save as you make them, and I read them from this page. Gold <span style="color:var(--gold)">{braces}</span> are filled in by the game. "Changes the design" marks a suggestion that also moves or hides something.</p>
+
+  <div class="bar" role="region" aria-label="Progress">
+    <span class="prog" id="prog"><b>0</b> of 0 decided</span>
+    <span class="meter" aria-hidden="true"><i id="meter"></i></span>
+    <button class="tg" id="only" aria-pressed="false">Only undecided</button>
+    <span class="mode" id="mode">Connecting...</span>
+  </div>
+
+  <div id="list"></div>
+
+  <div class="copyout">
+    <p>If saving is unavailable where you opened this, your choices stay in this browser. Copy them and paste them to me instead.</p>
+    <button class="tg" id="copyall">Copy my choices as text</button>
+    <span class="mode" id="copied" role="status"></span>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  // Every string: id, what it is, where it shows, draft, suggestion ("" = no change), why, flag.
+  const GROUPS = [
+    { title: "Voice rules", sub: "apply to every string below", items: [
+      { id: "V1", what: "Respite, never rest", where: "Everywhere", draft: "Respite (take a respite, at your next respite)", sug: "", why: "Already decided: rest is D&D's word." },
+      { id: "V2", what: "Describe the hero in a neutral voice", where: "Every tooltip and line about the hero's numbers", draft: "You start each combat with 2 extra Ferocity.", sug: "Starts each combat with 2 extra Ferocity.", why: "The same sheet opens on a teammate's hero, where \"you\" is the wrong person. \"You\" stays only on things only the owner sees: Equip, the away reason, Edit in Builder." },
+      { id: "V3", what: "Rules terms as the book writes them", where: "Everywhere", draft: "Stamina, Recoveries, Victories, XP, Winded, Dying, Potency, Signature", sug: "", why: "Capitalised and spelled exactly as in Draw Steel, so players can look them up." },
+    ] },
+    { title: "Top bar", sub: "above the stats", items: [
+      { id: "T1", what: "Switcher label in town", where: "Before the roster thumbnails, your own hero in town", draft: "Your roster", sug: "", why: "Matches the Guild's \"Your Roster\"." },
+      { id: "T2", what: "Switcher label in an encounter", where: "Before the thumbnails of the heroes in this encounter", draft: "This encounter", sug: "", why: "" },
+      { id: "T3", what: "Switcher label for a teammate's hero in town", where: "Opened from a party at the Town Gate", draft: "Your party", sug: "", why: "" },
+      { id: "T4", what: "Thumbnail tooltips", where: "Hover a thumbnail", draft: "{Hero}, level {n}  /  {Hero}, {Player}'s hero", sug: "", why: "" },
+      { id: "T5", what: "Owner chip on a teammate's hero", where: "Top bar, where your own buttons would be", draft: "{Player}'s hero (read-only)", sug: "{Player}'s hero", why: "Every hero is read-only in EotW, so the bracket only explains why there are no buttons." },
+      { id: "T6", what: "Change Appearance", where: "Button, your own hero", draft: "Change Appearance", sug: "", why: "" },
+      { id: "T7", what: "Edit in Builder (button and tooltip)", where: "Button, your own hero until it wins an encounter", draft: "Edit in Builder  (no tooltip)", sug: "Edit in Builder  -  tooltip: \"Change any choice until this hero wins an encounter.\"", why: "Explains why the button later disappears." },
+      { id: "T8", what: "Close", where: "Top-right button with the Esc key hint", draft: "Close  [Esc]", sug: "", why: "" },
+      { id: "T9", what: "You're needed: a trigger", where: "Replaces the Close label, gold, while a trigger waits on one of your heroes", draft: "A trigger is waiting  -  Close", sug: "{Hero} has a trigger waiting  -  Close", why: "With up to four heroes, the name says which one." },
+      { id: "T10", what: "You're needed: a save", where: "Same place, an end-of-turn save is waiting", draft: "(not drafted)", sug: "{Hero} has a save to make  -  Close", why: "" },
+      { id: "T11", what: "You're needed: a roll", where: "Same place, a roll is waiting", draft: "(not drafted)", sug: "{Hero} has a roll to make  -  Close", why: "" },
+      { id: "T12", what: "You're needed: the story moves on", where: "Same place, a narrative or montage starts", draft: "(not drafted)", sug: "The story continues  -  Close", why: "" },
+      { id: "T13", what: "Away chip", where: "Top bar, your hero is in a forming or underway party", draft: "Away: {party}", sug: "", why: "The Guild already uses this wording." },
+      { id: "T14", what: "Why a control is off while away", where: "Tooltip and click on Change Appearance, Edit in Builder, Equip", draft: "Not while away with a party.", sug: "", why: "" },
+      { id: "T15", what: "Danger Rooms chip", where: "Top bar, in a Danger Rooms game", draft: "Danger Rooms: practice only", sug: "", why: "The hero card already says this; same words on both." },
+      { id: "T16", what: "Fallen hero header", where: "Top bar of a hero opened from the Graveyard", draft: "The Graveyard", sug: "", why: "" },
+    ] },
+    { title: "The card", sub: "the hero's art and plate, top left", items: [
+      { id: "C1", what: "Subtitle", where: "Under the name", draft: "Level {n} {Ancestry} {Class} - {Subclass}", sug: "", why: "Shown with a dot separator." },
+      { id: "C2", what: "XP bar tooltip", where: "Hover the level bar", draft: "{xp} of 16 XP to level {next}.", sug: "", why: "" },
+      { id: "C3", what: "Banked Victories on the bar", where: "Added to C2 when the hatched stretch shows", draft: "{n} Victories: at your next respite they become {n} XP. That is enough for level {next}.", sug: "{n} Victories become {n} XP at the next respite. Enough for level {next}.", why: "Neutral voice (V2), shorter." },
+      { id: "C4", what: "Ready to level", where: "Gold line under the level bar", draft: "Level {next} is ready. Level up at the Training Grounds.", sug: "Same words, shown only on your own heroes; a teammate's sheet shows the gold bar without the line.", why: "It tells you where to go; on someone else's hero it is an instruction to the wrong person. \"Training Grounds\" is still a placeholder name.", flag: true },
+      { id: "C5", what: "Ready to level tooltip", where: "Hover the gold bar", draft: "You have {xp} XP, enough for level {next}. Level up at the Training Grounds.", sug: "{xp} XP: enough for level {next}.", why: "Neutral voice; the line under the bar already says where." },
+      { id: "C6", what: "Level 10", where: "Replaces the bar at the highest level", draft: "Highest level", sug: "", why: "" },
+      { id: "C7", what: "Stamina line", where: "Under the stamina bar", draft: "Winded at {w}  /  Winded (when winded)  /  Dying  /  Dead at -{w}  /  Dead", sug: "", why: "" },
+      { id: "C8", what: "Recoveries", where: "Beside the Recoveries ring", draft: "Recoveries  /  of {max} - +{value} each", sug: "Same words, plus a tooltip: \"Each Recovery regains {value} Stamina.\"", why: "\"+11 each\" is compact; the tooltip says what it is." },
+      { id: "C9", what: "Victories count", where: "Beside the Recoveries", draft: "{n} Victories  /  1 Victory", sug: "", why: "" },
+      { id: "C10", what: "Victories tooltip", where: "Hover the Victories count", draft: "You start each combat with {n} extra {Resource}. At your next respite your Victories become XP.", sug: "Starts each combat with {n} extra {Resource}. Victories become XP at the next respite.", why: "Neutral voice (V2)." },
+      { id: "C11", what: "Heroic resource tooltip", where: "Hover the resource icon and number", draft: "{Resource}", sug: "", why: "The name only, as on the hero card." },
+      { id: "C12", what: "Surges tooltip", where: "Hover the surge icons in the corner", draft: "{n} surges", sug: "{n} surges. Spend them for extra damage or potency.", why: "New players do not know what surges are for." },
+      { id: "C13", what: "Epitaph", where: "A fallen hero's plate, in place of Stamina and Recoveries", draft: "Fell in {Encounter}, week {n}  /  Played by you  /  Played by {Player}", sug: "", why: "" },
+    ] },
+    { title: "Kit", sub: "the card under the hero card", items: [
+      { id: "K1", what: "Headers", where: "Card header", draft: "Kit  /  Prayer, Ward, Enchantment, Augmentation (classes without a kit)", sug: "", why: "The rules' own names." },
+      { id: "K2", what: "Gear line", where: "Beside the kit name", draft: "No armor, heavy weapon  /  Heavy armor, medium weapon, shield", sug: "", why: "" },
+      { id: "K3", what: "Nothing to show", where: "Card body", draft: "No kit  /  None chosen", sug: "", why: "" },
+      { id: "K4", what: "Tactician's combined kit", where: "Kit name and bonus tooltips", draft: "{Kit A} + {Kit B}  /  tooltip: From {Kit}; {Other} gives {v}", sug: "{Kit A} + {Kit B}  /  tooltip: From {Kit}. {Other} gives {v}.", why: "Two sentences read more easily than a semicolon." },
+      { id: "K5", what: "Tactician's melee damage choice", where: "Under the Tactician's kit bonuses, when both kits give melee damage", draft: "Both kits give a melee bonus: choose one in town (a respite).  [Kit A] [Kit B]", sug: "No buttons on the sheet. The line reads: \"Melee damage from {Kit}. Change it during a respite.\"", why: "Choosing is a respite activity, so under \"the sheet shows, the town changes\" it moves to the respite.", flag: true },
+    ] },
+    { title: "Treasures", sub: "the scrolling card bottom left", items: [
+      { id: "R1", what: "Header and call to action", where: "Card header", draft: "Treasures  /  {n} to equip", sug: "", why: "" },
+      { id: "R2", what: "Sub-headers", where: "Inside the card", draft: "Leveled treasures - {n} of 3 carried  /  Trinkets - {n}  /  Consumables - {n}", sug: "", why: "" },
+      { id: "R3", what: "Row labels and buttons", where: "Each item", draft: "({Slot})  /  Equipped  /  Carried  /  Equip  /  Unequip", sug: "", why: "" },
+      { id: "R4", what: "No benefit chip", where: "On armor or weapon treasure the kit cannot use", draft: "No benefit", sug: "", why: "" },
+      { id: "R5", what: "No benefit tooltips", where: "Hover the chip", draft: "Kit armor is heavy: no benefit  /  Kit has no armor: no benefit  /  No kit: no benefit", sug: "The kit uses heavy armor, so this gives no benefit.  /  The kit uses no armor, so this gives no benefit.  /  Without a kit, this gives no benefit.", why: "Whole sentences that say why." },
+      { id: "R6", what: "Item card warning", where: "Hover an item that gives no benefit", draft: "Weapon and armor treasure only helps when your kit uses that kind of gear.", sug: "Weapon and armor treasures only help when the kit uses that kind of gear.", why: "Neutral voice (V2)." },
+      { id: "R7", what: "Empty list", where: "Any treasure group with nothing in it", draft: "None", sug: "", why: "" },
+    ] },
+    { title: "Stats", sub: "the band across the top", items: [
+      { id: "S1", what: "Section headers and labels", where: "Stats band", draft: "Characteristics, Skills, Languages, Immunities, Weaknesses  /  Might ... Presence  /  Size, Speed, Disengage, Stability, Potency, Weak, Average, Strong  /  Crafting, Exploration, Interpersonal, Intrigue, Lore", sug: "", why: "Rules terms (V3)." },
+      { id: "S2", what: "Empty list", where: "Skills, Languages, Immunities or Weaknesses with nothing in them", draft: "None", sug: "", why: "" },
+    ] },
+    { title: "Abilities", sub: "left list", items: [
+      { id: "A1", what: "Count beside the header", where: "After \"Abilities\"", draft: "{n} of the hero's own, {m} every hero has", sug: "{n} own - {m} for every hero", why: "Shorter; the groups below already say which is which." },
+      { id: "A2", what: "Group names", where: "Collapsible groups", draft: "Main actions, Maneuvers, Triggered actions, Other, Free strikes, Standard actions", sug: "", why: "" },
+      { id: "A3", what: "Standard actions note", where: "Right of the Standard actions header", draft: "Every hero can do these", sug: "", why: "" },
+      { id: "A4", what: "Row tags", where: "Right end of each ability row", draft: "Main action, Maneuver, Triggered action, Move action, Free  /  Signature, {n} {Resource}, Free strike", sug: "Same, with \"No action\" in place of \"Free\".", why: "\"No action\" is the book's term; \"Free\" reads like a cost." },
+      { id: "A5", what: "Ability card hint", where: "Bottom of the hover card", draft: "Click to pin.  /  Pinned. Click elsewhere or press Escape to close.", sug: "Click to keep it open.  /  Click elsewhere or press Esc to close.", why: "Plain words; \"pin\" is our word, not the player's." },
+    ] },
+    { title: "Features", sub: "right list", items: [
+      { id: "F1", what: "Count beside the header", where: "After \"Features\"", draft: "{n}  /  {shown} of {total} (when filtered)", sug: "", why: "" },
+      { id: "F2", what: "Pillar chips", where: "Feature filters", draft: "Combat, Exploration, Montage, Negotiation, Respite", sug: "", why: "" },
+      { id: "F3", what: "Filter box", where: "Placeholder text", draft: "Filter", sug: "Filter features", why: "Says what it filters." },
+      { id: "F4", what: "Section names", where: "Collapsible feature groups", draft: "Core feature, Class, Ancestry, Complication, Kit, Titles, Perks, Career, Culture, Treasures", sug: "", why: "" },
+      { id: "F5", what: "Choice line", where: "Under a feature picked from a choice", draft: "Chosen for {choice}", sug: "", why: "" },
+      { id: "F6", what: "Long features", where: "Under a clipped description", draft: "Show more  /  Show less", sug: "", why: "" },
+      { id: "F7", what: "Nothing matches", where: "When the filters hide every feature", draft: "No features match these filters.", sug: "No features match. Clear the filters to see them all.", why: "Says how to get them back." },
+    ] },
+    { title: "States", sub: "", items: [
+      { id: "X1", what: "Dead in an encounter", where: "The plate's stamina line", draft: "Dead", sug: "", why: "" },
+      { id: "X2", what: "Loading", where: "Read aloud by a screen reader while the skeleton shows (nothing on screen)", draft: "(nothing)", sug: "Loading {Hero}...", why: "The skeleton has no words; a screen reader needs some." },
+    ] },
+  ];
+  const ITEMS = GROUPS.flatMap(g => g.items);
+  const decisions = {};   // id -> {choice, text, note}
+  let db = null, col = null, only = false;
+
+  const esc = s => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  // placeholders the game fills in are shown in gold
+  const fmt = s => esc(s).replace(/\{[^}]+\}/g, m => '<span class="ph">' + m + "</span>");
+
+  function itemHtml(it) {
+    const hasSug = !!it.sug;
+    const opts = hasSug
+      ? [["suggested", "Use suggestion"], ["draft", "Keep draft"], ["custom", "My wording"]]
+      : [["draft", "Approve"], ["custom", "My wording"]];
+    return '<article class="item" id="it-' + it.id + '" data-id="' + it.id + '">' +
+      '<div class="head"><span class="id">' + it.id + '</span><span class="what">' + esc(it.what) + "</span>" + (it.flag ? '<span class="flag">Changes the design</span>' : "") +
+      '<span class="saved" id="sv-' + it.id + '" role="status"></span><span class="where">' + esc(it.where) + "</span></div>" +
+      '<div class="lines"><span class="lab">Draft</span><span class="str">' + fmt(it.draft) + "</span>" +
+      '<span class="lab">Suggested</span>' + (hasSug ? '<span class="str sug">' + fmt(it.sug) + "</span>" : '<span class="str same">No change suggested</span>') +
+      (it.why ? '<span class="lab">Why</span><span class="why">' + esc(it.why) + "</span>" : "") + "</div>" +
+      '<div class="choice" role="radiogroup" aria-label="Choice for ' + it.id + '">' + opts.map(o => '<label><input type="radio" name="c-' + it.id + '" id="c-' + it.id + "-" + o[0] + '" value="' + o[0] + '">' + o[1] + "</label>").join("") + "</div>" +
+      '<div class="custom" id="cu-' + it.id + '" hidden><textarea id="tx-' + it.id + '" rows="2" aria-label="Your wording for ' + it.id + '" placeholder="Your wording"></textarea></div>' +
+      '<input type="text" class="note" id="nt-' + it.id + '" aria-label="Note for ' + it.id + '" placeholder="Note (optional)">' +
+      "</article>";
+  }
+
+  document.getElementById("list").innerHTML = GROUPS.map(g => '<h2>' + esc(g.title) + (g.sub ? "<span>" + esc(g.sub) + "</span>" : "") + "</h2>" + g.items.map(itemHtml).join("")).join("");
+
+  const isDone = id => { const d = decisions[id]; return !!(d && d.choice && (d.choice !== "custom" || (d.text || "").trim())); };
+  function paintItem(id) {
+    const d = decisions[id] || {};
+    const el = document.getElementById("it-" + id);
+    el.querySelectorAll('input[type="radio"]').forEach(r => { r.checked = r.value === d.choice; });
+    document.getElementById("cu-" + id).hidden = d.choice !== "custom";
+    const tx = document.getElementById("tx-" + id), nt = document.getElementById("nt-" + id);
+    if (document.activeElement !== tx) tx.value = d.text || "";
+    if (document.activeElement !== nt) nt.value = d.note || "";
+    el.classList.toggle("done", isDone(id));
+    el.hidden = only && isDone(id);
+  }
+  function paintProgress() {
+    const n = ITEMS.filter(it => isDone(it.id)).length;
+    document.getElementById("prog").innerHTML = "<b>" + n + "</b> of " + ITEMS.length + " decided";
+    document.getElementById("meter").style.width = (100 * n / ITEMS.length).toFixed(1) + "%";
+  }
+  function paintAll() { ITEMS.forEach(it => paintItem(it.id)); paintProgress(); }
+
+  function local(write) {
+    try {
+      if (write) localStorage.setItem("eotw-copy", JSON.stringify(decisions));
+      else Object.assign(decisions, JSON.parse(localStorage.getItem("eotw-copy") || "{}"));
+    } catch (e) {}
+  }
+  // one write per change, awaited per document
+  const pending = {};
+  async function save(id) {
+    const body = Object.assign({ choice: "", text: "", note: "" }, decisions[id], { at: Date.now() });
+    local(true);
+    const sv = document.getElementById("sv-" + id);
+    if (!col) { sv.className = "saved"; sv.textContent = "Kept in this browser"; return; }
+    if (pending[id]) { pending[id].again = true; return; }
+    pending[id] = { again: false };
+    try {
+      await col.doc(id).set(body);
+      sv.className = "saved"; sv.textContent = "Saved";
+    } catch (e) {
+      sv.className = "saved err"; sv.textContent = "Not saved: " + ((e && e.message) || "try again");
+    }
+    const again = pending[id].again; delete pending[id];
+    if (again) save(id);
+  }
+
+  const list = document.getElementById("list");
+  list.addEventListener("change", e => {
+    const item = e.target.closest(".item"); if (!item) return;
+    const id = item.dataset.id, d = decisions[id] = Object.assign({}, decisions[id]);
+    if (e.target.type === "radio") { d.choice = e.target.value; if (d.choice === "custom" && !d.text) d.text = ITEMS.find(x => x.id === id).sug || ITEMS.find(x => x.id === id).draft; }
+    else if (e.target.id === "tx-" + id) d.text = e.target.value;
+    else if (e.target.id === "nt-" + id) d.note = e.target.value;
+    paintItem(id); paintProgress(); save(id);
+    if (e.target.type === "radio" && d.choice === "custom") { const tx = document.getElementById("tx-" + id); tx.focus(); }
+  });
+  document.getElementById("only").addEventListener("click", e => { only = !only; e.currentTarget.setAttribute("aria-pressed", String(only)); paintAll(); });
+
+  function asText() {
+    return ITEMS.map(it => {
+      const d = decisions[it.id] || {};
+      const pick = d.choice === "suggested" ? "SUGGESTION" : d.choice === "draft" ? (it.sug ? "DRAFT" : "APPROVED") : d.choice === "custom" ? "MINE: " + (d.text || "") : "undecided";
+      return it.id + " " + pick + (d.note ? "  (note: " + d.note + ")" : "");
+    }).join("\n");
+  }
+  document.getElementById("copyall").addEventListener("click", () => {
+    const out = document.getElementById("copied"), text = asText();
+    const p = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(text) : Promise.reject();
+    p.then(() => { out.textContent = "Copied."; }, () => {
+      const ta = document.createElement("textarea"); ta.value = text; ta.rows = 8; out.textContent = ""; out.appendChild(ta); ta.select();
+    });
+  });
+
+  // local first so the page is useful at once; the shared store takes over when it answers
+  local(false); paintAll();
+  const mode = document.getElementById("mode");
+  const use = window.claude && window.claude.use ? window.claude.use("db") : Promise.resolve(null);
+  use.then(ns => {
+    if (!ns) { mode.textContent = "Saving in this browser only"; mode.classList.add("warn"); return; }
+    db = ns; col = db.collection("decisions");
+    mode.textContent = "Choices save to this page";
+    col.onSnapshot(snap => {
+      snap.docs.forEach(doc => { const v = doc.data(); if (v) decisions[doc.id] = { choice: v.choice || "", text: v.text || "", note: v.note || "" }; });
+      paintAll();
+    }, () => { mode.textContent = "Saving in this browser only"; mode.classList.add("warn"); col = null; });
+  }, () => { mode.textContent = "Saving in this browser only"; mode.classList.add("warn"); });
+})();
+</script>

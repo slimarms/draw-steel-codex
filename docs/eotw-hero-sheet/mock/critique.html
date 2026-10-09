@@ -1,0 +1,245 @@
+<title>EotW Sheet Critique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<style>
+  /* Layout: a single review column - fixes, decisions and questions for David from the critique round,
+     each with the finding, a proposal and a choice that saves as you go.
+     One deliberate dark look: the EotW sheet's own palette, so strings are read in their world. */
+  :root {
+    color-scheme: dark;
+    --bg: #0e0e0d; --panel: #161614; --panel-2: #1d1c19; --line: #2e2c28;
+    --fg: #e4ddd2; --hi: #F3EDE7; --cream: #DFCFC0; --tan: #BC9B7B; --mut: #948d82;
+    --gold: #ffd66b; --ok: #6fc49a; --bad: #e07a5f; --ink: #10110F;
+    --slab: "Bitter", "Roboto Slab", Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); color: var(--fg); }
+  body { margin: 0; font-family: var(--slab); }
+  .page { max-width: 980px; margin: 0 auto; padding-block: 28px 80px; padding-inline: 20px; }
+  h1 { font-size: 28px; font-weight: 800; color: var(--hi); margin: 0; text-wrap: balance; }
+  .lede { color: var(--mut); font-size: 15px; line-height: 1.6; margin: 8px 0 0; max-width: 68ch; }
+  .lede b { color: var(--hi); font-weight: 600; }
+
+  .bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+    margin: 20px -20px 0; padding: 12px 20px; background: rgba(14,14,13,0.94); border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); }
+  .prog { font-size: 14px; color: var(--fg); font-variant-numeric: tabular-nums; }
+  .prog b { color: var(--hi); }
+  .meter { flex: 1 1 160px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.08); overflow: hidden; min-width: 120px; }
+  .meter i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--tan), var(--cream)); transition: width 200ms; }
+  .tg { font: inherit; font-size: 13px; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  .tg[aria-pressed="true"] { border-color: var(--tan); color: var(--hi); }
+  .tg:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .mode { font-size: 12.5px; color: var(--mut); }
+  .mode.warn { color: var(--gold); }
+
+  h2 { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan); margin: 34px 0 10px; }
+  h2 span { letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--mut); margin-left: 8px; font-size: 13px; }
+
+  .item { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-top: 10px; display: grid; gap: 9px; min-width: 0; }
+  .item.done { border-color: rgba(111,196,154,0.35); }
+  .item[hidden] { display: none; }
+  .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+  .id { font-size: 11.5px; font-weight: 700; color: var(--ink); background: var(--cream); border-radius: 6px; padding: 1px 6px; font-variant-numeric: tabular-nums; }
+  .what { font-size: 15.5px; font-weight: 700; color: var(--hi); }
+  .where { font-size: 13px; color: var(--mut); flex-basis: 100%; }
+  .flag { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); border: 1px solid rgba(255,214,107,0.5); border-radius: 8px; padding: 0 7px; }
+  .saved { margin-left: auto; font-size: 12px; color: var(--ok); }
+  .saved.err { color: var(--bad); }
+
+  .lines { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 6px 12px; align-items: baseline; }
+  .lab { font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mut); }
+  .str { font-size: 15px; color: var(--cream); line-height: 1.5; min-width: 0; overflow-wrap: anywhere; }
+  .str.sug { color: var(--hi); }
+  .str .ph { color: var(--gold); font-size: 13.5px; }
+  .str.same { color: var(--mut); font-style: italic; font-size: 14px; }
+  .why { font-size: 13.5px; color: var(--mut); line-height: 1.5; }
+
+  .choice { display: flex; flex-wrap: wrap; gap: 8px; }
+  .choice label { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 11px; cursor: pointer; }
+  .choice input { accent-color: #DFCFC0; margin: 0; }
+  .choice label:has(input:checked) { border-color: var(--cream); color: var(--hi); }
+  .custom { display: grid; gap: 6px; }
+  .custom[hidden] { display: none; }
+  textarea, input[type="text"] { font: inherit; font-size: 14.5px; color: var(--hi); background: #0f0f0e; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; resize: vertical; }
+  .note { font-size: 13.5px; }
+  .copyout { margin-top: 40px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .copyout p { margin: 0; font-size: 13px; color: var(--mut); flex-basis: 100%; }
+  @media (max-width: 560px) { .lines { grid-template-columns: minmax(0, 1fr); gap: 2px; } .lab { margin-top: 6px; } }
+  @media (prefers-reduced-motion: reduce) { .meter i { transition: none; } }
+</style>
+
+<div class="page">
+  <h1>EotW sheet critique</h1>
+  <p class="lede">What three independent reviewers found (usability, an experienced EotW player, accessibility), after I checked each claim. For each: the <b>finding</b>, my <b>proposal</b>, and your choice. Choices save as you make them. <b>Reopens</b> marks a proposal that changes something you already decided. Shot numbers refer to the ten states the reviewers saw.</p>
+
+  <div class="bar" role="region" aria-label="Progress">
+    <span class="prog" id="prog"><b>0</b> of 0 decided</span>
+    <span class="meter" aria-hidden="true"><i id="meter"></i></span>
+    <button class="tg" id="only" aria-pressed="false">Only undecided</button>
+    <span class="mode" id="mode">Connecting...</span>
+  </div>
+
+  <div id="list"></div>
+
+  <div class="copyout">
+    <p>If saving is unavailable where you opened this, your choices stay in this browser. Copy them and paste them to me instead.</p>
+    <button class="tg" id="copyall">Copy my choices as text</button>
+    <span class="mode" id="copied" role="status"></span>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  // Every string: id, what it is, where it shows, draft, suggestion ("" = no change), why, flag.
+  const GROUPS = [
+    { title: "Fixes I would just make", sub: "they follow decisions you have already made", opts: [["draft", "Go ahead"], ["custom", "Change it"], ["reject", "Hold"]], items: [
+      { id: "F1", what: "No gold while a Hero is away", where: "Usability + accessibility", draft: "While away, the gold \"1 to equip\" chip and the gold-bordered row stay lit, but Equip is off (shot 06). Off buttons are 45% opacity with no icon, and the reason flashes for 1.4s.", sug: "While away: the chip and row go neutral, off buttons get a lock icon, and the reason sits as a steady line under the Away chip.", why: "Gold means act on this; here it invites, then refuses." },
+      { id: "F2", what: "Treasure rows never cut the slot", where: "Usability + accessibility", draft: "\"Chain of the Sea and Sky (He...\" - the slot is cut off, not the name. A locked row (Dwarf Runic Carving) gives no reason.", sug: "The name truncates, never the slot; a locked row says why on hover (ancestry item, kit item).", why: "" },
+      { id: "F3", what: "Kit bonuses keep their labels", where: "Usability + accessibility + player", draft: "Long labels (Ranged magic distance) wrap, so values sit beside the wrong line (shots 02, 04). Kit Stamina prints the 1st-echelon value at every Level.", sug: "One bonus per row whenever a label would wrap. Print each bonus for the Hero's current echelon (+9 per echelon shows +18 at Level 4).", why: "" },
+      { id: "F4", what: "Teammate chip goes neutral", where: "Usability", draft: "\"Sam's Hero\" uses the blue reserved for yours and looks like a button.", sug: "A neutral, non-button chip.", why: "" },
+      { id: "F5", what: "Scrolling cards show that they scroll", where: "Usability", draft: "Treasures cuts rows off at its bottom edge with no fade or scrollbar; \"1 to equip\" cannot be clicked.", sug: "Bottom fade + thin scrollbar on every scrolling card; clicking \"N to equip\" scrolls to the first item and glows it.", why: "" },
+      { id: "F6", what: "Loading says so, and can fail", where: "Accessibility", draft: "The skeleton has no words (the engine has no screen-reader API, so the X2 label would never be seen); owner buttons work while loading; no failure state.", sug: "Show \"Loading {Hero}...\" where the name goes; hide owner buttons until the data arrives; after a timeout show \"{Hero} could not load.\" with Try again.", why: "Strings to sign: X2 becomes visible, and the failure line is new." },
+      { id: "F7", what: "The damage wash cannot strobe", where: "Accessibility", draft: "Each hit washes the card red at 45% for 450ms; several hits a second break the flashing limit.", sug: "At most one wash a second (extend it, do not restart it), at 30%. The hero card needs the same (David's file).", why: "" },
+      { id: "F8", what: "No benefit covers weapons too", where: "Player (rules)", draft: "The check covers armor only.", sug: "Weapon treasure needs the kit's weapon type, and a weapon's damage bonus only adds where the kit has that bonus; honour the Prayer of Soldier's Skill exception.", why: "Heroes, Treasures and kits." },
+      { id: "F9", what: "Leveled treasure shows all three tiers", where: "Player (rules)", draft: "Item cards show only the 1st-Level text.", sug: "Show the 1st, 5th and 9th Level text; unlocked tiers bright, the rest marked \"At Level 5\" / \"At Level 9\".", why: "" },
+      { id: "F10", what: "Fix the mock's data before judging density", where: "Usability + player", draft: "Five Level 1 pregens in the mock have no heroic abilities; the veteran items do not apply their effects (+6 Stamina, cold immunity); Level 10 reuses Level 1 numbers.", sug: "Re-probe the pregens when the bridge is free, apply item effects, and build a real Level 10 example.", why: "If the live pregens really lack heroic abilities, that is a pregen bug for David (Q2)." },
+      { id: "F11", what: "Focus ring in cream", where: "Accessibility", draft: "The keyboard focus ring is gold.", sug: "Cream, so gold keeps meaning act on this.", why: "" },
+      { id: "F12", what: "Font Size 120-140% grows the layout", where: "Accessibility", draft: "Text scales but the plate, vitals row, kit grid and switcher do not, so things clip at 140%.", sug: "At 120%+: the plate grows upward, the vitals row splits in two, subtitle and ready line may take two lines, the kit goes one column, the switcher wraps; bars, ring and icons scale with the setting.", why: "A build requirement." },
+    ] },
+    { title: "Decisions", sub: "some reopen an earlier call - marked", opts: [["draft", "Accept"], ["custom", "Change it"], ["reject", "Reject"]], items: [
+      { id: "D1", what: "Conditions while the sheet is open in a fight", where: "Player (reviewers did not know the character panel's role)", draft: "The reviewer called a missing Effects row a blocker, assuming the sheet is the combat reference. It is not: the character panel stays the in-encounter companion and already shows conditions and effects (decided 2026-10-08).", sug: "No Effects row on the sheet. One small rule instead: the sheet's numbers match the panel's (if the panel shows Speed 2 while Slowed, so does the sheet, with the base value on hover), so the two never disagree.", why: "Your note: the panel covers effects in combat.", flag: false },
+      { id: "D2", what: "A stronger \"you're needed\"", where: "All three reviewers", draft: "Only the Close button turns gold, in the far corner; it goes still under Reduce Motion.", sug: "A gold strip across the top of the sheet with the same words (still under Reduce Motion), plus one more cause: \"The Heroes can act\" when it is the Heroes' turn to claim. No extra sound: the game already plays its trigger and Hero-turn sounds with the sheet open.", why: "REOPENS the withdrawn \"Your turn\" banner, as a cause on the existing signal rather than a separate banner.", flag: true },
+      { id: "D3", what: "Name the heroic resource", where: "All three reviewers", draft: "The plate shows the resource icon and \"3\" with the name only on hover, while ability rows say \"5 Piety\". At Level 10 the epic resource uses the same icon.", sug: "\"3 Piety\" on the plate (the name as a small label, like Recoveries); the epic resource gets its own icon.", why: "REOPENS round 6/7 (revert to the card's icon + value). Labels may differ from the card; values stay the same.", flag: true },
+      { id: "D4", what: "Say when a respite would Level", where: "Usability + accessibility", draft: "Only the next-Level number brightening (1.35:1 contrast change) and a tooltip say a respite would Level the Hero.", sug: "An owner-only line in the ready-line slot: \"A respite would Level this Hero.\" The XP bar grows to 10px with a notch where the hatched stretch starts.", why: "Respiting is the decision now; it should read at a glance. New copy to sign.", flag: true },
+      { id: "D5", what: "Preview and keep what equipping changes", where: "All three reviewers", draft: "You only see what an item changes after pressing Equip, as a 1s glow (and nothing under Reduce Motion).", sug: "Hovering Equip previews the change (\"Speed 6 -> 8\"). After equipping, changed values keep a small gold \"6 -> 8\" tag until your next click - which is also what Reduce Motion shows.", why: "" },
+      { id: "D6", what: "State badges on the roster", where: "Usability + player", draft: "Thumbnails are bare art; you open each Hero to find who has treasure, can Level, or is away.", sug: "A small badge (shape + colour) on each thumbnail and Guild row: treasure to equip, ready to Level, a respite would Level, away. The thumbnail tooltip lists them.", why: "The \"why log on today\" summary across a roster of up to 12." },
+      { id: "D7", what: "Spend a Recovery out of combat", where: "Player", draft: "With Recoveries carrying home, a Hero pushing on cannot heal outside combat except by a respite (which converts the Victories they meant to keep). Draw Steel lets you spend Recoveries freely outside combat.", sug: "\"Spend a Recovery\" on the Recoveries ring - your own Heroes, out of combat only. Rules-legal, like equipping.", why: "REOPENS \"the sheet shows, the town changes\" (equipping as the only action). Depends on David's carry-home answer.", flag: true },
+      { id: "D8", what: "The Hero's Record", where: "Usability (engagement)", draft: "Nothing shows what the Hero has done over months; the memorial is two lines.", sug: "A Record as the first Features section: encounters won by name and week, weeks served. Item cards say where they were won. The Graveyard view leads with the Record and \"Reached Level N\".", why: "Answers your earlier question about a counter of encounters won; the City already logs outcomes." },
+      { id: "D9", what: "Reach and target on ability rows", where: "Player", draft: "Rows show keywords, action and cost; distance and target only on hover.", sug: "A short token per row (\"Ranged 10 - 1 ally\", \"3 burst\", \"Self\"); keywords move to the card.", why: "Weaker than the reviewer thought for your own turn (the panel and action bar are the combat surfaces), but still answers \"who can this Hero help?\" in a pick-up group." },
+      { id: "D10", what: "Mark what the game will not automate", where: "Player", draft: "Automation status only shows inside the hover card. With no Director, an effect the game does not automate simply does not happen.", sug: "A small marker on abilities and features below Fully automated; the card says what the game will not do for you. Wording to sign.", why: "" },
+      { id: "D11", what: "Saves 6+", where: "Player (rules)", draft: "No saving throw target anywhere.", sug: "\"Saves 6+\" on the body-stats line (5+ with Bastion Ward).", why: "" },
+      { id: "D12", what: "Surges tooltip with numbers", where: "Player (rules)", draft: "Signed C12: \"{n} surges. Spend them for extra damage or potency.\"", sug: "\"{n} surges. Each adds {highest characteristic} damage, up to 3 per roll. 2 raise a potency by 1.\"", why: "Replaces signed C12." },
+      { id: "D13", what: "Contrast over bright battle maps", where: "Accessibility", draft: "On light maps grey text drops to about 3:1 and the top-bar label to 2.2:1.", sug: "Panel opacity follows the backdrop's brightness (at least ~85% on light maps); a dark band behind the top bar; #A6A096 as the lightest readable grey; opaque panels when the colour scheme says high contrast.", why: "Reads one theme flag only; still no themes.", flag: true },
+      { id: "D14", what: "Readability", where: "Accessibility", draft: "Feature text runs ~110 characters a line; state words (Equipped, None) are small grey italics; the 17 Standard actions are always open.", sug: "Feature text capped near 75 characters a line; state words upright (italic stays flavour); Standard actions collapsed by default, remembered per player.", why: "" },
+      { id: "D15", what: "Status Icons on the stamina bar", where: "Accessibility", draft: "Green and amber are nearly the same brightness; the Codex's Status Icons setting is not used.", sug: "Add the shape to the hero card's stamina bar, so the card and the sheet both get it (David's file).", why: "" },
+      { id: "D16", what: "Every tooltip pins; arrow-key focus", where: "Accessibility", draft: "Only ability cards pin; plate tooltips cannot; there is no keyboard path.", sug: "Every tooltip pins on click; arrow keys move focus and Enter presses.", why: "" },
+    ] },
+    { title: "For David", sub: "data and rules questions, not sheet decisions", opts: [["draft", "Add to David's list"], ["reject", "Skip"]], items: [
+      { id: "Q1", what: "Standard actions differ from the book", where: "Player (rules)", draft: "The codex's list lacks Escape Grab, Use Consumable and Ride, and adds Claw Dirt, Dig, Climb Creature and Jump without saying so.", sug: "", why: "Escape Grab and Use Consumable are what a grabbed Hero or a potion carrier looks for." },
+      { id: "Q2", what: "Pregens without heroic abilities", where: "Usability + player", draft: "Five Level 1 pregens in the mock data have no heroic abilities; if the live ones are the same, the pregens are incomplete.", sug: "", why: "I will check when the bridge is free." },
+    ] },
+  ];
+  const ITEMS = GROUPS.flatMap(g => g.items);
+  const GROUP_OF = {}; GROUPS.forEach(g => g.items.forEach(it => { GROUP_OF[it.id] = g; }));
+  const decisions = {};   // id -> {choice, text, note}
+  let db = null, col = null, only = false;
+
+  const esc = s => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  // placeholders the game fills in are shown in gold
+  const fmt = s => esc(s).replace(/\{[^}]+\}/g, m => '<span class="ph">' + m + "</span>");
+
+  function itemHtml(it) {
+    const hasSug = !!it.sug;
+    const opts = GROUP_OF[it.id].opts;
+    return '<article class="item" id="it-' + it.id + '" data-id="' + it.id + '">' +
+      '<div class="head"><span class="id">' + it.id + '</span><span class="what">' + esc(it.what) + "</span>" + (it.flag ? '<span class="flag">Reopens</span>' : "") +
+      '<span class="saved" id="sv-' + it.id + '" role="status"></span><span class="where">From: ' + esc(it.where) + "</span></div>" +
+      '<div class="lines"><span class="lab">Finding</span><span class="str">' + fmt(it.draft) + "</span>" +
+      (hasSug ? '<span class="lab">Proposal</span><span class="str sug">' + fmt(it.sug) + "</span>" : "") +
+      (it.why ? '<span class="lab">Note</span><span class="why">' + esc(it.why) + "</span>" : "") + "</div>" +
+      '<div class="choice" role="radiogroup" aria-label="Choice for ' + it.id + '">' + opts.map(o => '<label><input type="radio" name="c-' + it.id + '" id="c-' + it.id + "-" + o[0] + '" value="' + o[0] + '">' + o[1] + "</label>").join("") + "</div>" +
+      '<div class="custom" id="cu-' + it.id + '" hidden><textarea id="tx-' + it.id + '" rows="2" aria-label="Your wording for ' + it.id + '" placeholder="What should change"></textarea></div>' +
+      '<input type="text" class="note" id="nt-' + it.id + '" aria-label="Note for ' + it.id + '" placeholder="Note (optional)">' +
+      "</article>";
+  }
+
+  document.getElementById("list").innerHTML = GROUPS.map(g => '<h2>' + esc(g.title) + (g.sub ? "<span>" + esc(g.sub) + "</span>" : "") + "</h2>" + g.items.map(itemHtml).join("")).join("");
+
+  const isDone = id => { const d = decisions[id]; return !!(d && d.choice && (d.choice !== "custom" || (d.text || "").trim())); };
+  function paintItem(id) {
+    const d = decisions[id] || {};
+    const el = document.getElementById("it-" + id);
+    el.querySelectorAll('input[type="radio"]').forEach(r => { r.checked = r.value === d.choice; });
+    document.getElementById("cu-" + id).hidden = d.choice !== "custom";
+    const tx = document.getElementById("tx-" + id), nt = document.getElementById("nt-" + id);
+    if (document.activeElement !== tx) tx.value = d.text || "";
+    if (document.activeElement !== nt) nt.value = d.note || "";
+    el.classList.toggle("done", isDone(id));
+    el.hidden = only && isDone(id);
+  }
+  function paintProgress() {
+    const n = ITEMS.filter(it => isDone(it.id)).length;
+    document.getElementById("prog").innerHTML = "<b>" + n + "</b> of " + ITEMS.length + " decided";
+    document.getElementById("meter").style.width = (100 * n / ITEMS.length).toFixed(1) + "%";
+  }
+  function paintAll() { ITEMS.forEach(it => paintItem(it.id)); paintProgress(); }
+
+  function local(write) {
+    try {
+      if (write) localStorage.setItem("eotw-critique", JSON.stringify(decisions));
+      else Object.assign(decisions, JSON.parse(localStorage.getItem("eotw-critique") || "{}"));
+    } catch (e) {}
+  }
+  // one write per change, awaited per document
+  const pending = {};
+  async function save(id) {
+    const body = Object.assign({ choice: "", text: "", note: "" }, decisions[id], { at: Date.now() });
+    local(true);
+    const sv = document.getElementById("sv-" + id);
+    if (!col) { sv.className = "saved"; sv.textContent = "Kept in this browser"; return; }
+    if (pending[id]) { pending[id].again = true; return; }
+    pending[id] = { again: false };
+    try {
+      await col.doc(id).set(body);
+      sv.className = "saved"; sv.textContent = "Saved";
+    } catch (e) {
+      sv.className = "saved err"; sv.textContent = "Not saved: " + ((e && e.message) || "try again");
+    }
+    const again = pending[id].again; delete pending[id];
+    if (again) save(id);
+  }
+
+  const list = document.getElementById("list");
+  list.addEventListener("change", e => {
+    const item = e.target.closest(".item"); if (!item) return;
+    const id = item.dataset.id, d = decisions[id] = Object.assign({}, decisions[id]);
+    if (e.target.type === "radio") { d.choice = e.target.value; if (d.choice === "custom" && !d.text) d.text = ITEMS.find(x => x.id === id).sug || ""; }
+    else if (e.target.id === "tx-" + id) d.text = e.target.value;
+    else if (e.target.id === "nt-" + id) d.note = e.target.value;
+    paintItem(id); paintProgress(); save(id);
+    if (e.target.type === "radio" && d.choice === "custom") { const tx = document.getElementById("tx-" + id); tx.focus(); }
+  });
+  document.getElementById("only").addEventListener("click", e => { only = !only; e.currentTarget.setAttribute("aria-pressed", String(only)); paintAll(); });
+
+  function asText() {
+    return ITEMS.map(it => {
+      const d = decisions[it.id] || {};
+      const pick = d.choice === "draft" ? "YES" : d.choice === "reject" ? "NO" : d.choice === "custom" ? "CHANGE: " + (d.text || "") : "undecided";
+      return it.id + " " + pick + (d.note ? "  (note: " + d.note + ")" : "");
+    }).join("\n");
+  }
+  document.getElementById("copyall").addEventListener("click", () => {
+    const out = document.getElementById("copied"), text = asText();
+    const p = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(text) : Promise.reject();
+    p.then(() => { out.textContent = "Copied."; }, () => {
+      const ta = document.createElement("textarea"); ta.value = text; ta.rows = 8; out.textContent = ""; out.appendChild(ta); ta.select();
+    });
+  });
+
+  // local first so the page is useful at once; the shared store takes over when it answers
+  local(false); paintAll();
+  const mode = document.getElementById("mode");
+  const use = window.claude && window.claude.use ? window.claude.use("db") : Promise.resolve(null);
+  use.then(ns => {
+    if (!ns) { mode.textContent = "Saving in this browser only"; mode.classList.add("warn"); return; }
+    db = ns; col = db.collection("decisions");
+    mode.textContent = "Choices save to this page";
+    col.onSnapshot(snap => {
+      snap.docs.forEach(doc => { const v = doc.data(); if (v) decisions[doc.id] = { choice: v.choice || "", text: v.text || "", note: v.note || "" }; });
+      paintAll();
+    }, () => { mode.textContent = "Saving in this browser only"; mode.classList.add("warn"); col = null; });
+  }, () => { mode.textContent = "Saving in this browser only"; mode.classList.add("warn"); });
+})();
+</script>

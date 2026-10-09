@@ -1,9 +1,142 @@
-# EotW Hero Sheet - Working Brief
+# EotW Hero Sheet - Design Brief
 
-> Status: WORKING - D1 frame/scope DECIDED; D2 surface + layering DECIDED; D3 layout converging
-> through mock rounds 3-10 (current = round 10); handoff refreshed 2026-10-08 session 2.
+> Status: **LOCKED 2026-10-09** (James). Design decided end to end; build starts 2026-10-10 from the
+> Build plan below. Everything in the ledger is settled unless listed under "Open with David".
+> History of how each decision was reached: the Decision ledger (newest last) and the evidence appendix.
 
-## NEXT SESSION STARTS HERE (handoff 2026-10-08, session 2)
+## NEXT SESSION STARTS HERE (locked 2026-10-09)
+
+Start the build at chunk C0 of the Build plan, using the implement-chunk skill (one chunk = one
+commit). The reference implementation of every decision is the mock:
+https://claude.ai/artifact/UkGYCopdu4DAiuh2P7xUb2 (version 17; source docs/eotw-hero-sheet/mock/
+layouts.html + data.js + std.js + vet.js + art/). Its State, Progress, Simulate and Motion controls
+show every state and moment; its option controls now default to the decided choices. Serve it
+locally for testing with the "eotw-sheet-mock" entry in .claude/launch.json (port 8765). Strings come
+only from the Copy manifest (below the ledger). Branch: design/eotw-hero-sheet (pushed to slimarms).
+
+Companion artifacts: copy review https://claude.ai/artifact/PKcPBB8WGAkHQuQUAjnR9j (mock/copy.html),
+critique review https://claude.ai/artifact/6yPZ9hchyD3D5UYhufMpmm (mock/critique.html), level row
+study https://claude.ai/artifact/Duq6bBPiiHSVwhFLB2r2jx (mock/levelrow.html), David's share page
+https://claude.ai/artifact/NURVkrf2hENNsBEDcJy7Mm (predates rounds 11-12; refresh before sending again).
+
+## The locked design
+
+Purpose and principles
+- EotW only, owned by James (David gave direction and is happy for James to proceed). The CARD is the
+  quick reference; the SHEET is the full reference; the CHARACTER PANEL stays the in-combat companion
+  (conditions and effects live there; the sheet's numbers match the panel's effective values).
+- READ-ONLY BY CONSTRUCTION, and "THE SHEET SHOWS THE HERO AS THEY ARE; THE TOWN IS WHERE THEY CHANGE".
+  The only sheet actions: Equip / Unequip treasure (rules-gated), spend a Recovery out of combat by
+  clicking the Recoveries ring (own Hero, in town), Change Appearance (the builder's Appearance page),
+  Edit in Builder (until the Hero's first encounter won), Close. No item context menu, no number edits.
+- Same layout and representations in town, montage and encounter. Backdrop = where you are (the
+  Guild in town, the blurred battle map in a game) under frosted panels, near-opaque over battle maps.
+- The sheet owns every route for EotW Heroes (town Guild row, strip card, party view; in game the
+  sheet keybinds and teammates); other routes to the full editable sheet close for EotW Heroes.
+
+Layout (1920x1080; the left column never scrolls)
+- LEFT: the hero card at sheet size - art, name, subtitle; LEVEL ROW = Level, 10px XP bar with a hatched
+  stretch for the XP the next respite adds (notch where it starts), next Level; owner-only lines "Head
+  to the Training Grounds to Level your Hero." (ready) and "A respite would Level this Hero." (reach);
+  LEVEL 10 = the class's epic resource ("Virtue 7", "+2 at the next respite", hover = the epic feature
+  card, the codex's Epic Resource icon). Stamina bar = the hero card's bar (S1) + "Winded at / Dead at";
+  the character panel's Healthy / Winded / Dying icons with the Status Icons setting. VITALS ROW =
+  Recoveries ring (click once to spend: pointer cursor, "+{value}" on hover, tooltip) + label +
+  Victories cell + heroic resource (the class's own icon + number, name on hover). Surges = one icon per
+  surge in a corner of the art above the plate (cap 9, none at 0).
+  Then a KIT card (Kit, or Prayer | Ward, Enchantment | Ward, Augmentation; the Tactician's two kits
+  read as one; one bonus per row whenever a label would wrap; values for the Hero's echelon). Then a
+  TREASURES card that scrolls inside itself (Leveled treasures "N of 3 carried", Trinkets,
+  Consumables; "N to equip" scrolls to the item; hovering an item shows the value it would change in
+  gold, equipping changes it, holds it gold, then it settles; No benefit for armor AND weapons the
+  kit cannot use; leveled treasure cards show 1st / 5th / 9th Level text).
+- MAIN: TOP BAR (roster switcher by context - your roster in town, this encounter's Heroes in game,
+  yours first; owner controls; Away / Danger Rooms / teammate chips; Close). The YOU'RE-NEEDED SIGNAL
+  turns the top bar gold in place (trigger, save, roll, the story continues, the Heroes can act).
+  STATS BAND = Characteristics as full-name tiles + centred lines (Size Speed Disengage Stability;
+  Potency weak/average/strong in a pill) over a words row (Skills by group, Languages, Immunities,
+  Weaknesses). ABILITIES | FEATURES below, each scrolling: abilities follow the tagging plan, grouped
+  by action (Standard actions collapsed to start, remembered per player), rows show action type +
+  cost, hover shows the codex ability card and click pins it; features have pillar chips + filter,
+  collapsible sections, Show more, ~75 characters a line.
+- STATES: draft = no sheet; away (chip + steady line, owner controls off with a lock and a reason);
+  dead in an encounter (grey art, "Dead"); fallen (memorial from the Graveyard: grey art, epitaph, no
+  controls or switcher, progress frozen); teammate (read-only, neutral chip); Danger Rooms chip; video
+  portraits play (a still under Reduce Motion); missing art = the card's dark ground; loading = a
+  skeleton of the full layout with "Loading {Hero}..." in place of the name; failure = "{Hero} could not
+  load." + Try again.
+- SKIN: fixed dark (no themes yet); builder cream/tan; ONE gold (#ffd66b) meaning act on this / it
+  landed; blue = yours; Berlingske Slab throughout. Motion: open fade + rise 200ms; card art fades on
+  switch; values fade in after loading; damage/heal wash at 30%, at most once a second; one light sweep
+  on first ready-to-Level. Sounds: UI.WindowOpen/Close, UI.Inv_Place/Grab, UI.Error_Generic on a
+  blocked control, Ability.Heal_Generic on spending a Recovery, Mouse.Click otherwise, none on hover.
+  Reduce Motion turns animation off (gold holds still apply). Font Size 120-140%: grow and wrap.
+  Contrast: panel opacity follows the backdrop; dark band behind the top bar; #A6A096 lightest readable
+  grey; opaque under a high-contrast scheme. Cream focus ring; every tooltip pins; arrow-key focus.
+- COPY: the Copy manifest only (voice rules V1-V5: respite never rest; neutral voice about the Hero,
+  "you" only where only the owner sees it; rules terms as the book; Level and Hero capitalised).
+
+Rejected (do not reopen without new evidence): rail + pages; job colours; "+N more" hiding;
+left-column scrolling; dot markers; a Record on the sheet (a town Record location instead); roster
+badges; "Saves 6+"; reach/target tokens on ability rows; an automation marker; a signal strip that
+pushes the sheet down; a Spend button that wraps the plate; the gold "6 -> 8" change tag.
+
+Open with David (rules calls; none changes the layout)
+- R2 carry-home: spent Recoveries (and Stamina) must carry home for skipping a respite to cost
+  anything; consumables used/won carry home? Gates whether spending a Recovery in town matters.
+- Carry-three leveled treasure: hard cap / allow + warn / automated respite test.
+- Editing while a party is FORMING (the City refuses changes to claimed Heroes): allow equip +
+  appearance until Begin?
+- R4 respite pacing once respite activities exist; R6 level bands or scaling now that Heroes level.
+- Town places the sheet points to: Training Grounds (Level up), the respite, a Record location.
+- His files: EotwHeroCard (Status Icons on the stamina bar, the wash rate limit; the temp-Stamina bar
+  representation T1-T3 is still his call); the core keys/radial/search routes (tell him before closing).
+
+## Build plan (2026-10-09; build starts 2026-10-10)
+
+Conventions for every chunk: implement-chunk skill, one chunk = one commit on a feature branch off
+main; luac -p + the lua-typing check (new files must check clean); ASCII only (separators as unicode
+escapes); deploy.ps1 and an app RESTART for Codex Titlescreen files; verify in the running app over
+the bridge (screenshots via the DMHub bridge), against the mock's matching state.
+
+- C0 SHELL. New core file Codex Titlescreen/EotwHeroSheet.lua (it must load at the titlescreen and in
+  game, like EotwHeroCard.lua), registered through the DMHub MCP register_lua_file (needs a session
+  with the dmhub MCP server; if it is missing, stop and ask). EotwHeroSheet.Show{token, context} = the
+  full-screen frame: backdrop by context, the two-column grid, Close + Escape (priority below roll
+  dialogs and modals), the loading skeleton and the failure state. Verify: open it over the bridge in
+  town and in a game; Escape order.
+- C1 DATA (no UI). EotwHeroSheet.Data(token) -> one plain table for everything the sheet shows:
+  identity, Level / XP / banked Victories / epic resource, Stamina and Recoveries, heroic resource and
+  surges, characteristics, body stats as effective values (base on hover), potency, skills by group,
+  languages, immunities, weaknesses, kit or kit-equivalent (Tactician combined, per echelon),
+  treasures grouped with equip state and No benefit reasons, abilities per the tagging plan (the
+  ability-to-source-feature lookup; triggered actions from GetTriggeredActions; Hidden dropped; global
+  free strikes and standard actions grouped), features (FeatureCategoriser.BuildIndex, tags, sections).
+  Verify: dump it for the nine pregens (at full Level 1 and as stored) and diff against mock/data.js.
+- C2 LEFT: THE CARD. Portrait via the hero card's crop path (lift EotwHeroCard's crop into an exported
+  function), plate, level row (hatch, notch, owner lines, Level 10 epic row), stamina bar (S1) with the
+  panel's state icons under Status Icons, vitals row, surges corner, dead / fallen variants.
+- C3 LEFT: KIT AND TREASURES. Kit grid rules; treasures with scroll fade, CTA scroll, Equip / Unequip
+  through the rules (kit match; carry-three per David), hover preview + gold hold, away gating, tiers.
+- C4 MAIN: TOP BAR AND STATS BAND. Switcher by context, owner controls (Change Appearance ->
+  EotwBuilder.Open at the Appearance step; Edit in Builder while no encounter is won), chips, the
+  gold top-bar signal with its five causes (trigger = the hero card's trigger test; save / roll = the
+  Monster AI waiting document; story = a stage starting; the Heroes can act = the initiative claim).
+- C5 MAIN: ABILITIES AND FEATURES. Groups, rows, hover card (CreateAbilityTooltip) + pin, every tooltip
+  pinnable, chips + filter, collapsible sections, Show more, the per-player collapsed state.
+- C6 SKIN AND ACCESS. Motion, sounds, Reduce Motion, Font Size grow-and-wrap, contrast by backdrop,
+  focus ring and arrow-key focus. Verify at 100 / 120 / 140% and with Reduce Motion on.
+- C7 ROUTES. Town: Guild row, strip card, party view open the sheet; Graveyard opens a fallen Hero
+  (dmhub.CreateDetachedCharacter over get-hero). Game: the sheet keybinds and the switcher. Then
+  redirect the full sheet for EotW Heroes at the CharacterSheetFramework show() chokepoint (~1433) and
+  close the c/i keys, radial, search and macro routes (tell David first).
+- C8 SPEND A RECOVERY. The ring action (town, own Hero, out of combat) and the push to the City -
+  build after David answers R2.
+
+Out of the build: the town places (Training Grounds, respite, Record), David's progression rules,
+and the hero card's own changes - separate work, tracked with David.
+
+## History: session 2 handoff (2026-10-08, superseded by the lock - do not action)
 
 Read the ledger (bottom) first: it is the record of every decision, newest last. Then open the
 CURRENT MOCK: https://claude.ai/artifact/UkGYCopdu4DAiuh2P7xUb2 - version 8 = round 10 (versions
@@ -31,6 +164,8 @@ Where the design stands (round 8; details in the ledger):
 - TYPE SYSTEM: section headers white + larger (16px caps); stat headers gold small caps.
 
 Open next (in rough order):
+0. (2026-10-09) Session 3 below: the Draw Steel vs EotW deviation register (R1-R11), the proposed
+   "sheet shows, town changes" split, and the work that does not need David. Walk it first.
 1. David's response to the share page (https://claude.ai/artifact/NURVkrf2hENNsBEDcJy7Mm) and its
    open questions. Size-to-potency (centred lines) and the backdrop are decided.
 2. (form question settled: B2 backdrop, B1's art lives on as the card)
@@ -72,6 +207,96 @@ Still-true facts from the session-1 handoff:
 > + top-zone design canvas (artifact 005d978a-3cbe-4e85-99b7-6c4d1696a330).
 > NOT used: the July work on branch codex/character-sheet-redesign (earlier lot; superseded).
 > EotW source of truth: EncounterOfTheWeek/EncounterOfTheWeek.md (David's design doc) + code.
+
+## Session 3 (2026-10-09): Draw Steel vs EotW, and sheet vs town (resolved - outcomes in the ledger and the locked design)
+
+James's framing: EotW must give people a reason to log on several times a week - solo, with
+whoever is around, or with strangers - not only on game night. The Director is an AI, so rules are
+enforced strictly and some mechanics are changed to be more fun (montage threats/opportunities,
+Intelligence). Question: what does an EotW sheet need that a Draw Steel sheet does not (and vice
+versa), and what moves out to its own town UI (e.g. respite)? Evidence: E15 (David's docs), E16
+(Victories/respite code reality).
+
+### The deviation register: "Draw Steel does X; EotW does Y, because Z"
+
+DELIBERATE (built by David; the sheet just reflects them): Monster AI + scripted beats; strict
+rules forced; montage board (opportunities/threats, knacks, delves, crits worth a hero token);
+Intelligence + Tactical Preparation; one hero token per hero per game; level-1 clamp on arrival
+(the week is balanced for level 1, scaled by hero count); one Victory per won encounter, once per
+hero per encounter, none for the dead, none in the Danger Rooms; non-consumable treasure from a
+victory goes home; permanent death + shared graveyard; builder limits (one gold complication, no
+title, level 1).
+
+DRIFT (in the code, never decided):
+- R1 [RESOLVED 2026-10-09: Victories become XP at a respite, as in Draw Steel] VICTORIES NEVER CONVERT. No respite exists, so Victories pile up on the roster hero and make
+  every later combat easier (+N heroic resource at the start of each combat, Victory-refresh
+  abilities) and change the monsters' side too; no XP is ever earned, so nobody can level. Needs a
+  respite rule (R3) or a clamp. FOR DAVID.
+- R2 [DIRECTION 2026-10-09: no longer a save point - spent Recoveries carry home so skipping a respite has a cost; consumables to confirm] THE TOWN IS A SAVE POINT. Nothing spent comes home (Stamina, Recoveries, used consumables, items
+  lost to a montage). Fine as a rule ("you always set out rested") but it should be chosen, and it
+  means a potion carried in is never used up. FOR DAVID.
+
+OPEN (in Draw Steel a Director decides; EotW needs a written rule):
+- R3 [WHEN RESOLVED 2026-10-09: the player chooses; WHERE: a town place, levelling at a Training Grounds] RESPITE: when (automatically on return / a player action at a town place / gated), what it
+  does (Victories -> XP, level-up, one respite activity). Respite activities are the natural
+  between-sessions solo loop (downtime projects, fishing, kit change, class rituals) - the
+  `Draw Steel Respite` module + activity registry already exist (E16).
+- R4 RESPITE PACING: Draw Steel allows unlimited back-to-back respites (only the Director's story
+  pressure stops it). With no Director, unlimited respites = unlimited project rolls. Gate by
+  encounters played, by real time, or by week.
+- R5 PROGRESSION RATE: the Gate offers one new encounter a week and its Victory once per hero, so
+  one hero earns at most 1 Victory a week (plus the Past Encounters backlog); David's target is
+  1-2. Levers: a Victory for a montage (Draw Steel already allows one for a big noncombat
+  challenge), weeks worth 2, the backlog.
+- R6 [STILL OPEN - David chose normal levelling, so the clamp must give way to bands or scaling] LEVELS vs THE LEVEL-1 CLAMP: levelled heroes need level bands or level scaling (David's
+  Progression section).
+- R7 WHICH RESPITE ACTIVITIES EXIST in EotW: kit change, the Tactician's melee choice, class rituals
+  (Conduit/Censor...), downtime projects (crafting/research), fishing, the optional "swap
+  abilities at a respite" rule; and the carry-three leveled-treasure test (already a David point).
+- R8 [James floated a Trading Hall: buy consumables, trade with other adventurers; not yet answered] WEALTH AND RENOWN: Draw Steel uses them to buy things and attract followers; EotW has no shop
+  or followers (knacks already read Wealth). Use, or show-only?
+- R9 TITLES: earned by deeds in Draw Steel; no title step in EotW. A natural achievement system
+  fed by the outcome log.
+- R10 ITEMS BETWEEN HEROES: giving, trading, a shared stash (already on the share page).
+- R11 DEATH EDGE CASES: a crash mid-fight; a Danger Room death (David's open questions).
+
+### Sheet vs town (PROPOSAL)
+
+Principle proposed: THE SHEET SHOWS THE HERO AS THEY ARE; THE TOWN IS WHERE THEY CHANGE. Every
+rules-legal change happens at a place in town; the sheet never changes numbers (this is option A
+from the play/edit decision, taken one step further). On the sheet: identity, characteristics,
+skills, languages, kit, abilities, features, vitals, equipped treasure, level + XP progress, a
+small record. In town: respite (rest, Victories -> XP, level-up, one activity), downtime projects,
+kit/ritual choices, any market. The sheet POINTS to the town when something is waiting there
+("Level up ready", "Treasure to equip") rather than doing it.
+- Tension: equipping treasure is a change, yet the brief puts an Equip CTA on the sheet. Either
+  equipping is the one sheet action (it is legal mid-adventure, e.g. after a delve chest) or it
+  moves to a town place.
+- Victories vs a record: in Draw Steel Victories are a spendable meter that resets at a respite.
+  If the town respites heroes, a hero in town always shows 0 Victories, so the level row should
+  read Level + XP, and "encounters won" is a separate RECORD (D8 conflated the two).
+
+### Engagement levers (input for the progression design pass, not sheet decisions)
+
+1. Roster breadth: once-per-hero-per-encounter means more play advances MORE heroes rather than
+   one hero outpacing friends - which keeps pick-up parties fair. The Guild could show which heroes
+   still have this week's Victory to earn.
+2. An async town loop: respite activities (projects, crafting, fishing) move forward between
+   sessions with no group needed.
+3. Collection: titles/achievements from the outcome log; the Danger Rooms' community loop (built).
+4. Caution: wall-clock waits ("come back tomorrow") serve retention numbers more than fun; prefer
+   gates tied to play (a respite per encounter played) unless playtests say otherwise.
+
+### Work that does not need David
+
+- Presentation still open on the sheet: D4 skin (motion, sound, final palette), D9 states (draft,
+  away in a party, dead/graveyard view, video portraits, missing art), copy sign-off, the Phase 6
+  critique round on the decided parts.
+- Make the level row progression-proof: Level + XP bar, Victories only where they mean something.
+- Build prep with no UI (needed whatever David decides): the ability-to-source-feature lookup the
+  tagging plan needs, the kit-equivalent resolver, treasure grouping.
+- A one-page option sheet on R1-R11 with recommendations, so David's reply is picks, not essays;
+  optionally a non-binding town Respite concept mock to make it concrete.
 
 ## Frame (PROPOSED 2026-10-08 - awaiting James)
 
@@ -531,6 +756,76 @@ Forge Steel / Draw Steel Plus / Compact Beyond screenshots.
   ("Main Action", else "Free") (MCDMActivatedAbility.lua:2467, 2656, 2817-2847, 991-1012).
   Fields: categorization, ActionResource() (nil when "none"), resourceCost + resourceNumber.
 
+### E15. What David's EotW docs say about rule changes and the long term (2026-10-09)
+
+Source: EncounterOfTheWeek/EncounterOfTheWeek.md at origin/main b546d23d (2026-10-08; 3868 lines -
+newer than the copy on this branch) + dmhub EOTW_MONTAGE_KNACKS.md.
+- PROGRESSION is explicitly OPEN ("needs its own design pass", Phase 11 step 65). His three options:
+  (1) Draw Steel-native levelling (Victories, XP at respite, level-ups) - then weekly content must
+  meet levelled parties via LEVEL BANDS (several `Encounter: <title>` maps per week) or SCALING BY
+  PARTY LEVEL, and the level-1 clamp goes or becomes a band clamp; (2) progression WITHOUT levels
+  (treasure, titles/renown, a record of encounters survived, town unlocks; weekly balance
+  untouched); (3) a mix (items + renown now, levels later with bands). His recommendation: record a
+  full outcome log from day one so any later rule can be applied after the fact. His Discord
+  direction since (same hero over time, 1-2 VP/week, echelon 1 in ~6 months) points at levelling.
+- LEVEL-UP: the builder's step engine is reused with a "Level N" step; the builder opens "only when
+  a level-up has actually happened". After the first encounter only level-up changes the build.
+- TOWN: locations are data rows (adding a place is cheap). Planned "later": the Drunken Fool
+  tavern (chat?), the Docks, Bora's Wagon Yard, the Cathedral. No respite, shop, workshop or inn is
+  designed.
+- HIS SHEET SPEC (step 5, unbuilt): read-only; header, stats, flat skills/languages, kit, abilities
+  by action type, features by source, inventory list only; Close + Edit in Builder.
+- HIS OPEN QUESTIONS touching heroes: Victories carried in from campaigns ("zero them like the level
+  clamp?"); Hero Tokens never re-awarded or cleared; Intelligence has no persistence; a crash
+  mid-fight (does the hero survive?); does a Danger Room death bury the hero ("nothing durable"
+  suggests not); the disconnected-player rule.
+- SILENT ON: respite, XP, Wealth, Renown, titles, downtime projects, shops, consumable economy,
+  solo play, matchmaking, mid-week engagement. Engagement today = the weekly rotation, Past
+  Encounters (a backlog that still awards the Victory once), and the Danger Rooms (community
+  encounters + vote/feedback/nominate debrief; practice only, nothing durable; unlock after a first
+  Encounter of the Week win). Party = 4-6 heroes, up to 4 per player, so one player can already
+  play solo with four heroes.
+- Mechanics EotW already changes on purpose (his doc): Monster AI + scripted beats instead of a
+  Director; strict:* rules forced (no re-roll, no cancelling a thrown montage roll, line of effect
+  enforced); enemy Stamina as bars until learned; montages rebuilt as a board of Opportunities and
+  Threats over rounds (party-size scaling, Temporary/Locked entries, delves with chests, knacks with
+  secret options, every test has a critical worth +1 hero token); Intelligence + Tactical
+  Preparation; one Hero Token per hero per game; builder = one gold-tier complication max, no
+  Title step, level 1; permanent death + shared graveyard (burial unbuilt).
+
+### E16. Victories, respite and the town save point - code reality (2026-10-09)
+
+- NO RESPITE EXISTS IN EotW. The town adds each won encounter's Victory to the roster hero
+  (EotwRoster.lua ApplyOutcome ~:480 `SetVictories(GetVictories() + victories)`) and nothing ever
+  converts Victories to XP. NormalizeHeroLevel (EncounterOfTheWeek.lua ~:2055) clamps LEVEL on
+  arrival but leaves Victories alone. So Victories pile up and ride into every later encounter.
+- WHAT ACCUMULATED VICTORIES DO IN COMBAT (Heroes text + codex): every class starts combat with
+  heroic resource EQUAL TO ITS VICTORIES and can use heroic abilities out of combat as if it spent
+  that much (heroes_pages.txt 7363, 8552, 10099, 11468, 12692, 13781...); some features give surges
+  equal to Victories (13279); Victory-refresh abilities recharge per Victory (MCDMRules.lua ~:1112);
+  the initiative start reads hero Victories (DSInitiativeRoll.lua ~:2724) and the encounter budget
+  counts them (MCDMEncounter.lua ~:484). EotW scales encounters by hero COUNT only, so balance drifts
+  with every win. Undesigned: nobody chose this.
+- DS RULE: finishing a respite (24h rest in a safe place) restores all Stamina and Recoveries and
+  converts Victories to XP (Victories reset to 0); you level during that respite when XP suffices
+  (16 XP per level); you may take ONE respite activity (a downtime project roll, changing your
+  kit, ...); you may take as many respites in a row as you like - only the Director's pacing
+  ("your enemies are still scheming") restrains that (heroes_pages.txt 1528-1616, 2336-2352).
+  Optional rule: swap signature/heroic abilities as a respite activity. DS also lets the Director
+  award a Victory for a big NONCOMBAT challenge, montages named explicitly (1537-1543).
+- THE TOWN IS A SAVE POINT: nothing spent in an encounter comes home - Stamina, Recoveries, used
+  consumables, items lost to a montage clause. Only gains come home (the Victory; NON-consumable
+  treasure gained in a victory, EncounterOfTheWeek.lua TreasureGained ~:1083; consumables "stay
+  behind"), and death once burial is built. Each encounter therefore starts after an implicit full
+  respite - minus the XP conversion.
+- REUSABLE: the `Draw Steel Respite` module (Tim Clark, Aug 2026; 12 files, ~3900 lines) - a
+  Director-run wizard (setup -> participants -> do activities -> rest) over a shared game document,
+  with an ACTIVITY REGISTRY (RSPActivity.Register; registered today: Downtime Projects
+  DTDirectorPanel.lua:558, Fishing FSHPanel.lua:2127). Completing it calls `Rest("long", true)` per
+  hero (converts Victories to XP) and fires `endrespite` (RSPSession.lua ~:646-681). It is
+  Director-gated (`dmhub.isDM`) and game-scoped; whether it loads at the titlescreen (where the town
+  runs) is UNVERIFIED.
+
 ## Synthesis (2026-10-08)
 
 1. The EotW sheet is where strictness is actually missing: the mode enforces rules on the map
@@ -660,9 +955,114 @@ Forge Steel / Draw Steel Plus / Compact Beyond screenshots.
 | 2026-10-08 | SHARE PAGE FOR DAVID published as a separate artifact: https://claude.ai/artifact/NURVkrf2hENNsBEDcJy7Mm (source mock/share.html, generated from layouts.html; built by scratchpad make_share.py): decided design only, no stamina study; level 1 Dwarf Fury vs level 6 Orc Conduit (veteran inventory, many immunities, 9 XP into level 6 + 2 Victories on the Conduit; resource + surges shown on both); Where toggle; a trigger-waiting toggle; plain-language "What is different for EotW, and why" (10 points) and "Open questions" (progression/XP, moving items between heroes/party/trade, carry-three, Edit in Builder window, teammates in encounters, route closing, banner suppression, panel view-only blocking play actions). Edit in Builder now hides once a hero has a victory. | James asked for a shareable basis. |
 | 2026-10-08 | PRECEDENT IS CONTEXT, NOT AUTHORITY: nobody has done a Draw Steel character sheet well; solving that is the aim. Layout reasoning rests on the DS rules (a test = characteristic + skill) and EotW's own surfaces, not on other sheets. | James. |
 | 2026-10-08 | SWITCHER (Q2c) = BY CONTEXT: in town it cycles your roster; in game it cycles the heroes in this encounter, yours first, others marked by the card's border ladder (own = 2px blue), never colour alone. Ours, not in David's doc. | James. Mirrors the surrounding roster (Guild vs HUD), so ownership stays legible. |
+| 2026-10-09 | SHEET SHOWS, TOWN CHANGES = LEANING (a), PROVISIONAL until discussed with David: the sheet is pure reference; every rules-legal change (rest, Victories -> XP, level-up, kit swap, rituals, projects) happens at a place in town and the sheet only points there; EQUIPPING stays on the sheet as its one action (legal mid-adventure, e.g. after a delve chest). Rejected for now: (b) equipping moves to town too; (c) town actions on the sheet when opened in town (breaks the same-layout-everywhere decision). | James. |
+| 2026-10-09 | LEVEL ROW STUDY published (non-David work, item 1): https://claude.ai/artifact/Duq6bBPiiHSVwhFLB2r2jx (source mock/levelrow.html). Options x states: (1) XP only; (2) XP + waiting Victories as a hatched segment on the XP bar + a separate "Won N" record (RECOMMENDED: degrades to a plain XP bar if the town rests heroes automatically); (3) Victories meter + Won. States: new, three wins rested, back from a win not rested (exists only if resting is a choice, R3), level-up ready, level 10. Common to all: level-up ready = gold bar + gold next level + a town-pointer line; level 10 = "Highest level", no bar. Every string is [COPY]. | Awaiting James. |
+| 2026-10-09 | DAVID ON PROGRESSION (Discord, via James): heroes LEVEL LIKE NORMAL DRAW STEEL - Victories become XP at a respite, XP levels the hero. The player CHOOSES whether to take a respite, so a hero can go into the next encounter with low Recoveries and high Victories (David confirmed). Tying things to town locations is "a nice idea"; levelling could be at a Training Grounds (name not fixed). | David. Resolves R1 (Victories convert at a respite) and R3-when (a player choice); R2 flips (see next row). |
+| 2026-10-09 | CONSEQUENCES of David's answer (my reading, to confirm with him where marked): (1) the town stops being a save point - Recoveries and Stamina spent must carry home, or skipping a respite costs nothing (David-side write-back; CONFIRM consumables too); (2) Victories become a decision number (start-of-combat heroic resource vs fewer Recoveries) and must be visible where the choice is made - the town strip, the party picker and the sheet; (3) "sheet shows, town changes" is in line with David: the sheet says "ready to level", a town place does it; (4) respite activities (R4 pacing) only become a pacing problem once activities exist. | Mine, from David's answer. |
+| 2026-10-09 | TERMINOLOGY: player-facing copy says RESPITE (take a respite, at your next respite), never "rest" - rest is D&D. The level row study's drafts said "rest in town" and are withdrawn. | James. |
+| 2026-10-09 | LEVEL ROW STUDY v2 (same URL, version 2) after David's answer: v1's options withdrawn (they assumed a respite might be automatic). Now (1) VICTORIES BESIDE RECOVERIES - level row = progress + a hatched stretch for the XP the next respite adds; the vitals row gets a Victories cell beside the Recoveries ring, so banked vs left sit together (RECOMMENDED); (2) Victories on the level row + hatch (round 10 + hatch); (3) round 10 as it was. Moments: new, back from a win, pushing on (3 Victories, 2 Recoveries, winded), a respite would level them (hatch reaches the end, next level brightens), ready to level (gold + "Level up at the Training Grounds" [COPY, placeholder name]), level 10. Encounters-won counter left off pending David. | Awaiting James. |
+| 2026-10-09 | LEVEL ROW = VICTORIES BESIDE RECOVERIES (decided): the level row shows Level, the XP bar with a hatched stretch for the XP the next respite adds, and the next level; the vitals row holds the Recoveries ring + label, a Victories cell, then the heroic resource. James then asked where SURGES go: the row has room for about two surge icons. Study v3 (same URL) adds three placements: CORNER (the hero card's own rule - one icon per surge, none at 0, cap 9, in a corner of the art just above the plate on a dark backing; RECOMMENDED), COUNT (one icon + a number beside the resource), OWN LINE (a line of icons under the row, only while there are surges). Surges exist only in combat. | James chose; surges awaiting James. |
+| 2026-10-09 | SURGES = CORNER (decided): one icon per surge, none at 0, cap 9, clustered in a corner of the card art just above the plate on a dark backing - the hero card's own rule, so the vitals row never changes width and town/combat layouts match. | James. |
+| 2026-10-09 | D9 STATES: James accepted the recommended treatments in principle (draft = no sheet, Guild keeps Continue/Discard; away = "Away: <party>" chip, owner controls visible but off and a click says why; own hero in an encounter = same sheet, equipping allowed; dying = stamina bar only; dead mid-encounter = grey art, "Dead" on the plate, owner controls hidden, teammates can still open it; fallen = memorial from the Graveyard - grey art, epitaph in place of Stamina/Recoveries, no controls, no switcher, progress frozen (the City keeps a fallen hero's full record); teammate = decided; video portraits play muted like the card, never rebuilt on refresh, still if the Codex has a reduced-motion setting (UNVERIFIED); missing art = the card's dark ground; Danger Rooms = the card's existing "Danger Rooms: practice only" note as a chip; loading = frame + loading line, never stale values) but wants to SEE them. ROUND 11 published as version 9 of the main mock (source mock/layouts.html; round 10 kept as mock/layouts-r10.html): today's decisions folded in (centred lines, level row + hatch, Victories beside Recoveries, surges in the corner; Size-to-potency control removed) + a STATE control (normal / away / dead / fallen / Danger Rooms / loading / art missing) + a PROGRESS control (new / 5 XP + 2 Victories / a respite would level / ready). Edit in Builder now keys on encounters WON, not Victories (Victories reset at a respite). | Awaiting James. |
+| 2026-10-09 | D9 STATES APPROVED as shown in round 11 ("they look good"), with one change: LOADING = A SKELETON OF THE FULL LAYOUT. The sheet renders its real frame - section headers, labels that never change (characteristic names, Size/Speed..., Kit, Treasures sub-headers), chips, top bar - and every VALUE is a shimmering placeholder in its own place (no art, name, numbers, bars, kit, items, skill groups, ability and feature rows), so the values pop in without the UI changing. Lists show a fixed number of placeholder rows; the ready-to-level line appears with the data. Shimmer stops under reduced motion. Mock version 10 (same URL) has "Replay the load". | James. |
+| 2026-10-09 | DAVID IS HAPPY FOR JAMES TO PROCEED WITH THE SHEET - no need to wait for his approval on sheet decisions (his rules calls, e.g. R2 carry-home, stay his). NO THEMES YET: the sheet is fixed dark, accents are literals, not theme-dependent (closes the open accent theme-dependence question for now). Reduce Motion EXISTS: ThemeEngine.GetAccessibility().reduceMotion (setting themeengine.reducemotion, ThemeEngine.lua:637) - video portraits show a still and the sheet skips non-essential animation when it is on; Status Icons (themeengine.statusicons) pairs a shape with every status colour. | James; code verified. |
+| 2026-10-09 | D4 SKIN PROPOSAL published as mock version 11 (same URL): Motion buttons + a sound toast. MOTION: open = backdrop fade + sheet rises 10px, 200ms; switch hero = card art fades in 180ms, values land at once; equip = the row and every value the item changes glow gold ~1s (demo: Lightning Treads, Speed 6 -> 8); damage/heal in a fight = the hero card's own red/green wash + the bar slides, 450ms; ready to level = one light sweep along the gold bar on first sight; values arriving after the skeleton fade in 160ms; Reduce Motion turns all of it off (shimmer and the you're-needed pulse go still). SOUND (only events the codex already fires): open UI.WindowOpen, close UI.WindowClose, equip UI.Inv_Place, unequip UI.Inv_Grab, blocked while away UI.Error_Generic, every other press Mouse.Click, nothing on hover, nothing for damage/heal (the fight plays its own) or ready to level (the celebration belongs to the Training Grounds - the sheet is a quiet reference). PALETTE (fixed dark): builder cream/tan text and chrome; ONE gold, the hero card's #ffd66b, meaning only act-on-this or something-landed; blue #6fa8ff = yours; stamina colours from the hero card's bar; the town's antique gold not used on the sheet. Sounds can be auditioned in the running Codex over the bridge. | Awaiting James. |
+| 2026-10-09 | D4 SKIN APPROVED as proposed (motion, sound map, fixed-dark palette with one gold); James does not need to audition the sounds. | James. |
+| 2026-10-09 | COPY PASS: every sheet string (60 items: 3 voice rules + top bar, card, kit, treasures, stats, abilities, features, states) on a review page https://claude.ai/artifact/PKcPBB8WGAkHQuQUAjnR9j (source mock/copy.html; db capability, decisions in collection "decisions", one doc per string id: {choice: suggested|draft|custom, text, note, at}). Proposed voice rule V2: tooltips about the hero use a NEUTRAL voice ("Starts each combat with...") so a teammate's sheet reads right; "you" only on owner-only controls. Two suggestions change the design: C4 the ready-to-level line shows only on your own heroes; K5 the Tactician's melee choice leaves the sheet (a respite activity) - the sheet says "Melee damage from {Kit}. Change it during a respite." | Awaiting James's choices. |
+| 2026-10-09 | COPY SIGNED for 54 of 60 strings (see Copy manifest): V2 neutral voice ADOPTED; owner-only lines may say "you"; K5 ADOPTED (the Tactician's melee choice leaves the sheet for the respite); new V4 = "Level" capitalised as the game term. PENDING: T8 (Close vs an X), T13 (when Away shows), C3 (when the hatched stretch shows), C4 (James's wording "You have enough XP to Level up. Head to the Training Grounds to Level your Hero." + owner-only), C6 (Level 10 - rules: Victories still become XP at a respite and each class's epic resource grows by the XP gained), A1 (is the Abilities count worth having). | James. |
+| 2026-10-09 | COPY PASS CLOSED: "Hero" capitalised everywhere (V5); T8 keep Close; T13 Away stands, plus a question for David (below); C3 the hatched stretch shows whenever Victories are banked; C4 = "Ready to Level. Head to the Training Grounds to Level your Hero.", own Heroes only, two lines (cannot fit one line at a legible size); A1 dropped. C6 LEVEL 10 DESIGNED NOW (James): rules = Victories still become XP at a respite, and each class's 10th-level feature adds an epic resource equal to the XP gained, kept until spent (spent as the heroic resource; the Elementalist's Breath converts to 3 Essence each). The level bar becomes that resource: "10  Virtue 7" + "+2 at the next respite"; hover = the epic feature card. Mock version 12 (same URL) carries every signed string and a Progress > Level 10 option. Aside: Draw Steel has half- and double-speed XP tables, so the bar reads its threshold from the pace EotW uses, not a hard-coded 16. | James. |
+| 2026-10-09 | C4 TRIMMED to "Head to the Training Grounds to Level your Hero." so it sits on one line (the gold bar and gold next Level already say ready). | James. |
+| 2026-10-09 | PHASE 6 CRITIQUE ROUND run: three independent reviewers (Hodent usability/engagement, an experienced EotW player incl. rules accuracy, accessibility) over the brief, mock and ten state screenshots. Findings checked and consolidated into 12 fixes, 16 decisions and 2 David questions on a review page https://claude.ai/artifact/6yPZ9hchyD3D5UYhufMpmm (source mock/critique.html; db collection "decisions"). Corrections made while checking: the game ALREADY plays Notify.Trigger and UI.TurnStart_Hero with the sheet open (DrawSteelTokenHud.lua:243, MCDMInitiativeBar.lua:744), so no extra signal sound; the player reviewer's Effects-row blocker was recast after James pointed out the character panel is the in-combat companion and shows effects (proposal: the sheet's numbers simply match the panel's). Confirmed: five pregens in the mock data have no Level 1 heroic abilities. | Awaiting James's choices. |
+| 2026-10-09 | CRITIQUE CHOICES (James, review page): FIXES F1-F9 and F11 GO AHEAD (no gold while away + lock icon + steady reason line; slot never truncates, locked rows explain; kit bonuses one per row when a label would wrap + per-echelon values; neutral teammate chip; scroll fade/scrollbar + "N to equip" scrolls to the item; visible "Loading {Hero}...", owner buttons hidden while loading, failure state; damage wash max once a second at 30%; No benefit covers weapons + Soldier's Skill exception; leveled treasure shows all three tiers; cream focus ring). F10 GO AHEAD with a correction: LIVE PREGENS ARE FINE - the mock's probe read pregens set to the slow-start "encounter 1" rung, so re-probe at full Level 1. F12 (Font Size) NOT accepted as written: James wants MOCKS of a couple of options for handling 120-140% gracefully. DECISIONS ACCEPTED: D1 (no Effects row - the character panel is the in-combat companion; the sheet's numbers match the panel's, base on hover); D4 ("A respite would Level this Hero." owner-only + 10px XP bar with a notch); D5 (Equip previews the change on hover; changed values keep a "6 -> 8" tag until the next click, also the Reduce Motion form); D12 (surges tooltip with numbers); D13 (panel opacity follows backdrop brightness, dark band behind the top bar, #A6A096 lightest readable grey, opaque when the scheme is high contrast); D14 (feature text ~75 characters a line, state words upright, Standard actions collapsed by default per player); D16 (every tooltip pins; arrow-key focus). ACCEPTED PENDING A MOCK: D2 (strip across the top + "The Heroes can act"). NEEDS A MOCK FIRST: D3 (James worries a name label wraps at larger sizes; the epic resource already has its own icon - CharacterResource.epicResourceId, shown by TacPanel.OtherResourceRow under GetEpicResourceName - reuse it), D6 (roster badges), D7 (James asked whether clicking the ring spends a Recovery - show it), D15 (James did not follow it - explain with a mock). REJECTED: D8 on the sheet - a town RECORD LOCATION should hold the Hero's history instead (fits "the sheet shows, the town changes"); D9 (hover is enough; rows would crowd or wrap); D10 (James: the builder hides options below a threshold anyway - FACT CHECK: only complications are filtered by automation tier, EotwBuild.lua:116-139; class abilities and features are offered at any tier); D11 (Saves 6+). DAVID QUESTIONS: Q1 REJECTED (consumables bring their own action-bar ability; Escape Grab appears when grabbed); Q2 RESOLVED (live pregens fine). | James. |
+| 2026-10-09 | ROUND 12 published as mock version 14 (same URL; round 11 kept as mock/layouts-r11.html). Accepted fixes and decisions applied (see the critique-choices row). OPTIONS TO CHOOSE, as controls: D2 signal = Close button only / strip across the top (causes: trigger, save, roll, story, "The Heroes can act"); D3 resource = icon + number / name under the number / name beside it (epic resource now a distinct hexagon stand-in for the codex's Epic Resource icon); D6 roster badges (shape + colour: + treasure to equip, filled triangle ready to Level, outline triangle a respite would Level, dot away; tooltip lists them); D7 spend a Recovery = not offered / a button under the Recoveries label / click the ring (own Hero, town, out of combat; sound Ability.Heal_Generic); D15 Status Icons (a shape inside the stamina bar: circle ok, triangle winded, cross dying); F12 Font Size 100/120/140 x handling = as is (clips) / grow and wrap / grow + wider left column. The mock now scales TEXT with Font Size while boxes stay fixed, as the engine does. NEW COPY to sign: "Changes are off until the party ends.", "Part of the Hero's ancestry.", "Equipping changes {Stat} {a} -> {b}.", "Spend a Recovery" + "Regain {v} Stamina." + "Already at full Stamina.", "{Hero} could not load." + "Try again", "The Heroes can act", badge names. | Awaiting James. |
+| 2026-10-09 | ROUND 12 PICKS (James): D2 - the strip pushed the sheet down (disliked); two no-shift options added: the TOP BAR turns gold in place, or a BANNER floats over the stats band. D3 - AS NOW: icon + number; the build uses each class's own heroic resource icon with its name on hover (the mock's diamond is a stand-in). D6 - REMOVED (no roster badges). D7 - a button under the label wraps the plate (disliked); James leans to CLICKING THE RING with a pointer cursor and tooltip; two options now in the mock: click the ring (it shows +11 on hover) or click it twice (first click arms it, "Click again to spend a Recovery."). D15 - ACCEPTED using the existing icons the character panel already shows at the end of its stamina bar: drawsteel/Icon_STA_Healthy, Icon_STA_Winded, Icon_STA_Dying (+ Icon_STA_TempBoost with temporary Stamina), MCDMCharacterPanel.lua ~1109-1139 / 5380-5393. F12 - GROW AND WRAP. MOCK DATA FIXED (F10): the seven slow-start pregens re-probed at full Level 1 over the bridge with the rung cleared in memory and restored in the same call (game untouched): +2-3 heroic abilities each, their triggered actions (Lines of Force, Parry, Resist the Unnatural, Inertial Shield...; Opportunity Attack left out as every Hero's), and missing features; the Censor's Sanctified Weapon ability stays out of Abilities (visible respite feature per the tagging plan). Mock version 15. | James; probe 2026-10-09. |
+| 2026-10-09 | D2 = THE TOP BAR TURNS GOLD in place (message + Close; nothing below moves; causes: trigger, save, roll, story continues, "The Heroes can act"). D7 = CLICK THE RING ONCE: own Hero, in town, out of combat, Stamina below max and Recoveries left; pointer cursor, the ring shows "+{value}" on hover, tooltip; spends immediately (Ability.Heal_Generic). Mock defaults now show both. | James. |
+| 2026-10-09 | D5 REVISED (James): NO gold "6 -> 8" tag. Hovering an item shows the value it would change already changed, in gold (Speed reads 8 in gold while hovering Lightning Treads); equipping changes it for real, holds it gold for a moment (~1.4s), then it settles back over 0.6s (no fade under Reduce Motion, still gold for the moment). NEW COPY N1-N9 SIGNED: N1 "Changes are off until the party ends." (under the Away chip); N2 "Part of the Hero's ancestry."; N3 "Equipping changes {Stat} {a} -> {b}." / "Unequipping changes {Stat} {a} -> {b}." (Equip tooltip); N4 "Click to spend a Recovery: regain {v} Stamina." (ring, which shows "+{v}" on hover); N5 "Loading {Hero}..." (visible, in place of the name); N6 "{Hero} could not load." + "Try again"; N7 "The Heroes can act"; N8 "The kit does not use this weapon, so this gives no benefit."; N9 "1st Level" / "At Level 5" / "At Level 9". Mock version 17. | James. |
+| 2026-10-09 | DESIGN LOCKED (James). Brief rewritten with the locked design + build plan C0-C8 at the top; build starts 2026-10-10. Branch design/eotw-hero-sheet pushed to the slimarms fork (James OK'd). | James. |
+
+## Copy manifest (signed 2026-10-09; source of truth for every sheet string)
+
+From the copy review page (artifact PKcPBB8WGAkHQuQUAjnR9j, db collection "decisions"). {Braces} are filled in by the game. Lua strings stay ASCII: separators shown as "-" here are a middle dot in the build, written as a unicode escape. PENDING items are discussed in the ledger.
+
+- **Voice rules**
+  - V5 "Hero" takes a capital H everywhere (your Hero, {Player}'s Hero, Every Hero) - James.
+  - V4 "Level" takes a capital L wherever it is the game term (Level 2, to Level 3, Level up) - James's notes on C2/C5.
+  - V1 Respite, never rest: Respite (take a respite, at your next respite)
+  - V2 Describe the hero in a neutral voice: Starts each combat with 2 extra Ferocity.
+  - V3 Rules terms as the book writes them: Stamina, Recoveries, Victories, XP, Winded, Dying, Potency, Signature
+- **Top bar**
+  - T1 Switcher label in town: Your roster
+  - T2 Switcher label in an encounter: This encounter
+  - T3 Switcher label for a teammate's hero in town: Your party
+  - T4 Thumbnail tooltips: {Hero}, Level {n}  /  {Hero}, {Player}'s Hero
+  - T5 Owner chip on a teammate's hero: {Player}'s Hero
+  - T6 Change Appearance: Change Appearance
+  - T7 Edit in Builder (button and tooltip): Edit in Builder  -  tooltip: "Change any choice until this Hero wins an encounter."
+  - T8 Close: Close  [Esc] (EotW screens use words, never an X; the button also carries T9-T12)
+  - T9 You're needed: a trigger: {Hero} has a trigger waiting  -  Close
+  - T10 You're needed: a save: {Hero} has a save to make  -  Close
+  - T11 You're needed: a roll: {Hero} has a roll to make  -  Close
+  - T12 You're needed: the story moves on: The story continues  -  Close
+  - T13 Away chip: Away: {party}
+  - T14 Why a control is off while away: Not while away with a party.
+  - T15 Danger Rooms chip: Danger Rooms: practice only
+  - T16 Fallen hero header: The Graveyard
+- **The card**
+  - C1 Subtitle: Level {n} {Ancestry} {Class} - {Subclass}
+  - C2 XP bar tooltip: {xp} of 16 XP to Level {next}.
+  - C3 Banked Victories on the bar (shown whenever Victories are banked; the second sentence only when a respite would Level the Hero): {n} Victories become {n} XP at the next respite. Enough for Level {next}.
+  - C4 Ready to Level (your own Heroes only; one line on the plate): Head to the Training Grounds to Level your Hero.
+  - C5 Ready to level tooltip: {xp} XP: enough for Level {next}.
+  - C6 Level 10 (the level bar becomes the class's epic resource): row "10  {Epic} {n}" + "+{v} at the next respite" when Victories are banked; tooltip "{v} Victories become {v} XP and {v} {Epic} at the next respite."; hovering {Epic} shows the class's Level 10 epic feature card. Epic names: Virtue, Divine Power, Breath, Primordial Power, Order, Subterfuge, Command, Vision, Applause, Eidos (Summoner), Ferox (Beastheart).
+  - C7 Stamina line: Winded at {w}  /  Winded (when winded)  /  Dying  /  Dead at -{w}  /  Dead
+  - C8 Recoveries: Same words, plus a tooltip: "Each Recovery regains {value} Stamina."
+  - C9 Victories count: {n} Victories  /  1 Victory
+  - C10 Victories tooltip: Starts each combat with {n} extra {Resource}. Victories become XP at the next respite.
+  - C11 Heroic resource tooltip: {Resource}
+  - C12 Surges tooltip: {n} surges. Spend them for extra damage or potency.
+  - C13 Epitaph: Fell in {Encounter}, week {n}  /  Played by you  /  Played by {Player}
+- **Kit**
+  - K1 Headers: Kit  /  Prayer, Ward, Enchantment, Augmentation (classes without a kit)
+  - K2 Gear line: No armor, heavy weapon  /  Heavy armor, medium weapon, shield
+  - K3 Nothing to show: No kit  /  None chosen
+  - K4 Tactician's combined kit: {Kit A} + {Kit B}  /  tooltip: From {Kit}. {Other} gives {v}.
+  - K5 Tactician's melee damage choice: No buttons on the sheet. The line reads: "Melee damage from {Kit}. Change it during a respite."
+- **Treasures**
+  - R1 Header and call to action: Treasures  /  {n} to equip
+  - R2 Sub-headers: Leveled treasures - {n} of 3 carried  /  Trinkets - {n}  /  Consumables - {n}
+  - R3 Row labels and buttons: ({Slot})  /  Equipped  /  Carried  /  Equip  /  Unequip
+  - R4 No benefit chip: No benefit
+  - R5 No benefit tooltips: The kit uses heavy armor, so this gives no benefit.  /  The kit uses no armor, so this gives no benefit.  /  Without a kit, this gives no benefit.
+  - R6 Item card warning: Weapon and armor treasures only help when the kit uses that kind of gear.
+  - R7 Empty list: None
+- **Stats**
+  - S1 Section headers and labels: Characteristics, Skills, Languages, Immunities, Weaknesses  /  Might ... Presence  /  Size, Speed, Disengage, Stability, Potency, Weak, Average, Strong  /  Crafting, Exploration, Interpersonal, Intrigue, Lore
+  - S2 Empty list: None
+- **Abilities**
+  - A1 Count beside the Abilities header: DROPPED (groups carry their own counts; nothing can hide abilities)
+  - A2 Group names: Main actions, Maneuvers, Triggered actions, Other, Free strikes, Standard actions
+  - A3 Standard actions note: Every Hero can do these
+  - A4 Row tags: Same, with "No action" in place of "Free".
+  - A5 Ability card hint: Click to keep it open.  /  Click elsewhere or press Esc to close.
+- **Features**
+  - F1 Count beside the header: {n}  /  {shown} of {total} (when filtered)
+  - F2 Pillar chips: Combat, Exploration, Montage, Negotiation, Respite
+  - F3 Filter box: Filter features
+  - F4 Section names: Core feature, Class, Ancestry, Complication, Kit, Titles, Perks, Career, Culture, Treasures
+  - F5 Choice line: Chosen for {choice}
+  - F6 Long features: Show more  /  Show less
+  - F7 Nothing matches: No features match. Clear the filters to see them all.
+- **States**
+  - X1 Dead in an encounter: Dead
+  - X2 Loading: Loading {Hero}...
+
+  - N1-N9 (signed 2026-10-09; see ledger): Away line, ancestry-item tooltip, Equip/Unequip preview tooltips, ring tooltip, visible loading line, load failure + Try again, "The Heroes can act", weapon No benefit, leveled treasure tier labels.
 
 ## Discussion points for David
 
+- (2026-10-09) AWAY WHILE FORMING: the City refuses changes to a Hero claimed by any party, forming or underway, so a player waiting at the Gate cannot equip treasure they just won. Heroes are copied into the game at Begin, so allowing equip + appearance changes until Begin would carry in safely. Lock only once underway?
+- (2026-10-09) "Sheet shows, town changes" (James leaning (a), provisional) and the deviation
+  register R1-R11 in Session 3 - above all R1, Victories never converting.
 - Carry-three leveled treasure in a directorless mode: hard cap / allow + warn / automated respite test.
 - Panel class-control blocks (Summoner Sacrifice/Edit Squads, Elementalist end persistent) are bugs under EotW's blanket "view" access; a "play" access level is one fix path.
 - Closing the core routes to the full sheet (c/i keys, radial, search, macros) touches core code - needs his OK (D1-Q4).
