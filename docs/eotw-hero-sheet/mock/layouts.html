@@ -1273,7 +1273,7 @@
   }
 
   const heroSel = document.getElementById("ctl-hero");
-  heroSel.innerHTML = HEROES.map(h => '<option value="' + esc(h.key) + '">' + esc(h.name) + " (level " + esc(h.level) + (isMine(h) ? ")" : ", " + esc(h.owner) + "'s)") + "</option>").join("");
+  heroSel.innerHTML = HEROES.map(h => '<option value="' + esc(h.key) + '">' + esc(h.name) + " (Level " + esc(h.level) + (isMine(h) ? ")" : ", " + esc(h.owner) + "'s)") + "</option>").join("");
   heroSel.addEventListener("change", () => { state.hero = heroSel.value; state.pin = null; state.hp = null; state.fx = "swap"; render(); });
   const stamSel = document.getElementById("ctl-stam");
   stamSel.innerHTML = STAM_STATES.map(s => '<option value="' + s[0] + '">' + esc(s[1]) + "</option>").join("");

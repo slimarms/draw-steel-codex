@@ -11,7 +11,7 @@
     color-scheme: dark;
     --page: #0e0e0d; --page-fg: #d9d3c7; --page-mut: #8f897e; --page-line: #2a2926; --ctl: #1a1a18;
     --screen: #0b0c0b; --card: #1a1b18; --card-hover: #262722; --border: #3a3833;
-    --cream: #DFCFC0; --cream-light: #F3EDE7; --tan: #BC9B7B; --muted: #9a9188; --lab: #A6A096; --ink: #10110F;
+    --cream: #DFCFC0; --cream-light: #F3EDE7; --tan: #BC9B7B; --muted: #A6A096; --lab: #A6A096; --ink: #10110F;
     --mine: #6fa8ff; --gold: #ffd66b; --warn: #e9b86f;
     --st-ok: #4DB88C; --st-winded: #E8A030; --st-dying: #C94040; --temp: #E4DDD0;
     --slab: "Bitter", "Roboto Slab", Georgia, serif;
@@ -21,7 +21,7 @@
   body { margin: 0; font-family: var(--slab); }
   .page { max-width: 1960px; margin: 0 auto; padding-block: 22px 60px; padding-inline: 20px; }
   button, select, input { font: inherit; }
-  button:focus-visible, select:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  button:focus-visible, select:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--cream-light); outline-offset: 2px; }
 
   /* review chrome */
   .intro h1 { font-size: 26px; font-weight: 800; margin: 0; color: #f1ece2; text-wrap: balance; }
@@ -66,40 +66,113 @@
   .main { min-height: 0; min-width: 0; display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 16px; }
   .blk { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; min-width: 0; }
   /* type system: section headers are white and larger; stat headers are gold small caps */
-  .bh { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--cream-light); margin-bottom: 8px; }
+  .bh { display: flex; align-items: center; gap: 10px; font-size: calc(16px * var(--fs, 1)); font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--cream-light); margin-bottom: 8px; }
   .bh .r { margin-left: auto; display: flex; gap: 8px; letter-spacing: 0; text-transform: none; font-weight: 600; }
   .none { color: var(--muted); font-style: italic; }
-  .btn { font-size: 14px; color: var(--cream); background: var(--card); border: 1px solid var(--border); border-radius: 6px; height: 38px; padding: 0 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0; }
+  .btn { font-size: calc(14px * var(--fs, 1)); color: var(--cream); background: var(--card); border: 1px solid var(--border); border-radius: 6px; height: 38px; padding: 0 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0; }
   .btn:hover { background: var(--card-hover); border-color: var(--tan); }
   .btn.primary { border-color: var(--gold); color: var(--gold); }
-  .btn.sm { height: 24px; font-size: 12.5px; padding: 0 9px; }
-  .btn kbd { font: inherit; font-size: 11px; color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 0 5px; }
-  .cta { font-size: 12px; font-weight: 700; color: var(--ink); background: var(--gold); border-radius: 9px; padding: 1px 8px; }
-  .pill { font-size: 12px; color: var(--lab); border: 1px solid var(--border); border-radius: 9px; padding: 0 8px; white-space: nowrap; }
+  .btn.sm { height: 24px; font-size: calc(12.5px * var(--fs, 1)); padding: 0 9px; }
+  .btn kbd { font: inherit; font-size: calc(11px * var(--fs, 1)); color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 0 5px; }
+  .cta { font-size: calc(12px * var(--fs, 1)); font-weight: 700; color: var(--ink); background: var(--gold); border-radius: 9px; padding: 1px 8px; }
+  .pill { font-size: calc(12px * var(--fs, 1)); color: var(--lab); border: 1px solid var(--border); border-radius: 9px; padding: 0 8px; white-space: nowrap; }
 
   /* the card: the EotW hero card's grammar at sheet size, with level progress on the plate */
   .card { position: relative; width: 400px; height: 520px; flex-shrink: 0; border-radius: 10px; border: 1px solid #000000cc; background: #151515 center / cover; background-position: 50% 12%; overflow: hidden; }
   .plate { position: absolute; left: 10px; right: 10px; bottom: 10px; background: #000000c4; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; }
-  .plate .pn { font-size: 28px; font-weight: 800; color: #fff; line-height: 1.08; }
-  .plate .ps { font-size: 14px; color: #c6d0da; margin-top: 2px; }
-  .xprow { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #c6d0da; }
-  .xprow .lvn { font-size: 14px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; }
+  .plate .pn { font-size: calc(28px * var(--fs, 1)); font-weight: 800; color: #fff; line-height: 1.08; }
+  .plate .ps { font-size: calc(14px * var(--fs, 1)); color: #c6d0da; margin-top: 2px; }
+  .xprow { display: flex; align-items: center; gap: 8px; font-size: calc(12.5px * var(--fs, 1)); color: #c6d0da; }
+  .xprow .lvn { font-size: calc(14px * var(--fs, 1)); font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; }
   .xprow .lvn.next { color: #c6d0da; font-weight: 700; }
   .xprow .xpbar { flex: 1 1 auto; cursor: help; }
   .xprow .vic { margin-left: 14px; white-space: nowrap; }
   .xprow .vic b { color: #fff; }
-  .xpl { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: #c6d0da; margin-bottom: 4px; }
+  .xpl { display: flex; justify-content: space-between; gap: 10px; font-size: calc(12.5px * var(--fs, 1)); color: #c6d0da; margin-bottom: 4px; }
   .xpl b { color: #fff; }
   .xpbar { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.12); overflow: hidden; }
   .xpbar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--tan), var(--cream)); }
-  .bnote { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: #c6d0da; margin-top: 5px; font-variant-numeric: tabular-nums; }
+  /* round 11: the level row. Victories banked since the last respite show as a hatched stretch: the XP the next respite adds */
+  .xprow .xpbar { position: relative; height: 7px; }
+  .xprow .xpbar i { position: absolute; top: 0; left: 0; }
+  .xprow .xpbar s { position: absolute; top: 0; bottom: 0; border-radius: 0 3px 3px 0; text-decoration: none;
+    background: repeating-linear-gradient(135deg, rgba(223,207,192,0.9) 0 2px, rgba(223,207,192,0.25) 2px 4px); }
+  .xprow .xpbar.ready i { background: var(--gold); }
+  .xprow .lvn.next.reach { color: var(--cream-light); }
+  .xprow .lvn.next.ready { color: var(--gold); }
+  .ready-line { font-size: calc(14px * var(--fs, 1)); font-weight: 700; color: var(--gold); margin-top: -3px; }
+  /* Level 10: the bar becomes the class's epic resource (no next Level; each respite adds as much as the XP) */
+  .epic { display: inline-flex; align-items: baseline; gap: 7px; font-size: calc(13px * var(--fs, 1)); color: #c6d0da; cursor: help; }
+  .epic i { width: 10px; height: 10px; transform: rotate(45deg); border: 2px solid var(--cream-light); background: rgba(243,237,231,0.25); align-self: center; }
+  .epic b { font-size: calc(17px * var(--fs, 1)); color: #fff; font-variant-numeric: tabular-nums; }
+  .epb { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: calc(12.5px * var(--fs, 1)); color: #c6d0da; white-space: nowrap; cursor: help; }
+  .epb s { width: 18px; height: 7px; border-radius: 3px; text-decoration: none; background: repeating-linear-gradient(135deg, rgba(223,207,192,0.9) 0 2px, rgba(223,207,192,0.25) 2px 4px); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .vcell { display: flex; align-items: baseline; gap: 6px; padding-left: 10px; border-left: 1px solid rgba(255,255,255,0.10); font-size: calc(12.5px * var(--fs, 1)); color: #c6d0da; white-space: nowrap; cursor: help; }
+  .vcell b { font-size: calc(20px * var(--fs, 1)); color: #fff; font-variant-numeric: tabular-nums; }
+  .epitaph { border-top: 1px solid rgba(255,255,255,0.10); padding-top: 9px; font-size: calc(14px * var(--fs, 1)); color: #c6d0da; line-height: 1.45; }
+  .epitaph b { color: #fff; }
+  /* dead or fallen: the art greys out; the plate keeps its own colours */
+  .card.dead::before { content: ""; position: absolute; inset: 0; backdrop-filter: grayscale(1) brightness(0.7); }
+  .card.noart { background-image: none !important; }
+  .plate { z-index: 1; }
+  .statechip { font-size: calc(14px * var(--fs, 1)); color: var(--cream-light); border: 1px solid rgba(188,155,123,0.6); background: rgba(188,155,123,0.14); border-radius: 18px; padding: 6px 14px; white-space: nowrap; }
+  .btn.off { opacity: 0.45; cursor: not-allowed; }
+  .btn.off:hover { background: var(--card); border-color: var(--border); }
+  /* loading skeleton: the real layout with every VALUE replaced by a shimmering placeholder in the same place,
+     so the frame never changes and the values pop in. Labels that never change (Characteristics, Kit...) stay. */
+  .stage.skel .card { background-image: none !important; }
+  .stage.skel :is(.ps, .lvn, .bnote span, .rcell, .vcell, .res b, .kith .kn, .kith .kg, .kv span, .tile .val, .clines .row b, .words, .sub3 span, .lhead .cnt, .skv),
+  .stage.skel :is(.ps, .lvn, .bnote span, .rcell, .vcell, .res b, .kith .kn, .kith .kg, .kv span, .tile .val, .clines .row b, .words, .sub3 span, .lhead .cnt, .skv) * {
+    color: transparent !important; text-shadow: none !important; border-color: transparent !important; }
+  .stage.skel :is(.ps, .lvn, .bnote span, .rcell, .vcell, .res b, .kith .kn, .kith .kg, .kv span, .tile .val, .clines .row b, .words, .sub3 span, .lhead .cnt, .skv, .xpbar, .bar, .ring) {
+    background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.14) 50%, rgba(255,255,255,0.06) 100%) 0 0 / 200% 100% !important;
+    border-radius: 5px; animation: skel 1.4s ease-in-out infinite; }
+  .stage.skel :is(.ps, .words) { width: fit-content; max-width: 100%; }
+  .stage.skel :is(.xpbar i, .xpbar s, .bar .clip, .res i, .sgcorner, .ready-line) { display: none !important; }
+  .stage.skel :is(.bar, .ring) { border-color: transparent !important; color: transparent !important; }
+  .stage.skel .bar b, .stage.skel .ring { color: transparent !important; text-shadow: none !important; }
+  .stage.skel :is(.res, .vcell) { border-left-color: rgba(255,255,255,0.10) !important; }
+  /* skills: one placeholder per skill group rather than one slab for the whole cell */
+  .stage.skel .words:has(.sk) { background: none !important; animation: none; }
+  .stage.skel .words .sk { background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.14) 50%, rgba(255,255,255,0.06) 100%) 0 0 / 200% 100%; border-radius: 5px; animation: skel 1.4s ease-in-out infinite; margin-bottom: 4px; }
+  .skrow { display: block; height: 14px; margin: 6px 0; }
+  @keyframes skel { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+  /* skin proposal: motion. Each moment is a one-shot class on the stage (fx-*); Reduce Motion (.rm) turns all of it off */
+  .card .wash { position: absolute; inset: 0; opacity: 0; pointer-events: none; z-index: 2; border-radius: 10px; }
+  .stage.fx-hurt .card .wash { background: var(--st-dying); animation: wash 450ms ease-out; }
+  .stage.fx-heal .card .wash { background: var(--st-ok); animation: wash 450ms ease-out; }
+  @keyframes wash { 0% { opacity: 0.30; } 100% { opacity: 0; } }
+  .stage.fx-opening .bd { animation: fadeIn 260ms ease-out; }
+  .stage.fx-opening .lay { animation: sheetIn 200ms ease-out; }
+  @keyframes fadeIn { from { opacity: 0; } }
+  @keyframes sheetIn { from { opacity: 0; transform: translateY(10px); } }
+  .stage.fx-swap .card { animation: artIn 180ms ease-out; }
+  .stage.fx-arrive .card { animation: artIn 240ms ease-out; }
+  @keyframes artIn { from { opacity: 0.3; } }
+  .stage.fx-arrive :is(.pn, .ps, .lvn, .xpbar, .bar, .bnote, .ring, .rcell, .vcell, .res, .kith, .kv, .tile .val, .clines .row b, .words, .it, .arow, .fcard, .lhead .cnt) { animation: valIn 160ms ease-out; }
+  @keyframes valIn { from { opacity: 0; } }
+  .stage.fx-sweep .xpbar.ready::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; left: -40%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent); animation: sweep 900ms ease-out; }
+  .stage.fx-sweep .ready-line { animation: valIn 300ms ease-out; }
+  @keyframes sweep { to { left: 100%; } }
+  .glow { animation: glow 1100ms ease-out; }
+  @keyframes glow { 0% { color: var(--gold); text-shadow: 0 0 10px rgba(255,214,107,0.9); } }
+  .it.glow { animation: rowGlow 1100ms ease-out; }
+  @keyframes rowGlow { 0% { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(255,214,107,0.25); } }
+  .stage.rm *, .stage.rm *::before, .stage.rm *::after { animation: none !important; transition: none !important; }
+  /* review chrome: which sound a moment plays */
+  .toast { position: fixed; right: 18px; bottom: 18px; z-index: 100; background: #1a1a18; border: 1px solid var(--tan); color: var(--cream-light); border-radius: 8px; padding: 8px 12px; font-size: calc(13px * var(--fs, 1)); opacity: 0; transition: opacity 150ms; pointer-events: none; max-width: calc(100% - 36px); }
+  .toast.on { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .stage.skel * { animation: none !important; } }
+  .bd.grave { filter: grayscale(1) brightness(0.45) blur(2px); }
+  .bnote { display: flex; justify-content: space-between; gap: 10px; font-size: calc(13px * var(--fs, 1)); color: #c6d0da; margin-top: 5px; font-variant-numeric: tabular-nums; }
   .bnote b { color: #fff; }
   .rrow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 10px; align-items: center; border-top: 1px solid rgba(255,255,255,0.10); padding-top: 9px; }
-  .ring { width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(223,207,192,0.6); background: #000000a0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: var(--cream-light); font-variant-numeric: tabular-nums; }
-  .rcell { font-size: 12.5px; color: #c6d0da; min-width: 0; line-height: 1.25; }
-  .rcell b { color: #fff; font-size: 14px; }
+  .ring { width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(223,207,192,0.6); background: #000000a0; display: flex; align-items: center; justify-content: center; font-size: calc(18px * var(--fs, 1)); font-weight: 800; color: var(--cream-light); font-variant-numeric: tabular-nums; }
+  .rcell { font-size: calc(12.5px * var(--fs, 1)); color: #c6d0da; min-width: 0; line-height: 1.25; }
+  .rcell b { color: #fff; font-size: calc(14px * var(--fs, 1)); }
   .rcell.num { text-align: center; padding-left: 10px; border-left: 1px solid rgba(255,255,255,0.10); }
-  .rcell.num b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .rcell.num b { display: block; font-size: calc(20px * var(--fs, 1)); font-variant-numeric: tabular-nums; }
   .pips { display: inline-flex; gap: 3px; margin-left: 4px; vertical-align: 3px; }
   .pips i { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
 
@@ -112,55 +185,57 @@
   .kitcols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .kitcols .ksec + .ksec { border-left: 1px solid rgba(255,255,255,0.08); padding-left: 14px; }
   .kv.one { grid-template-columns: 1fr auto; }
-  .sub3 { font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); margin: 9px 0 2px; display: flex; justify-content: space-between; gap: 8px; }
+  .sub3 { font-size: calc(11.5px * var(--fs, 1)); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); margin: 9px 0 2px; display: flex; justify-content: space-between; gap: 8px; }
   .sub3 span { letter-spacing: 0; text-transform: none; font-weight: 600; }
   .res { display: inline-flex; align-items: center; gap: 7px; padding-left: 10px; border-left: 1px solid rgba(255,255,255,0.10); }
   .res i { width: 12px; height: 12px; transform: rotate(45deg); border: 2px solid var(--tan); }
-  .res b { font-size: 20px; color: #fff; font-variant-numeric: tabular-nums; }
-  .surges { display: inline-flex; gap: 2px; color: var(--gold); }
-  .surges:empty { display: none; }
-  .surges svg { width: 13px; height: 13px; display: block; }
-  .sec2 { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 9px 0 3px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .res b { font-size: calc(20px * var(--fs, 1)); color: #fff; font-variant-numeric: tabular-nums; }
+  /* surges: one icon per surge in a corner of the art just above the plate (the hero card's rule) */
+  .sgcorner { position: absolute; right: 4px; bottom: 100%; margin-bottom: 8px; display: inline-flex; gap: 2px; padding: 5px 7px; border-radius: 8px; background: #000000c4; color: var(--gold); cursor: help; }
+  .sgcorner svg { width: 15px; height: 15px; display: block; }
+  .sec2 { font-size: calc(11.5px * var(--fs, 1)); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 9px 0 3px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
   .sec2 span { letter-spacing: 0; text-transform: none; font-weight: 600; }
   .kith { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-  .kith .kn { font-size: 16.5px; font-weight: 700; color: var(--cream-light); }
-  .kith .kg { font-size: 12.5px; color: var(--muted); }
-  .kv { display: grid; grid-template-columns: 1fr auto 1fr auto; gap: 1px 12px; font-size: 13.5px; margin-top: 4px; }
-  .kv span:nth-child(odd) { font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); font-size: 11px; align-self: center; }
+  .kith .kn { font-size: calc(16.5px * var(--fs, 1)); font-weight: 700; color: var(--cream-light); }
+  .kith .kg { font-size: calc(12.5px * var(--fs, 1)); color: var(--muted); }
+  .kv { display: grid; grid-template-columns: 1fr auto 1fr auto; gap: 1px 12px; font-size: calc(13.5px * var(--fs, 1)); margin-top: 4px; }
+  .kv span:nth-child(odd) { font-size: calc(11.5px * var(--fs, 1)); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); font-size: calc(11px * var(--fs, 1)); align-self: center; }
   .kv span:nth-child(even) { color: var(--cream-light); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .mk { color: var(--tan); font-weight: 400; margin-left: 4px; font-size: 11px; vertical-align: 1px; }
-  .kdesc { font-size: 13px; color: var(--cream); margin-top: 3px; line-height: 1.4; }
+  .mk { color: var(--tan); font-weight: 400; margin-left: 4px; font-size: calc(11px * var(--fs, 1)); vertical-align: 1px; }
+  .kdesc { font-size: calc(13px * var(--fs, 1)); color: var(--cream); margin-top: 3px; line-height: 1.4; }
   .kitpair { display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; }
-  .kchip { font-size: 15px; font-weight: 700; color: var(--cream-light); }
-  .kchip i { font-style: normal; color: var(--tan); font-size: 12px; margin-right: 5px; vertical-align: 1px; }
+  .kchip { font-size: calc(15px * var(--fs, 1)); font-weight: 700; color: var(--cream-light); }
+  .kchip i { font-style: normal; color: var(--tan); font-size: calc(12px * var(--fs, 1)); margin-right: 5px; vertical-align: 1px; }
   .kplus { color: var(--muted); }
-  .choose { margin-top: 6px; display: grid; grid-template-columns: auto 1fr 1fr; gap: 6px; align-items: center; font-size: 12.5px; color: var(--lab); }
+  .choose { margin-top: 6px; display: grid; grid-template-columns: auto 1fr 1fr; gap: 6px; align-items: center; font-size: calc(12.5px * var(--fs, 1)); color: var(--lab); }
   .choose > span:first-child { white-space: nowrap; }
-  .opt { font-size: 12.5px; text-align: left; border: 1px solid var(--border); border-radius: 6px; padding: 3px 7px; background: transparent; color: var(--cream); cursor: pointer; white-space: nowrap; }
+  .opt { font-size: calc(12.5px * var(--fs, 1)); text-align: left; border: 1px solid var(--border); border-radius: 6px; padding: 3px 7px; background: transparent; color: var(--cream); cursor: pointer; white-space: nowrap; }
   .opt b { color: var(--cream-light); }
   .opt.on { border-color: var(--cream-light); background: #2c2a25; }
-  .chooseh { grid-column: 1 / -1; font-size: 11.5px; color: var(--muted); font-style: italic; }
-  .it { display: flex; align-items: center; gap: 8px; font-size: 13.5px; padding: 3px 6px 3px 10px; border: 1px solid var(--border); border-radius: 6px; background: rgba(0,0,0,0.2); margin-top: 4px; min-height: 31px; }
+  .chooseh { grid-column: 1 / -1; font-size: calc(11.5px * var(--fs, 1)); color: var(--muted); font-style: italic; }
+  .it { display: flex; align-items: center; gap: 8px; font-size: calc(13.5px * var(--fs, 1)); padding: 3px 6px 3px 10px; border: 1px solid var(--border); border-radius: 6px; background: rgba(0,0,0,0.2); margin-top: 4px; min-height: 31px; }
   .it:hover, .it.pinned { border-color: #6a6459; }
-  .it .nm2 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .it .nm2 { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+  .it .nmt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .it .slot { flex-shrink: 0; color: var(--muted); }
   .it .rt { margin-left: auto; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-  .it .tg { font-size: 12px; color: var(--muted); font-style: italic; white-space: nowrap; padding-right: 4px; }
+  .it .tg { font-size: calc(12px * var(--fs, 1)); color: var(--muted); font-style: italic; white-space: nowrap; padding-right: 4px; }
   .it.todo { border-color: var(--gold); }
-  .warnchip { font-size: 11px; color: var(--warn); border: 1px solid rgba(233,184,111,0.5); border-radius: 9px; padding: 0 6px; white-space: nowrap; }
+  .warnchip { font-size: calc(11px * var(--fs, 1)); color: var(--warn); border: 1px solid rgba(233,184,111,0.5); border-radius: 9px; padding: 0 6px; white-space: nowrap; }
   .cons { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
-  .cons .it { margin-top: 0; min-height: 28px; padding: 2px 9px; font-size: 13px; }
+  .cons .it { margin-top: 0; min-height: 28px; padding: 2px 9px; font-size: calc(13px * var(--fs, 1)); }
   .cons .q { color: var(--cream-light); font-weight: 700; margin-left: 4px; }
   .cons .it.more { color: var(--tan); border-style: dashed; cursor: pointer; }
 
   /* top bar */
   .topbar { display: flex; align-items: center; gap: 10px; min-height: 60px; min-width: 0; }
   .sw { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 auto; overflow: hidden; }
-  .sw .grp { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-right: 2px; white-space: nowrap; }
+  .sw .grp { font-size: calc(11px * var(--fs, 1)); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-right: 2px; white-space: nowrap; }
   .sw .sep { width: 1px; align-self: stretch; background: var(--border); margin: 6px 4px; }
   .th { width: 40px; height: 56px; border-radius: 6px; background-size: cover; background-position: 50% 15%; border: 1px solid #000; cursor: pointer; flex-shrink: 0; padding: 0; }
   .th.mine { box-shadow: 0 0 0 2px rgba(111,168,255,0.8); }
   .th.cur { outline: 2px solid var(--cream-light); outline-offset: 3px; }
-  .ownerchip { font-size: 14px; color: var(--cream); border: 1px solid rgba(111,168,255,0.55); background: rgba(111,168,255,0.10); border-radius: 18px; padding: 6px 14px; white-space: nowrap; }
+  .ownerchip { font-size: calc(13.5px * var(--fs, 1)); color: var(--cream); border: 1px solid rgba(255,255,255,0.14); background: transparent; border-radius: 6px; padding: 4px 10px; white-space: nowrap; }
   .ownerchip i { color: var(--muted); }
   .close.sig { border: 2px solid var(--gold); color: var(--gold); animation: pulse 1.6s ease-in-out infinite; }
   .close .sigt { font-weight: 700; }
@@ -169,33 +244,33 @@
 
   /* stats band: numbers row over words row */
   .band { padding: 12px 18px; }
-  .glab { font-size: 16px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--cream-light); margin-bottom: 8px; white-space: nowrap; }
+  .glab { font-size: calc(16px * var(--fs, 1)); font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--cream-light); margin-bottom: 8px; white-space: nowrap; }
   .nums { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 26px; align-items: stretch; }
   .tiles { display: grid; gap: 7px; }
   .tile { background: rgba(0,0,0,0.22); border: 1px solid var(--border); border-radius: 8px; padding: 6px 4px 5px; text-align: center; min-width: 0; }
-  .tile .lab { font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tile .val { font-size: 30px; font-weight: 800; color: var(--cream-light); line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .tile .lab { font-size: calc(11.5px * var(--fs, 1)); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile .val { font-size: calc(30px * var(--fs, 1)); font-weight: 800; color: var(--cream-light); line-height: 1.1; font-variant-numeric: tabular-nums; }
   .tile.sm { padding: 4px 4px 3px; border-color: rgba(58,56,51,0.7); background: rgba(0,0,0,0.12); }
-  .tile.sm .lab { font-size: 12.5px; }
-  .tile.sm .val { font-size: 19px; font-weight: 700; }
+  .tile.sm .lab { font-size: calc(12.5px * var(--fs, 1)); }
+  .tile.sm .val { font-size: calc(19px * var(--fs, 1)); font-weight: 700; }
   .lines { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-content: center; row-gap: 16px; column-gap: 12px; padding-left: 24px; border-left: 1px solid rgba(255,255,255,0.08); }
-  .lines > span { display: flex; align-items: baseline; justify-content: center; gap: 8px; white-space: nowrap; font-size: 14px; color: var(--lab); }
+  .lines > span { display: flex; align-items: baseline; justify-content: center; gap: 8px; white-space: nowrap; font-size: calc(14px * var(--fs, 1)); color: var(--lab); }
   .lines > span:nth-child(4n+1) { justify-content: flex-start; }
-  .lines > span b { color: var(--cream-light); font-size: 21px; font-variant-numeric: tabular-nums; }
-  .lines .st { font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); }
+  .lines > span b { color: var(--cream-light); font-size: calc(21px * var(--fs, 1)); font-variant-numeric: tabular-nums; }
+  .lines .st { font-size: calc(11.5px * var(--fs, 1)); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); }
   /* stat block option "centred": each group is one tight centred line */
   .clines { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 14px; padding-left: 24px; border-left: 1px solid rgba(255,255,255,0.08); }
-  .clines .row { display: flex; align-items: baseline; gap: 26px; white-space: nowrap; font-size: 14px; color: var(--lab); }
+  .clines .row { display: flex; align-items: baseline; gap: 26px; white-space: nowrap; font-size: calc(14px * var(--fs, 1)); color: var(--lab); }
   .clines .row > span { display: inline-flex; align-items: baseline; gap: 8px; }
-  .clines .row b { color: var(--cream-light); font-size: 21px; font-variant-numeric: tabular-nums; }
-  .clines .row .st, .groups .st { font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); }
+  .clines .row b { color: var(--cream-light); font-size: calc(21px * var(--fs, 1)); font-variant-numeric: tabular-nums; }
+  .clines .row .st, .groups .st { font-size: calc(11.5px * var(--fs, 1)); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); }
   .clines .pot { padding: 3px 14px; border: 1px solid rgba(188,155,123,0.35); border-radius: 18px; gap: 20px; }
   /* stat block option "groups": body stats as a 2x2 grid, potency as its own captioned group */
   .groups { display: grid; grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr); gap: 0 22px; align-items: center; padding-left: 24px; border-left: 1px solid rgba(255,255,255,0.08); }
   .groups .vr { align-self: stretch; background: rgba(255,255,255,0.08); }
   .groups .g4 { display: grid; grid-template-columns: auto auto; gap: 12px 26px; justify-content: center; }
-  .groups .g4 > span, .groups .g3 > span { display: inline-flex; align-items: baseline; gap: 8px; font-size: 14px; color: var(--lab); white-space: nowrap; }
-  .groups b { color: var(--cream-light); font-size: 21px; font-variant-numeric: tabular-nums; }
+  .groups .g4 > span, .groups .g3 > span { display: inline-flex; align-items: baseline; gap: 8px; font-size: calc(14px * var(--fs, 1)); color: var(--lab); white-space: nowrap; }
+  .groups b { color: var(--cream-light); font-size: calc(21px * var(--fs, 1)); font-variant-numeric: tabular-nums; }
   .groups .pg { display: flex; flex-direction: column; align-items: center; gap: 8px; }
   .groups .g3 { display: flex; gap: 22px; }
   /* the scene behind the sheet: where you are (town or encounter) or a wash of the hero's own art */
@@ -209,60 +284,60 @@
   .scene .topbar .sw .grp { color: #d9d0c0; text-shadow: 0 1px 2px #000; }
   .lrow { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: baseline; gap: 10px; }
   .lrow .glab { margin: 0; }
-  .pairs { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 24px; font-size: 14px; color: var(--lab); }
-  .pairs .st { font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); }
+  .pairs { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 24px; font-size: calc(14px * var(--fs, 1)); color: var(--lab); }
+  .pairs .st { font-size: calc(11.5px * var(--fs, 1)); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); }
   .pairs .tier { color: var(--lab); }
-  .pairs b { color: var(--cream-light); font-size: 20px; margin-left: 6px; font-variant-numeric: tabular-nums; }
+  .pairs b { color: var(--cream-light); font-size: calc(20px * var(--fs, 1)); margin-left: 6px; font-variant-numeric: tabular-nums; }
   .smt { display: grid; grid-template-columns: 4fr 3fr; gap: 14px; padding-left: 22px; border-left: 1px solid rgba(255,255,255,0.08); align-content: center; }
   .hr { height: 1px; background: rgba(255,255,255,0.08); margin: 10px 0 9px; }
   .wrow { display: grid; grid-template-columns: minmax(0, 2.4fr) minmax(0, 0.9fr) minmax(0, 1.1fr) minmax(0, 0.8fr); gap: 18px; }
   .wrow > div + div { border-left: 1px solid rgba(255,255,255,0.08); padding-left: 16px; }
-  .wl { font-size: 16px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--cream-light); margin-bottom: 5px; }
-  .words { font-size: 14px; line-height: 1.6; color: var(--cream); min-width: 0; }
-  .words .g { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tan); margin-right: 5px; }
+  .wl { font-size: calc(16px * var(--fs, 1)); font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--cream-light); margin-bottom: 5px; }
+  .words { font-size: calc(14px * var(--fs, 1)); line-height: 1.6; color: var(--cream); min-width: 0; }
+  .words .g { font-size: calc(11.5px * var(--fs, 1)); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tan); margin-right: 5px; }
   .words .sk { white-space: nowrap; display: inline-block; margin-right: 18px; }
 
   /* lists */
   .lists { min-height: 0; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); grid-template-rows: auto minmax(0, 1fr); gap: 0 20px; }
   .lhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-bottom: 9px; border-bottom: 1px solid rgba(188,155,123,0.4); min-width: 0; min-height: 44px; }
-  .lhead h3 { margin: 0; font-size: 16px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--cream-light); }
-  .lhead .cnt { font-size: 13px; color: var(--muted); margin-right: 6px; }
-  .chip { font-size: 12.5px; height: 28px; padding: 0 10px; border-radius: 14px; border: 1px solid var(--border); background: transparent; color: var(--cream); cursor: pointer; }
+  .lhead h3 { margin: 0; font-size: calc(16px * var(--fs, 1)); font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--cream-light); }
+  .lhead .cnt { font-size: calc(13px * var(--fs, 1)); color: var(--muted); margin-right: 6px; }
+  .chip { font-size: calc(12.5px * var(--fs, 1)); height: 28px; padding: 0 10px; border-radius: 14px; border: 1px solid var(--border); background: transparent; color: var(--cream); cursor: pointer; }
   .chip:hover { border-color: var(--tan); }
   .chip.on { background: var(--cream); color: var(--ink); border-color: var(--cream); font-weight: 700; }
-  .search { font-size: 13px; height: 28px; flex: 1 1 110px; min-width: 100px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--border); background: rgba(0,0,0,0.25); color: var(--cream); }
+  .search { font-size: calc(13px * var(--fs, 1)); height: 28px; flex: 1 1 110px; min-width: 100px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--border); background: rgba(0,0,0,0.25); color: var(--cream); }
   .search::placeholder { color: var(--muted); }
   .lbody { overflow-y: auto; min-height: 0; padding: 8px 6px 0 0; scrollbar-width: thin; scrollbar-color: #4a4740 transparent; }
   .grp { margin-top: 14px; } .grp:first-child { margin-top: 2px; }
   .grph { display: flex; align-items: baseline; gap: 8px; padding: 3px 0; width: 100%; background: none; border: 0; color: inherit; text-align: left; cursor: pointer; }
-  .grph .car { width: 12px; font-size: 10px; color: var(--muted); transition: transform 0.12s; }
+  .grph .car { width: 12px; font-size: calc(10px * var(--fs, 1)); color: var(--muted); transition: transform 0.12s; }
   .grp.closed .grph .car { transform: rotate(-90deg); }
   .grp.closed .gb { display: none; }
-  .grph .gl { font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); font-size: 12px; }
-  .grph .gc { font-size: 13px; color: var(--muted); }
-  .grph .gn { margin-left: auto; font-size: 12px; color: var(--muted); font-style: italic; }
+  .grph .gl { font-size: calc(11.5px * var(--fs, 1)); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); font-size: calc(12px * var(--fs, 1)); }
+  .grph .gc { font-size: calc(13px * var(--fs, 1)); color: var(--muted); }
+  .grph .gn { margin-left: auto; font-size: calc(12px * var(--fs, 1)); color: var(--muted); font-style: italic; }
   .arow { display: flex; align-items: baseline; gap: 10px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(26,27,24,0.85); margin-top: 6px; cursor: pointer; min-width: 0; }
   .arow:hover { border-color: #6a6459; background: rgba(38,39,34,0.9); }
   .arow.pinned { border-color: var(--cream-light); }
-  .arow .an { font-size: 16px; font-weight: 700; color: var(--cream-light); white-space: nowrap; }
-  .arow .ak { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .arow .an { font-size: calc(16px * var(--fs, 1)); font-weight: 700; color: var(--cream-light); white-space: nowrap; }
+  .arow .ak { font-size: calc(12px * var(--fs, 1)); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
   .arow .tags { margin-left: auto; display: flex; gap: 6px; flex-shrink: 0; }
-  .atag { font-size: 12.5px; color: var(--lab); white-space: nowrap; }
+  .atag { font-size: calc(12.5px * var(--fs, 1)); color: var(--lab); white-space: nowrap; }
   .atag.cost { color: var(--tan); font-weight: 700; }
   .atag + .atag::before { content: "\00B7"; color: var(--muted); margin-right: 6px; }
   .compact { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
   .compact .arow { margin-top: 0; padding: 6px 10px; }
-  .compact .arow .an { font-size: 14.5px; font-weight: 600; }
+  .compact .arow .an { font-size: calc(14.5px * var(--fs, 1)); font-weight: 600; }
   .fcard { border: 1px solid var(--border); border-radius: 8px; background: rgba(26,27,24,0.85); padding: 10px 14px; margin-top: 7px; }
   .ft { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-  .ft .fn { font-size: 16px; font-weight: 700; color: var(--cream-light); }
+  .ft .fn { font-size: calc(16px * var(--fs, 1)); font-weight: 700; color: var(--cream-light); }
   .ft .ftags { margin-left: auto; display: flex; gap: 5px; }
-  .ptag { font-size: 12px; color: var(--muted); border: 1px solid var(--border); border-radius: 9px; padding: 0 7px; white-space: nowrap; }
-  .fsub { font-size: 13px; font-style: italic; color: var(--muted); margin-top: 1px; }
-  .fd { font-size: 14px; color: var(--cream); line-height: 1.55; margin-top: 6px; white-space: pre-line; }
+  .ptag { font-size: calc(12px * var(--fs, 1)); color: var(--muted); border: 1px solid var(--border); border-radius: 9px; padding: 0 7px; white-space: nowrap; }
+  .fsub { font-size: calc(13px * var(--fs, 1)); font-style: italic; color: var(--muted); margin-top: 1px; }
+  .fd { font-size: calc(14px * var(--fs, 1)); color: var(--cream); line-height: 1.55; margin-top: 6px; white-space: pre-line; }
   .fd.clamp { max-height: 110px; overflow: hidden; -webkit-mask-image: linear-gradient(180deg, #000 65%, transparent); mask-image: linear-gradient(180deg, #000 65%, transparent); }
-  .more { font-size: 13px; color: var(--tan); background: none; border: 0; padding: 0; margin-top: 4px; cursor: pointer; text-decoration: underline; }
-  .empty { font-size: 14px; color: var(--muted); font-style: italic; padding: 20px 4px; }
+  .more { font-size: calc(13px * var(--fs, 1)); color: var(--tan); background: none; border: 0; padding: 0; margin-top: 4px; cursor: pointer; text-decoration: underline; }
+  .empty { font-size: calc(14px * var(--fs, 1)); color: var(--muted); font-style: italic; padding: 20px 4px; }
 
   /* hover / pinned card */
   .hcard { position: absolute; z-index: 50; width: 470px; max-height: 620px; overflow-y: auto; background: #12110f; border: 1px solid #5a554c; border-radius: 10px;
@@ -270,21 +345,21 @@
   .hcard.pinned { pointer-events: auto; border: 2px solid var(--cream-light); padding: 13px 15px 11px; }
   .hcard .x { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--cream); cursor: pointer; display: none; }
   .hcard.pinned .x { display: block; }
-  .hcard .hint { font-size: 11.5px; color: var(--muted); margin-top: 8px; font-style: italic; }
-  .c-title { font-size: 20px; font-weight: 800; color: var(--cream-light); padding-right: 30px; }
-  .c-title span { font-size: 15px; color: var(--tan); font-weight: 700; margin-left: 6px; }
-  .c-type { font-size: 13px; font-weight: 700; color: var(--tan); letter-spacing: 0.06em; margin-top: 1px; }
-  .c-fl { font-size: 14px; font-style: italic; color: var(--muted); margin-top: 6px; }
-  .c-kw { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--lab); border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 5px 0; margin-top: 8px; }
+  .hcard .hint { font-size: calc(11.5px * var(--fs, 1)); color: var(--muted); margin-top: 8px; font-style: italic; }
+  .c-title { font-size: calc(20px * var(--fs, 1)); font-weight: 800; color: var(--cream-light); padding-right: 30px; }
+  .c-title span { font-size: calc(15px * var(--fs, 1)); color: var(--tan); font-weight: 700; margin-left: 6px; }
+  .c-type { font-size: calc(13px * var(--fs, 1)); font-weight: 700; color: var(--tan); letter-spacing: 0.06em; margin-top: 1px; }
+  .c-fl { font-size: calc(14px * var(--fs, 1)); font-style: italic; color: var(--muted); margin-top: 6px; }
+  .c-kw { display: flex; justify-content: space-between; gap: 10px; font-size: calc(13px * var(--fs, 1)); color: var(--lab); border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 5px 0; margin-top: 8px; }
   .c-kw b { color: var(--cream); font-weight: 600; }
-  .c-dt { display: flex; gap: 22px; font-size: 13px; color: var(--lab); margin-top: 6px; flex-wrap: wrap; }
+  .c-dt { display: flex; gap: 22px; font-size: calc(13px * var(--fs, 1)); color: var(--lab); margin-top: 6px; flex-wrap: wrap; }
   .c-dt b { color: var(--cream); font-weight: 600; }
-  .c-roll { font-size: 14px; font-weight: 700; color: var(--cream-light); margin-top: 9px; }
-  .tier { display: flex; gap: 10px; font-size: 14px; color: var(--cream); margin-top: 5px; line-height: 1.4; }
-  .tier .tb { flex-shrink: 0; width: 82px; font-size: 12px; font-weight: 700; color: var(--tan); border: 1px solid rgba(188,155,123,0.45); border-radius: 4px; text-align: center; padding: 1px 0; height: fit-content; }
-  .c-eff { font-size: 14px; color: var(--cream); margin-top: 8px; line-height: 1.5; white-space: pre-line; }
-  .c-list { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
-  .c-impl { font-size: 12px; font-style: italic; margin-top: 8px; }
+  .c-roll { font-size: calc(14px * var(--fs, 1)); font-weight: 700; color: var(--cream-light); margin-top: 9px; }
+  .tier { display: flex; gap: 10px; font-size: calc(14px * var(--fs, 1)); color: var(--cream); margin-top: 5px; line-height: 1.4; }
+  .tier .tb { flex-shrink: 0; width: 82px; font-size: calc(12px * var(--fs, 1)); font-weight: 700; color: var(--tan); border: 1px solid rgba(188,155,123,0.45); border-radius: 4px; text-align: center; padding: 1px 0; height: fit-content; }
+  .c-eff { font-size: calc(14px * var(--fs, 1)); color: var(--cream); margin-top: 8px; line-height: 1.5; white-space: pre-line; }
+  .c-list { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; font-size: calc(14px * var(--fs, 1)); }
+  .c-impl { font-size: calc(12px * var(--fs, 1)); font-style: italic; margin-top: 8px; }
 
   /* stamina bars */
   .bar { position: relative; display: flex; align-items: center; width: 100%; height: 22px; border: 1px solid var(--st-ok); border-radius: 3px; background: #00000066; }
@@ -294,8 +369,8 @@
   .bar.st-winded .f { background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(0,0,0,0.18)), var(--st-winded); }
   .bar.st-dying .f { background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(0,0,0,0.18)), var(--st-dying); }
   .bar .t { height: calc(100% - 2px); flex-shrink: 0; background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(0,0,0,0.2)), var(--temp); }
-  .bar b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; text-shadow: 0 1px 2px #000, 0 0 3px #000; font-variant-numeric: tabular-nums; white-space: nowrap; z-index: 3; }
-  .bar.sm { height: 14px; } .bar.sm b { font-size: 10px; }
+  .bar b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: calc(13px * var(--fs, 1)); font-weight: 700; text-shadow: 0 1px 2px #000, 0 0 3px #000; font-variant-numeric: tabular-nums; white-space: nowrap; z-index: 3; }
+  .bar.sm { height: 14px; } .bar.sm b { font-size: calc(10px * var(--fs, 1)); }
   .bar .tick { position: absolute; top: -2px; bottom: -2px; width: 2px; background: rgba(255,255,255,0.9); box-shadow: 0 0 0 1px rgba(0,0,0,0.6); z-index: 2; }
   .bar .band { position: absolute; top: 1px; bottom: 1px; border: 2px solid var(--temp); border-radius: 2px; z-index: 1;
     background: repeating-linear-gradient(135deg, rgba(228,221,208,0.55) 0 4px, rgba(228,221,208,0.25) 4px 8px); }
@@ -306,6 +381,78 @@
   .bar .capout { position: absolute; top: 1px; bottom: 1px; z-index: 1; border: 2px solid var(--temp); border-left: 0; border-radius: 0 3px 3px 0;
     background: repeating-linear-gradient(135deg, rgba(228,221,208,0.55) 0 4px, rgba(228,221,208,0.25) 4px 8px); }
   .barwrap.t3 { width: 82%; }
+
+  /* ---------- round 12 ---------- */
+  .none, .it .tg { font-style: normal; }
+  .fd { max-width: 75ch; }
+  .tbody { -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 22px), transparent); mask-image: linear-gradient(180deg, #000 calc(100% - 22px), transparent); padding-bottom: 18px; scrollbar-color: #6a655b transparent; }
+  .lbody { scrollbar-color: #6a655b transparent; }
+  button.cta { border: 0; cursor: pointer; font-family: inherit; }
+  .cta.off { background: transparent; color: var(--lab); border: 1px solid var(--border); }
+  .btn.off::before { content: ""; width: 10px; height: 12px; flex-shrink: 0; background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 12'%3E%3Cpath d='M2.5 5V3.5a2.5 2.5 0 0 1 5 0V5' fill='none' stroke='%23DFCFC0' stroke-width='1.4'/%3E%3Crect x='1' y='5' width='8' height='6.5' rx='1.2' fill='%23DFCFC0'/%3E%3C/svg%3E"); }
+  .statechip small { display: block; font-size: calc(11.5px * var(--fs, 1)); color: var(--lab); font-weight: 400; margin-top: 1px; }
+  .statechip:has(small) { border-radius: 10px; padding: 4px 12px; }
+  .xprow .xpbar { height: 10px; border-radius: 5px; }
+  .xpbar .notch { position: absolute; top: 0; bottom: 0; width: 2px; background: #000; z-index: 1; }
+  .respite-line { font-size: calc(13.5px * var(--fs, 1)); font-weight: 700; color: var(--cream-light); margin-top: -3px; }
+  /* a value an item would change (hover) or just changed (equip): gold, then it settles back over 0.6s */
+  .stage [data-chg] { transition: color 600ms ease-out; }
+  .stage .pv, .stage .held { color: var(--gold) !important; }
+  .c-eff.locked { color: var(--muted); }
+  /* D13: over a battle map the panels are near-opaque; the top bar sits on its own dark band */
+  .stage.ingame .blk { background: rgba(14,13,11,0.86); }
+  .stage.ingame .lists { background: rgba(12,11,10,0.86); }
+  .topbar { background: rgba(10,10,9,0.72); border-radius: 10px; padding: 0 12px; }
+  /* D2 option: the you're-needed strip across the top of the sheet; still under Reduce Motion */
+  .sigstrip { position: absolute; left: 0; right: 0; top: 0; height: 46px; z-index: 40; display: flex; align-items: center; gap: 14px; padding: 0 24px; background: #ffd66bf2; color: var(--ink); font-weight: 800; font-size: calc(17px * var(--fs, 1)); }
+  .sigstrip .btn { margin-left: auto; height: 32px; background: var(--ink); color: var(--gold); border-color: var(--ink); }
+  .sigstrip .btn kbd { color: var(--gold); border-color: rgba(255,214,107,0.4); }
+  .stage.hasstrip .lay { top: 46px; }
+  /* D2 options that never move the sheet: the top bar itself turns gold, or a banner floats over the stats */
+  .topbar.sigbar { background: #ffd66bf2; }
+  .topbar.sigbar .sigmsg { flex: 1 1 auto; font-weight: 800; font-size: calc(17px * var(--fs, 1)); color: var(--ink); }
+  .topbar.sigbar .btn { background: var(--ink); color: var(--gold); border-color: var(--ink); }
+  .topbar.sigbar .btn kbd { color: var(--gold); border-color: rgba(255,214,107,0.4); }
+  .main { position: relative; }
+  .sigfloat { position: absolute; top: 76px; left: 50%; transform: translateX(-50%); z-index: 40; display: flex; align-items: center; gap: 16px; padding: 10px 12px 10px 20px; border-radius: 10px;
+    background: #ffd66bf5; color: var(--ink); font-weight: 800; font-size: calc(17px * var(--fs, 1)); box-shadow: 0 10px 30px rgba(0,0,0,0.55); white-space: nowrap; }
+  .sigfloat .btn { background: var(--ink); color: var(--gold); border-color: var(--ink); height: 32px; }
+  .sigfloat .btn kbd { color: var(--gold); border-color: rgba(255,214,107,0.4); }
+  /* D7: hovering a spendable ring previews what a Recovery gives; armed = waiting for the second click */
+  .ring .rn { pointer-events: none; }
+  .ring.spendable:hover .rn, .ring.armed .rn { display: none; }
+  .ring.spendable:hover::after, .ring.armed::after { content: attr(data-gain); font-size: calc(15px * var(--fs, 1)); color: var(--cream-light); }
+  .ring.armed { background: rgba(243,237,231,0.18); border-color: var(--cream-light); }
+  /* D3 options: the heroic resource's name */
+  .res .rl { font-size: calc(12px * var(--fs, 1)); color: #c6d0da; white-space: nowrap; }
+  .res.under { flex-direction: column; align-items: center; gap: 0; }
+  .res.under > span:first-child { display: inline-flex; align-items: center; gap: 7px; }
+  .epic i { transform: none; border: 0; width: 12px; height: 11px; background: var(--cream-light); clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
+  /* D6 option: state badges on roster thumbnails - a shape and a colour each */
+  .th { position: relative; overflow: visible; }
+  .th .bdg { position: absolute; right: -6px; top: -6px; display: flex; gap: 2px; }
+  .bdg i { width: 17px; height: 17px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 10px; font-weight: 800; border: 1.5px solid #000; line-height: 1; }
+  .bdg .eq { background: var(--gold); color: var(--ink); }
+  .bdg .lv { background: var(--gold); color: var(--ink); border-radius: 4px; }
+  .bdg .rs { background: #1a1917; color: var(--cream-light); border-color: var(--cream-light); border-radius: 4px; }
+  .bdg .aw { background: #3a3833; color: var(--cream-light); }
+  /* D7 options: spend a Recovery out of combat */
+  .spend { font-family: inherit; font-size: calc(12px * var(--fs, 1)); color: var(--cream-light); background: rgba(255,255,255,0.06); border: 1px solid rgba(223,207,192,0.45); border-radius: 6px; padding: 1px 8px; cursor: pointer; margin-top: 4px; display: inline-block; }
+  .spend[disabled] { opacity: 0.5; cursor: not-allowed; }
+  .ring.spendable { cursor: pointer; }
+  .ring.spendable:hover { border-color: var(--cream-light); box-shadow: 0 0 0 3px rgba(243,237,231,0.15); }
+  /* D15 option: the Codex's Status Icons setting puts a shape beside the stamina colour */
+  .bar .si { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); z-index: 4; font-size: calc(12px * var(--fs, 1)); color: #fff; text-shadow: 0 1px 2px #000; }
+  /* F12 options at 120-140% Font Size */
+  .stage.fs-asis .plate { max-height: 236px; overflow: hidden; }
+  .stage.fs-asis :is(.ps, .ready-line, .respite-line, .rcell, .bnote span, .kv span) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stage:is(.fs-grow, .fs-wide) .rrow { display: flex; flex-wrap: wrap; row-gap: 8px; }
+  .stage:is(.fs-grow, .fs-wide) .rrow .rcell { flex: 1 1 auto; }
+  .stage:is(.fs-grow, .fs-wide) .kv { grid-template-columns: 1fr auto; }
+  .stage:is(.fs-grow, .fs-wide) .topbar { flex-wrap: wrap; row-gap: 6px; padding-block: 6px; }
+  .stage:is(.fs-grow, .fs-wide) .sw { flex-wrap: wrap; overflow: visible; }
+  .stage.fs-wide .lay { grid-template-columns: calc(400px * var(--fs, 1)) minmax(0, 1fr); }
+  .stage.fs-wide .card { width: calc(400px * var(--fs, 1)); height: calc(520px * var(--fs, 1)); }
 
   /* stamina study */
   .study-wrap { overflow-x: auto; border: 1px solid var(--page-line); border-radius: 10px; }
@@ -324,7 +471,7 @@
 <div class="page">
   <header class="intro">
     <h1>EotW hero sheet</h1>
-    <p>A read-only hero sheet for Encounter of the Week, shown with two real pregens: a <b>level 1 Dwarf Fury</b> fresh from the builder, and a <b>level 6 Orc Conduit</b> who has been playing for a while, with treasure, immunities and XP. Hover any ability or item to see its card, and click to pin it. Use Where to see the sheet in town or during an encounter.</p>
+    <p><b>Updated 9 October: the design is locked</b> and the build starts next. A read-only hero sheet for Encounter of the Week, shown with two real pregens: a <b>Level 1 Dwarf Fury</b> fresh from the builder, and a <b>Level 6 Orc Conduit</b> who has been playing for a while, with treasure, immunities, XP and two Victories banked. Hover any ability or item to see its card, and click to pin it. Use Where to see the sheet in town or during an encounter, and State for the other situations the sheet handles.</p>
   </header>
 
   <div class="controls" role="toolbar" aria-label="Preview controls">
@@ -335,10 +482,23 @@
         <button data-where="game">In an encounter</button>
       </div>
     </div>
+    <div class="ctl"><span>State</span><select id="ctl-st" aria-label="Sheet state"></select></div>
     <div class="ctl"><span>Show</span>
-      <button class="tog" id="ctl-sig" aria-pressed="false">A trigger is waiting</button>
+      <button class="tog" id="ctl-sig" aria-pressed="false">Something is waiting on you</button>
     </div>
     <div class="ctl"><span>Zoom</span><div class="seg" id="ctl-zoom"><button data-zoom="fit">Fit</button><button data-zoom="full">100%</button></div></div>
+  </div>
+  <!-- controls the full review mock has; kept hidden so the shared script runs unchanged -->
+  <div hidden>
+    <select id="ctl-stam"></select><select id="ctl-prog"></select><button id="ctl-replay"></button>
+    <button id="ctl-vet"></button><button id="ctl-imm"></button><button id="ctl-twokit"></button><button id="ctl-res"></button>
+    <button id="mo-open"></button><button id="mo-hurt"></button><button id="mo-heal"></button><button id="mo-ready"></button><button id="mo-rm"></button>
+    <select id="op-sig"><option value="button"></option><option value="topbar"></option><option value="float"></option></select>
+    <select id="op-cause"><option value="trigger"></option><option value="save"></option><option value="roll"></option><option value="story"></option><option value="act"></option></select>
+    <select id="op-spend"><option value="off"></option><option value="ring"></option><option value="ring2"></option></select>
+    <select id="op-fs"><option value="1"></option><option value="1.2"></option><option value="1.4"></option></select>
+    <button id="op-si"></button>
+    <div class="toast" id="toast"></div>
   </div>
 
   <div class="stage-wrap" id="wrap"><div class="stage" id="stage"></div></div>
@@ -347,34 +507,35 @@
     <section class="note">
       <h2>What is different for EotW, and why</h2>
       <ul>
-        <li><b>Read-only by design.</b> The sheet only has the actions the rules allow: equip or unequip treasure, change appearance, and edit in the builder before the first win. Nothing can edit stamina or other numbers, so EotW's "enforce everything" holds.</li>
-        <li><b>One sheet everywhere.</b> The Guild, the town strip and the in-game hero card all open this sheet, and teammates' heroes open read-only. The other ways into the old editable sheet (the C key, the token menu, search, chat commands) would point here.</li>
-        <li><b>It looks like EotW.</b> The hero card, enlarged, anchors the sheet with the same stamina bar, recoveries ring, resource and surge icons as the HUD card, so players learn it once. Panels are frosted glass over where you are: the Hero's Guild in town, the battle map in an encounter.</li>
-        <li><b>Everything on one screen.</b> No tabs: abilities and features sit side by side, and the left column never scrolls. Hovering shows the same ability card the action bar uses; clicking pins it.</li>
-        <li><b>Laid out the way you use it.</b> Characteristics sit with skills, grouped by skill group, because a test is a characteristic plus a skill. Size, speed, disengage, stability and potency sit beside them.</li>
-        <li><b>Abilities follow the feature tags.</b> Only real abilities show, plus the standard actions and free strikes every hero has, which helps newer players. Features the book writes as prose stay in Features.</li>
-        <li><b>Kit, or what the class uses instead.</b> Prayer and ward for a Conduit, enchantment and ward for an Elementalist, and so on. A Tactician's two kits read as one kit, with the damage bonus choice made in town.</li>
-        <li><b>Treasure by type, with an equip prompt.</b> Leveled treasure (with the carry-three count), trinkets and consumables. Won treasure currently arrives unequipped and does nothing until it is equipped, so the sheet flags it.</li>
-        <li><b>Progress on the card.</b> Level, the bar to the next level (XP on hover) and Victories.</li>
-        <li><b>Safe to open mid-encounter.</b> The sheet sits over the map. If a trigger, save or roll is waiting on you, the Close button turns gold and says so; EotW prompts wait rather than time out, so nothing is lost.</li>
+        <li><b>Read-only by design.</b> The sheet only has the actions the rules allow: equip or unequip treasure, spend a Recovery outside combat by clicking the Recoveries ring, change appearance, and edit in the builder before the Hero wins an encounter. Nothing edits Stamina or other numbers, so EotW's "enforce everything" holds.</li>
+        <li><b>The sheet shows the Hero; the town changes them.</b> Levelling up, taking a respite and the Hero's history belong to places in town (a Training Grounds and so on). The sheet points there: "Head to the Training Grounds to Level your Hero."</li>
+        <li><b>Built for your levelling answer.</b> Victories sit beside Recoveries, because pushing on with Victories banked and Recoveries low is now the player's decision. The XP bar shows, hatched, the XP the next respite will add, and says when a respite would Level the Hero. At Level 10 the bar becomes the class's epic resource.</li>
+        <li><b>One sheet everywhere.</b> The Guild, the town strip and the party view open this sheet, and teammates' Heroes open read-only, in town and in an encounter. The other ways into the old editable sheet (the C key, the token menu, search, chat commands) would point here.</li>
+        <li><b>The character panel stays the combat companion.</b> Conditions and effects live there; the sheet's numbers match the panel's. If something waits on you while the sheet is open, its top bar turns gold and says what (a trigger, a save, a roll, the story continuing, or the Heroes being able to act).</li>
+        <li><b>It looks like EotW.</b> The hero card, enlarged, anchors the sheet with the same stamina bar, recoveries ring, resource and surge icons as the HUD card. Panels are frosted glass over where you are: the Hero's Guild in town, the battle map in an encounter.</li>
+        <li><b>Everything on one screen.</b> No tabs: abilities and features side by side, and the left column never scrolls. Hovering shows the same ability card the action bar uses; clicking pins it.</li>
+        <li><b>Laid out the way you use it.</b> Characteristics sit with skills, grouped by skill group, because a test is a characteristic plus a skill. Abilities follow the feature tags, including each Hero's heroic abilities and triggered actions, plus the standard actions and free strikes every Hero has.</li>
+        <li><b>Treasure you can read.</b> Leveled treasure (with the carry-three count), trinkets and consumables. Hovering an item shows the value it would change in gold; equipping changes it. Armor or weapons the kit cannot use say "No benefit", and leveled treasure shows its Level 5 and 9 text.</li>
+        <li><b>Every state handled.</b> Away in a party, dead mid-encounter, fallen (opened from the Graveyard as a memorial), Danger Rooms practice, loading (a skeleton of the whole layout) and a failure to load. Reduce Motion, Font Size up to 140% and the Status Icons setting are all respected.</li>
       </ul>
     </section>
     <section class="note">
-      <h2>Open questions</h2>
+      <h2>Questions for you (rules calls; none changes the layout)</h2>
       <ul>
-        <li><b>Progression.</b> Is levelling done with XP (victories become XP at a respite, 16 XP per level), or something else in EotW? Where does a level-up happen?</li>
-        <li><b>Moving items.</b> Can players move items between their own heroes, share them within a party, or trade with other players? Today Give To, Set Quantity and Duplicate can inflate won treasure.</li>
+        <li><b>What carries home after an encounter.</b> Pushing on only costs something if spent Recoveries and Stamina come home with the Hero. Today nothing spent comes home. Should it? And consumables used or won?</li>
         <li><b>Carrying three leveled treasures.</b> Hard cap, allow it with a warning, or automate the respite Presence test?</li>
-        <li><b>Edit in Builder.</b> Your doc says before a hero's first encounter; the code allows it until the first victory, so a hero who lost stays rebuildable. Which do you want?</li>
-        <li><b>Teammates' sheets.</b> OK to open them read-only during an encounter as well as in town?</li>
-        <li><b>Closing the other routes.</b> Pointing the C key, token menu, search and chat commands at this sheet touches core code. OK to do?</li>
-        <li><b>Noticed along the way.</b> The AI's "Waiting for..." banner hides whenever any panel window is open, including the character panel the HUD card opens. Intended?</li>
-        <li><b>Also noticed.</b> In EotW every hero's character panel is view-only, which also blocks play actions such as the Summoner's Sacrifice Minions and ending an Elementalist's persistent ability.</li>
+        <li><b>Equipping while a party forms.</b> The City refuses changes to a Hero claimed by any party, so a player waiting at the Gate cannot equip the treasure they just won. Heroes are copied in at Begin, so allowing equip and appearance changes until then would carry in safely. Lock only once the game is underway?</li>
+        <li><b>Edit in Builder.</b> Your doc says before a Hero's first encounter; the sheet allows it until the Hero wins one, so a Hero who lost stays rebuildable. Which do you want?</li>
+        <li><b>Town places.</b> The sheet points to a Training Grounds for levelling, a respite, and a Record location for the Hero's history. Where do these live, and what does a respite offer once respite activities exist (and how often)?</li>
+        <li><b>Encounters for levelled Heroes.</b> Every Hero is still clamped to Level 1 on arrival; levelled Heroes need level bands or scaling.</li>
+        <li><b>Your hero card file.</b> Three small changes would carry to the sheet: the Status Icons shapes on the stamina bar, the damage wash at most once a second at 30% (flashing safety), and how temporary Stamina is drawn (it disappears at full Stamina today).</li>
+        <li><b>Closing the other routes.</b> Pointing the C key, token menu, search and chat commands at this sheet touches core code. Flagging it before the build gets there.</li>
+        <li><b>Still noticed.</b> The AI's "Waiting for..." banner hides whenever any panel window is open, and the EotW character panel's view-only mode blocks play actions such as the Summoner's Sacrifice Minions.</li>
       </ul>
     </section>
   </div>
 
-  <p class="foot">Built with real pregen data from the Codex. The typeface stands in for Berlingske Slab, the heroic resource icon is a placeholder, and all wording is draft.</p>
+  <p class="foot">Built with real pregen data from the Codex (read at full Level 1). The typeface stands in for Berlingske Slab; the heroic resource, epic resource and status icons are stand-ins for the Codex's own. The wording is signed off.</p>
 </div>
 
 <script src="data.js"></script>
@@ -419,7 +580,7 @@
       trigger: "The target force moves a creature or object.", effect: "The forced movement distance gains a bonus equal to your Reason score.\nSpend 1 Essence: The forced movement distance gains a bonus equal to twice your Reason score instead." }],
   };
   /* abilities whose source is a visible prose feature (tagging plan) or custom test content on a pregen */
-  const NOT_ABILITIES = { "Life Domain Effect": "feature", "War Domain Effect": "feature", "Light": "feature", "Revitalizing Ritual": "feature", "Magic Ritual of Blessing": "feature", "Halt Miscreant! - Copy": "test", "Test custom trigger": "test" };
+  const NOT_ABILITIES = { "Life Domain Effect": "feature", "War Domain Effect": "feature", "Light": "feature", "Revitalizing Ritual": "feature", "Magic Ritual of Blessing": "feature", "Sanctified Weapon": "feature", "Halt Miscreant! - Copy": "test", "Test custom trigger": "test" };
   const EXTRA_FEATURES = { conduit: [
     { name: "Life Domain Effect", section: "Class", kind: "normal", tags: ["Combat"], desc: "Choose yourself or one ally within 10 squares. That character can spend a Recovery, can end one effect on them that is ended by a saving throw or that ends at the end of their turn, or can stand up if they are prone. Alternatively, you or one ally within 10 squares gains temporary Stamina equal to two times your Intuition score." },
     { name: "War Domain Effect", section: "Class", kind: "normal", tags: ["Combat"], desc: "Three allies of your choice within 10 squares of you, including yourself, gain two surges." },
@@ -436,18 +597,30 @@
     ["neardeath", "Near death", (m, w) => ({ cur: -(w - 3), temp: 0 })],
   ];
 
-  const state = { hero: "fury", bd: "place", where: "town", sp: "centred", mp: "lines", stam: "full", vet: false, imm: false, prog: false, twokit: false, res: false, sig: false, zoom: "fit", caps: { lev: 4, trk: 4, con: 8 },
-    chips: new Set(), search: "", closed: new Set(), more: new Set(), hover: null, pin: null, meleeFrom: "Shining Armor" };
-
+  const state = { hero: "fury", bd: "place", where: "town", sp: "centred", mp: "lines", stam: "full", vet: false, imm: false, prog: "none", st: "normal", eq: {}, hp: null, rm: false, fx: null, glow: null, barFrom: null,
+    fs: 1, fsh: "grow", sigui: "topbar", armed: false, cause: "trigger", resl: "icon", badges: false, spend: "ring", si: false, changes: null, recUsed: 0, lastWash: 0, twokit: false, res: false, sig: false, zoom: "fit", caps: { lev: 4, trk: 4, con: 8 },
+    chips: new Set(), search: "", closed: new Set(["ab-Standard actions"]), more: new Set(), hover: null, pin: null, meleeFrom: "Shining Armor" };
   (location.hash || "").replace("#", "").split(".").forEach(t => {
     if (t === "tiles" || t === "lines") state.mp = t;
     else if (t === "place" || t === "nobd" || t === "herobd") state.bd = t === "nobd" ? "none" : t === "herobd" ? "hero" : "place";
     else if (t === "town" || t === "game") state.where = t;
     else if (t === "groups" || t === "centred" || t === "grid") state.sp = t;
-    else if (["vet", "imm", "prog", "twokit", "res", "sig"].includes(t)) state[t] = true;
+    else if (["vet", "imm", "twokit", "res", "sig"].includes(t)) state[t] = true;
+    else if (/^st-/.test(t)) state.st = t.slice(3);
+    else if (/^fs1[24]0$/.test(t)) state.fs = t === "fs120" ? 1.2 : 1.4;
+    else if (/^fsh-/.test(t)) state.fsh = t.slice(4);
+    else if (t === "strip" || t === "sigbar" || t === "sigfloat") { state.sigui = t === "sigfloat" ? "float" : "topbar"; state.sig = true; }
+    else if (/^cause-/.test(t)) { state.cause = t.slice(6); state.sig = true; }
+    else if (/^res-/.test(t)) state.resl = t.slice(4);
+    else if (t === "badges") state.badges = true;
+    else if (/^spend-/.test(t)) state.spend = t.slice(6);
+    else if (t === "si") state.si = true;
+    else if (/^prog-/.test(t)) state.prog = t.slice(5);
     else if (/^pin-/.test(t)) state.pin = t.slice(4).replace("-", ":");
     else if (t) state.hero = t;
   });
+  if (state.st === "away") state.where = "town";
+  if (state.st === "dead" || state.st === "practice") state.where = "game";
 
   const esc = s => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   const isMine = h => h.owner === "You";
@@ -457,6 +630,8 @@
   /* ---------- data helpers ---------- */
   function stamOf(h, key) {
     const max = h.stamina.max, w = h.stamina.winded;
+    //the Motion buttons' damage and healing, on the sheet's own card only (not the stamina study)
+    if (!key && state.hp != null) return { cur: state.hp, temp: 0, max: max, w: w };
     const def = STAM_STATES.find(s => s[0] === (key || state.stam)) || STAM_STATES[0];
     const v = def[2](max, w);
     return { cur: v.cur, temp: v.temp, max: max, w: w };
@@ -466,18 +641,82 @@
   const VETERAN_KEY = "conduit";
   const immOf = h => h.key === VETERAN_KEY ? MANY_IMM : (h.immunities || []);
   const weakOf = h => h.key === VETERAN_KEY ? MANY_WEAK : (h.weaknesses || []);
+  //Progress control moments: [XP into this level, Victories banked since the last respite, encounters won]
+  //[XP into this Level, Victories banked since the last respite, encounters won, epic resource (Level 10 only)]
+  const PROG = { none: [0, 0, 0], some: [5, 2, 7], reach: [14, 3, 17], ready: [17, 0, 17], max: [0, 2, 147, 7] };
+  const PROG_STATES = [["none", "New Hero"], ["some", "Some progress: 5 XP, 2 Victories"], ["reach", "A respite would Level them"], ["ready", "Ready to Level"], ["max", "Level 10 (epic resource)"]];
+  //each class's 10th-level epic resource and how it is spent (Heroes; Summoner = Eidos, Beastheart = Ferox in their own books)
+  const EPIC = {
+    censor: ["Virtue", "Spend it on abilities as if it were Wrath."],
+    conduit: ["Divine Power", "Spend it on abilities as if it were Piety."],
+    elementalist: ["Breath", "Spend any amount to gain Essence: each Breath becomes 3 Essence."],
+    fury: ["Primordial Power", "Spend it on abilities as if it were Ferocity."],
+    null: ["Order", "Spend it on abilities as if it were Discipline."],
+    shadow: ["Subterfuge", "Spend it on abilities as if it were Insight."],
+    tactician: ["Command", "Spend it on abilities as if it were Focus."],
+    talent: ["Vision", "Spend it on abilities as if it were Clarity."],
+    troubadour: ["Applause", "Spend it on abilities as if it were Drama."],
+  };
+  const SHEET_STATES = [["normal", "Normal"], ["away", "Away in a party (town)"], ["dead", "Dead in an encounter"], ["fallen", "Fallen (from the Graveyard)"], ["practice", "Danger Rooms game"], ["loading", "Still loading (skeleton)"], ["noart", "Art missing or not loaded"], ["failed", "Could not load"]];
   function progressOf(h) {
-    if (h.key === VETERAN_KEY) return { vic: 2, into: 9, need: XP_PER_LEVEL, next: h.level + 1 };
-    const xp = state.prog ? 11 : (parseInt(h.xp, 10) || 0);
-    const vic = state.prog ? 2 : (h.victories || 0);
-    return { vic: vic, into: Math.max(0, xp - (h.level - 1) * XP_PER_LEVEL), need: XP_PER_LEVEL, next: h.level + 1 };
+    if (h.key === VETERAN_KEY && state.prog === "none") return { into: 9, vic: 2, won: 47, epic: 0, max: false, level: h.level, need: XP_PER_LEVEL, next: h.level + 1, ready: false, reach: false };
+    const v = PROG[state.prog] || PROG.none, into = v[0], vic = v[1], max = state.prog === "max";
+    return { into: into, vic: vic, won: v[2], epic: v[3] || 0, max: max, level: max ? 10 : h.level, need: XP_PER_LEVEL, next: h.level + 1,
+      ready: !max && into >= XP_PER_LEVEL, reach: !max && into < XP_PER_LEVEL && into + vic >= XP_PER_LEVEL };
   }
+  //the owner's controls exist only for your own living hero; away keeps them visible but off
+  const ownerActs = h => isMine(h) && state.st !== "dead" && state.st !== "fallen";
+  const awayOff = () => state.st === "away";
+  //signed copy (brief: Copy manifest, 2026-10-09); neutral voice about the Hero, "you" only where only the owner sees it
+  const COPY = {
+    bar: p => p.into + " of " + p.need + " XP to Level " + p.next + ".",
+    hatch: p => p.vic + " " + (p.vic === 1 ? "Victory becomes " : "Victories become ") + p.vic + " XP at the next respite." + (p.reach ? " Enough for Level " + p.next + "." : ""),
+    victories: (n, res) => "Starts each combat with " + n + " extra " + res + ". Victories become XP at the next respite.",
+    ready: () => "Head to the Training Grounds to Level your Hero.",
+    readyTip: p => p.into + " XP: enough for Level " + p.next + ".",
+    recovery: v => "Each Recovery regains " + v + " Stamina.",
+    surges: (n, hi) => n + (n === 1 ? " surge" : " surges") + ". Each adds " + hi + " damage, up to 3 per roll. 2 raise a potency by 1.",
+    epicBank: (v, name) => v + " " + (v === 1 ? "Victory becomes " : "Victories become ") + v + " XP and " + v + " " + name + " at the next respite.",
+    epicLine: v => "+" + v + " at the next respite",
+    ownerChip: who => who + "'s Hero",
+    editTip: "Change any choice until this Hero wins an encounter.",
+    trigger: name => name + " has a trigger waiting",
+    loading: name => "Loading " + name + "...",
+    respite: "A respite would Level this Hero.",
+    cause: { trigger: n => n + " has a trigger waiting", save: n => n + " has a save to make", roll: n => n + " has a roll to make", story: () => "The story continues", act: () => "The Heroes can act" },
+    awayLine: "Changes are off until the party ends.",
+    ancestryItem: "Part of the Hero's ancestry.",
+    preview: (l, a, b) => "Equipping changes " + l + " " + a + " -> " + b + ".",
+    previewOff: (l, a, b) => "Unequipping changes " + l + " " + a + " -> " + b + ".",
+    spend: "Spend a Recovery",
+    spendTip: v => "Regain " + v + " Stamina.",
+    spendFull: "Already at full Stamina.",
+    spendRing: v => "Click to spend a Recovery: regain " + v + " Stamina.",
+    spendRing2: v => "Click twice to spend a Recovery: regain " + v + " Stamina.",
+    spendArmed: "Click again to spend a Recovery.",
+    failed: name => name + " could not load.",
+    retry: "Try again",
+    badge: { eq: "Treasure to equip", lv: "Ready to Level", rs: "A respite would Level", aw: "Away" },
+    away: "Not while away with a party.",
+    awayChip: party => "Away: " + party,
+    practice: "Danger Rooms: practice only",
+    fell: (enc, week) => "Fell in <b>" + esc(enc) + "</b>, week " + week,
+    playedBy: who => "Played by " + who,
+    dead: "Dead",
+  };
+  //1st / 5th / 9th Level text for the veteran's leveled treasures (data repo tbl-gear)
+  const TIERS = {"Bloodbound Band": ["While you wear this ring, you gain a +6 bonus to Stamina. Additionally, during a respite, you can touch the ring to any number of other Bloodbound Bands worn by willing creatures to form a bond among all of you. Creatures related by blood can\u2019t form bonds in this way. Bonded creatures can each use the highest recovery value of any bonded creature in place of their own, and can spend each other\u2019s Recoveries as if they were their own. Whenever any other bonded creature takes damage, each bonded creature takes 1 damage that can\u2019t be reduced in any way. Your bond ends if you remove the ring, use it to bond with one or more other creatures, or die, but other rings continue to be bonded to each other.", "The ring\u2019s bonus to Stamina increases to +12. Additionally, you have damage immunity 2.", "The ring\u2019s bonus to Stamina increases to +21. Additionally, if a creature bonded with you dies, you can choose to die in their place. Your sacrifice twists fate to remove the creature from danger, and they regain Stamina equal to their winded value. Your ring then teleports into their possession and ceases to be magic."], "Chain of the Sea and Sky": ["While you wear this armor, you gain a +6 bonus to Stamina, you can automatically swim at full speed while moving, and you can breathe underwater for up to 1 hour. Returning to the surface to breathe air again for any length of time reset\u2019s the armor\u2019s water- breathing benefit.", "The armor\u2019s bonus to Stamina increases to +12, and you have cold immunity 5. Additionally, whenever you fall, you can extend your arms (no action required) to unfurl a thick membrane between your arms and your body, slowing your fall and allowing you to glide. While gliding this way, you move downward at 1 square per round, and you can glide up to 6 squares horizontally as a free maneuver once during each of your turns.", "The armor\u2019s bonus to Stamina increases to +21, and you have cold immunity 10. Additionally, whenever your feet are not touching the ground (including floating in water or being in midair), you gain an edge on ability rolls, and any ability takes a bane when targeting you."], "Lightning Treads": ["While you wear these boots, any weapon ability that deals rolled damage using your unarmed strikes deals an extra 1 lightning damage. Additionally, you gain a +2 bonus to speed.", "The extra lightning damage granted by the treads increases to 2. Additionally, for each square you move on your turn before you use a weapon ability that deals rolled damage using your unarmed strikes, this extra damage increases by 1 (to a maximum of 4).", "The extra lightning damage granted by the treads increases to 3, and your movement can increase that extra damage to a maximum of 6. Additionally, you can use a maneuver to perform a flying lightning kick on one adjacent creature. That target is pushed up to 5 squares, and you can move to any square adjacent to the target after the push."]};
+  //demo roster states for the D6 badges: eq treasure to equip, lv ready to Level, rs a respite would Level, aw away
+  const BADGES = { fury: ["eq"], tactician: ["lv"], censor: ["aw"], elementalist: ["rs"], conduit: ["eq", "lv"] };
+  const highestChar = h => Math.max.apply(null, (h.chars || []).map(c => parseInt(c.v, 10) || 0).concat([0]));
   function inventoryOf(h) {
     const base = (h.inventory || []).map(it => ({ name: it.name, kind: "Trinket", body: null, equipped: it.equipped, qty: it.qty || 1, desc: "An item from the hero's ancestry.", keywords: [] }));
     if (h.key !== VETERAN_KEY) return base;
-    return base.concat(VETERAN.map(it => Object.assign({}, it)));
+    return base.concat(VETERAN.map(it => Object.assign({}, it, it.name in state.eq ? { equipped: state.eq[it.name] } : {})));
   }
-  const toEquip = h => isMine(h) ? inventoryOf(h).filter(it => it.won && !it.equipped).length : 0;
+  //Lightning Treads give +2 speed while worn (vet.js), so equipping them shows a changed value
+  const speedOf = h => (parseInt(h.speed, 10) || 0) + (inventoryOf(h).some(it => it.name === "Lightning Treads" && it.equipped) ? 2 : 0);
+  const toEquip = h => ownerActs(h) ? inventoryOf(h).filter(it => it.won && !it.equipped).length : 0;
   function kitGearOf(h) {
     if (h.key === "tactician") { const b = state.twokit ? KITS["Panther"] : KITS["Rapid-Fire"]; const a = KITS["Shining Armor"]; return { armor: a.armor.concat(b.armor), weapons: a.weapons.concat(b.weapons) }; }
     return h.kit ? KIT_GEAR[h.kit.name] : null;
@@ -487,21 +726,35 @@
     const uniq = a => a.filter((x, i) => a.indexOf(x) === i);
     return (g.armor.length ? uniq(g.armor).join(" or ") + " armor" : "No armor") + ", " + uniq(g.weapons).map(w => w === "Shield" ? "shield" : w.toLowerCase() + " weapon").join(", ");
   }
+  //what equipping or unequipping an item changes, for the hover preview: [label, from, to]
+  function previewOf(h, it) {
+    if (it.name !== "Lightning Treads") return null;
+    const sp = speedOf(h);
+    return it.equipped ? ["Speed", sp, sp - 2] : ["Speed", sp, sp + 2];
+  }
   //weapon and armor treasure only helps when the kit uses that kind of gear (Heroes p.314)
   function itemWarn(h, it) {
+    const w = /^(Light|Medium|Heavy) Weapon$|^(Bow|Polearm|Ensnaring|Whip)$/.exec(it.body || "");
+    if (w) {
+      const g = kitGearOf(h);
+      if (!g) return "Without a kit, this gives no benefit.";
+      const kind = w[1] || w[2];
+      return g.weapons.includes(kind) ? "" : "The kit does not use this weapon, so this gives no benefit.";
+    }
     const m = /^(Light|Medium|Heavy) Armor$/.exec(it.body || "");
     if (!m) return "";
     const g = kitGearOf(h);
-    if (!g) return "No kit: no benefit";
+    if (!g) return "Without a kit, this gives no benefit.";
     if (g.armor.includes(m[1])) return "";
-    return (g.armor.length ? "Kit armor is " + g.armor.join(" or ").toLowerCase() : "Kit has no armor") + ": no benefit";
+    return "The kit uses " + (g.armor.length ? g.armor.join(" or ").toLowerCase() + " armor" : "no armor") + ", so this gives no benefit.";
   }
 
   /* ---------- stamina bars (S1 = the hero card's bar as built) ---------- */
   function barS1(s, small) {
     const pct = Math.max(0, Math.min(1, s.cur / s.max));
     const tp = (s.max > 0 && s.temp > 0) ? Math.min(1 - pct, s.temp / s.max) : 0;
-    return '<div class="bar st-' + stamState(s) + (small ? " sm" : "") + '"><span class="clip"><span class="f" style="width:' + pc(pct * 0.98) + '"></span><span class="t" style="width:' + pc(tp * 0.98) + '"></span></span><b>' + esc(stamText(s)) + "</b></div>";
+    const si = state.si ? '<span class="si" aria-hidden="true">' + ({ ok: "&#9679;", winded: "&#9650;", dying: "&#10006;" })[stamState(s)] + "</span>" : "";
+    return '<div class="bar st-' + stamState(s) + (small ? " sm" : "") + '"><span class="clip"><span class="f" style="width:' + pc(pct * 0.98) + '"></span><span class="t" style="width:' + pc(tp * 0.98) + '"></span></span>' + si + "<b>" + esc(stamText(s)) + "</b></div>";
   }
   const tick = pos => '<span class="tick" style="left:calc(' + pc(pos) + ' - 1px)"></span>';
   function band(pct, tp) {
@@ -542,27 +795,74 @@
   /* ---------- left column: the card, then kit and treasures ---------- */
   //the card draws one surge icon per available surge (EotwHeroCard CreateSurgeCorner); stand-in glyph
   const SURGE_ICON = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7 0 2 7h3.5L4.5 12 10 4.8H6.6Z" fill="currentColor"/></svg>';
-  const resOf = h => h.key === VETERAN_KEY ? { v: 4, s: 2 } : { v: 2, s: 1 };
+  const resOf = h => state.where !== "game" ? { v: 0, s: 0 } : h.key === VETERAN_KEY ? { v: 4, s: 2 } : { v: 2, s: 1 };
+  function levelRow(h, p) {
+    //a fallen hero's progress is frozen: no respite and no level-up are coming
+    if (state.st === "fallen") p = Object.assign({}, p, { vic: 0, ready: false, reach: false });
+    if (p.max) {
+      const e = EPIC[h.key] || ["Epic resource", ""];
+      const banked = p.vic > 0 ? '<span class="epb" title="' + esc(COPY.epicBank(p.vic, e[0])) + '"><s></s>' + esc(COPY.epicLine(p.vic)) + "</span>" : "";
+      return '<div class="xprow"><span class="lvn">10</span><span class="epic" data-card="epic:' + esc(h.key) + '" tabindex="0"><i></i>' + esc(e[0]) + " <b>" + p.epic + "</b></span>" + banked + "</div>";
+    }
+    let fill = p.ready ? 1 : p.into / p.need, seg = "", tip = p.ready ? COPY.readyTip(p) : COPY.bar(p);
+    if (p.vic > 0 && !p.ready) {
+      seg = '<s style="left:' + pc(fill) + ";width:" + pc(Math.min(1, (p.into + p.vic) / p.need) - fill) + '"></s><span class="notch" style="left:calc(' + pc(fill) + ' - 1px)"></span>';
+      tip += " " + COPY.hatch(p);
+    }
+    const next = "lvn next" + (p.ready ? " ready" : p.reach ? " reach" : "");
+    return '<div class="xprow"><span class="lvn">' + esc(h.level) + '</span><div class="xpbar' + (p.ready ? " ready" : "") + '" title="' + esc(tip) + '"><i style="width:' + pc(Math.min(1, fill)) + '"></i>' + seg + '</div><span class="' + next + '">' + p.next + "</span></div>" +
+      (p.ready && state.st !== "fallen" && isMine(h) ? '<div class="ready-line">' + esc(COPY.ready(p)) + "</div>" : "") +
+      (p.reach && state.st !== "fallen" && isMine(h) ? '<div class="respite-line">' + esc(COPY.respite) + "</div>" : "");
+  }
+  //out of combat, your own living Hero may spend a Recovery (D7 options); the ring shows Recoveries left
+  const canSpend = h => state.spend !== "off" && isMine(h) && state.where === "town" && state.st === "normal";
+  const recLeft = h => Math.max(0, h.recoveries.cur - (isMine(h) ? state.recUsed : 0));
+  function ringHtml(h, s) {
+    const ring = (state.spend === "ring" || state.spend === "ring2") && canSpend(h) && recLeft(h) > 0 && s.cur < s.max;
+    const armed = ring && state.armed;
+    const tip = !ring ? COPY.recovery(h.recoveries.value) : armed ? COPY.spendArmed : state.spend === "ring2" ? COPY.spendRing2(h.recoveries.value) : COPY.spendRing(h.recoveries.value);
+    return '<span class="ring' + (ring ? " spendable" : "") + (armed ? " armed" : "") + '"' + (ring ? ' data-spend="1" data-gain="+' + h.recoveries.value + '"' : "") + ' title="' + esc(tip) + '"><span class="rn">' + recLeft(h) + "</span></span>";
+  }
+  function spendButton(h, s) {
+    if (state.spend !== "button" || !canSpend(h)) return "";
+    const full = s.cur >= s.max || recLeft(h) === 0;
+    return '<br><button class="spend"' + (full ? " disabled" : ' data-spend="1"') + ' title="' + esc(full ? COPY.spendFull : COPY.spendTip(h.recoveries.value)) + '">' + esc(COPY.spend) + "</button>";
+  }
+  //the heroic resource, with its name per the D3 option
+  function resHtml(h, v) {
+    const name = h.resource.name || "Heroic Resource";
+    if (state.resl === "under") return '<span class="res under" title="' + esc(name) + '"><span><i></i><b>' + esc(v) + '</b></span><span class="rl">' + esc(name) + "</span></span>";
+    if (state.resl === "beside") return '<span class="res" title="' + esc(name) + '"><i></i><b>' + esc(v) + '</b><span class="rl">' + esc(name) + "</span></span>";
+    return '<span class="res" title="' + esc(name) + '"><i></i><b>' + esc(v) + "</b></span>";
+  }
   function heroCard(h) {
-    const s = stamOf(h), st = stamState(s), p = progressOf(h), r = resOf(h);
-    const left = st === "dying" ? "<b>Dying</b>" : st === "winded" ? "<b>Winded</b> at " + esc(s.w) : "Winded at <b>" + esc(s.w) + "</b>";
-    return '<div class="card" role="img" aria-label="' + esc(h.name) + '" style="background-image:url(art/' + esc(h.key) + '.jpg)">' +
-      '<div class="plate"><div><div class="pn">' + esc(h.name) + '</div><div class="ps">Level ' + esc(h.level) + " " + esc(h.ancestry) + " " + esc(h.className) + " &middot; " + esc(h.subclass || "") + "</div></div>" +
-      '<div class="xprow"><span class="lvn">' + esc(h.level) + '</span><div class="xpbar" title="' + p.into + " of " + p.need + " XP to level " + p.next + '"><i style="width:' + pc(Math.min(1, p.into / p.need)) + '"></i></div><span class="lvn next">' + p.next + '</span><span class="vic">Victories <b>' + p.vic + "</b></span></div>" +
-      "<div>" + barS1(s, false) + '<div class="bnote"><span>' + left + "</span><span>Dead at <b>-" + esc(s.w) + "</b></span></div></div>" +
-      '<div class="rrow"><span class="ring" title="Recoveries">' + esc(h.recoveries.cur) + '</span><div class="rcell"><b>Recoveries</b><br>of ' + esc(h.recoveries.max) + " &middot; +" + esc(h.recoveries.value) + " each</div>" +
-      '<span class="res" title="' + esc(h.resource.name || "Heroic Resource") + '"><i></i><b>' + esc(r.v) + "</b></span>" +
-      '<span class="surges" title="' + esc(r.s) + ' surges">' + (r.s > 0 ? SURGE_ICON.repeat(Math.min(9, r.s)) : "") + "</span></div></div></div>";
+    const dead = state.st === "dead", fallen = state.st === "fallen";
+    const s = dead ? { cur: -h.stamina.winded, temp: 0, max: h.stamina.max, w: h.stamina.winded } : stamOf(h), st = stamState(s), p = progressOf(h), r = resOf(h);
+    const left = dead ? "<b>" + esc(COPY.dead) + "</b>" : st === "dying" ? "<b>Dying</b>" : st === "winded" ? "<b>Winded</b> at " + esc(s.w) : "Winded at <b>" + esc(s.w) + "</b>";
+    const surges = !dead && !fallen && r.s > 0 ? '<span class="sgcorner" title="' + esc(COPY.surges(r.s, highestChar(h))) + '">' + SURGE_ICON.repeat(Math.min(9, r.s)) + "</span>" : "";
+    const vics = '<span class="vcell" title="' + esc(COPY.victories(p.vic, h.resource.name || "Heroic Resource")) + '"><b>' + p.vic + "</b>" + (p.vic === 1 ? "Victory" : "Victories") + "</span>";
+    const vitals = fallen
+      ? '<div class="epitaph">' + COPY.fell("Goblin Ambush", 3) + "<br>" + esc(COPY.playedBy(isMine(h) ? "you" : h.owner)) + "</div>"
+      : "<div>" + barS1(s, false) + '<div class="bnote"><span>' + left + "</span><span>Dead at <b>-" + esc(s.w) + "</b></span></div></div>" +
+        '<div class="rrow">' + ringHtml(h, s) + '<div class="rcell" title="' + esc(COPY.recovery(h.recoveries.value)) + '"><b>Recoveries</b><br>of ' + esc(h.recoveries.max) + " &middot; +" + esc(h.recoveries.value) + " each" + spendButton(h, s) + "</div>" + vics +
+        resHtml(h, dead ? 0 : r.v) + "</div>";
+    const nameText = state.st === "loading" ? COPY.loading(h.name) : state.st === "failed" ? COPY.failed(h.name) : h.name;
+    return '<div class="card' + (dead || fallen ? " dead" : "") + (state.st === "noart" ? " noart" : "") + '" role="img" aria-label="' + esc(h.name) + '" style="background-image:url(art/' + esc(h.key) + '.jpg)">' +
+      '<span class="wash"></span><div class="plate">' + surges + '<div><div class="pn">' + esc(nameText) + (state.st === "failed" ? ' <button class="btn sm" data-retry="1">' + esc(COPY.retry) + "</button>" : "") + '</div><div class="ps">Level ' + esc(p.level) + " " + esc(h.ancestry) + " " + esc(h.className) + " &middot; " + esc(h.subclass || "") + "</div></div>" +
+      levelRow(h, p) + vitals + "</div></div>";
   }
   //pairs are [label, value, hover text]; one column for the narrow two-up kit-equivalents
   function kvGrid(pairs, one) {
+    one = one || pairs.some(x => String(x[0]).length > 13);
     return '<div class="kv' + (one ? " one" : "") + '">' + pairs.map(p => "<span>" + esc(p[0]) + "</span><span" + (p[2] ? ' title="' + esc(p[2]) + '"' : "") + ">" + esc(p[1]) + "</span>").join("") + (!one && pairs.length % 2 ? "<span></span><span></span>" : "") + "</div>";
   }
   const ksec = (label, body) => '<div class="ksec"><div class="bh">' + esc(label) + "</div>" + body + "</div>";
   const kname = (name, line) => '<div class="kith"><span class="kn">' + esc(name) + "</span>" + (line ? '<span class="kg">' + esc(line) + "</span>" : "") + "</div>";
   function kitBlock(h) {
     if (h.key === "tactician") return ksec("Kit", tacticianKit(h));
-    if (h.kit) return ksec("Kit", kname(h.kit.name, gearLine(kitGearOf(h))) + kvGrid((h.kit.bonuses || []).map(b => [b.label, b.value])));
+    //kit bonuses print for the Hero's echelon (Stamina is per echelon; Level 10 = echelon 4)
+    const ech = progressOf(h).max ? 4 : 1;
+    if (h.kit) return ksec("Kit", kname(h.kit.name, gearLine(kitGearOf(h))) + kvGrid((h.kit.bonuses || []).map(b => [b.label, b.label === "Stamina" && ech > 1 ? "+" + (parseInt(b.value, 10) || 0) * ech : b.value])));
     const eq = EQUIV[h.key];
     if (!eq) return ksec("Kit", '<div class="none" style="font-size:13.5px">No kit</div>');
     const body = (e, one) => e.name ? kname(e.name) + (e.bon ? kvGrid(e.bon, one) : "") + (e.text ? '<div class="kdesc">' + esc(e.text) + "</div>" : "") : '<div class="none" style="font-size:13.5px">None chosen</div>';
@@ -577,40 +877,48 @@
     const pairs = labels.map(l => {
       const va = (a.bon.find(x => x[0] === l) || [])[1], vb = (b.bon.find(x => x[0] === l) || [])[1];
       const useA = vb == null || (va != null && va >= vb);
-      const other = va != null && vb != null ? "; " + (useA ? b.name + " gives " + signed(vb) : a.name + " gives " + signed(va)) : "";
-      return [l, signed(useA ? va : vb), "From " + (useA ? a.name : b.name) + other];
+      const other = va != null && vb != null ? " " + (useA ? b.name + " gives " + signed(vb) : a.name + " gives " + signed(va)) + "." : "";
+      return [l, signed(useA ? va : vb), "From " + (useA ? a.name : b.name) + "." + other];
     });
     const shared = a.dmg.melee && b.dmg.melee;
     ["melee", "ranged"].forEach(t => {
       const from = [a, b].filter(k => k.dmg[t]);
       if (!from.length) return;
       const k = from.length > 1 ? (state.meleeFrom === a.name ? a : b) : from[0];
-      pairs.push([t === "melee" ? "Melee damage" : "Ranged damage", k.dmg[t], from.length > 1 ? "Chosen in town: " + k.name : "From " + k.name]);
+      pairs.push([t === "melee" ? "Melee damage" : "Ranged damage", k.dmg[t], "From " + k.name + "."]);
     });
     let html = kname(a.name + " + " + b.name) + '<div class="kith"><span class="kg">' + esc(gearLine(kitGearOf(h))) + "</span></div>" + kvGrid(pairs);
-    if (shared) html += '<div class="choose"><span>Melee damage</span>' + [a, b].map(k => '<button class="opt' + (state.meleeFrom === k.name ? " on" : "") + '" data-melee="' + esc(k.name) + '"' + (isMine(h) ? "" : " disabled") + ">" + esc(k.name) + " <b>" + esc(k.dmg.melee) + "</b></button>").join("") +
-      '<span class="chooseh">Both kits give a melee bonus: choose one in town (a respite).</span></div>';
+    //choosing between two melee bonuses is a respite activity, so the sheet only says which one is in use
+    if (shared) html += '<div class="kdesc">Melee damage from ' + esc(state.meleeFrom === a.name ? a.name : b.name) + ". Change it during a respite.</div>";
     return html;
   }
   function treasureLists(h) {
     const inv = inventoryOf(h);
     return { inv: inv, lev: inv.filter(it => it.kind === "Leveled treasure"), trk: inv.filter(it => it.kind === "Trinket" || it.kind === "Artifact"), con: inv.filter(it => it.kind === "Consumable") };
   }
+  //placeholder rows for lists whose length is unknown until the hero arrives
+  const skRows = (n, cls, widths) => Array.from({ length: n }, (_, i) => '<div class="' + cls + '"><span class="skv">' + "M".repeat(widths[i % widths.length]) + "</span></div>").join("");
   function treasuresBlock(h) {
+    if (state.st === "loading") return '<div class="bh">Treasures</div><div class="tbody"><div class="sub3">Leveled treasures</div>' + skRows(1, "it", [12]) +
+      '<div class="sub3">Trinkets</div>' + skRows(2, "it", [14, 9]) + '<div class="sub3">Consumables</div>' + skRows(1, "it", [10]) + "</div>";
     const T = treasureLists(h), n = toEquip(h), idx = it => T.inv.indexOf(it);
     const row = it => {
-      const i = idx(it), warn = itemWarn(h, it), todo = it.won && !it.equipped && isMine(h), id = "it:" + i;
+      const i = idx(it), warn = itemWarn(h, it), todo = it.won && !it.equipped && ownerActs(h) && !awayOff(), id = "it:" + i;
+      const pv = previewOf(h, it), pvTitle = pv ? ' title="' + esc((it.equipped ? COPY.previewOff : COPY.preview)(pv[0], pv[1], pv[2])) + '"' : "";
       let right = "";
       if (warn) right += '<span class="warnchip" title="' + esc(warn) + '">No benefit</span>';
-      if (todo) right += '<button class="btn primary sm" data-flash="Equips if the rules allow it">Equip</button>';
-      else if (isMine(h) && it.body) right += '<button class="btn sm" data-flash="' + (it.equipped ? "Unequips it" : "Equips if the rules allow it") + '">' + (it.equipped ? "Unequip" : "Equip") + "</button>";
-      else right += '<span class="tg">' + (it.equipped ? "Equipped" : "Carried") + "</span>";
-      return '<div class="it' + (todo ? " todo" : "") + (state.pin === id ? " pinned" : "") + '" data-card="' + id + '" tabindex="0"><span class="nm2">' + esc(it.name) + (it.body ? ' <span class="none">(' + esc(it.body) + ")</span>" : "") + '</span><span class="rt">' + right + "</span></div>";
+      const act = awayOff() ? ' off" title="' + esc(COPY.away) + '" data-sound="UI.Error_Generic" data-flash="' + esc(COPY.away) + '"' : '" data-equip="' + esc(it.name) + '"' + pvTitle;
+      if (it.won && !it.equipped && ownerActs(h)) right += '<button class="btn primary sm' + act + ">Equip</button>";
+      else if (ownerActs(h) && it.body) right += '<button class="btn sm' + act + ">" + (it.equipped ? "Unequip" : "Equip") + "</button>";
+      else right += '<span class="tg"' + (!it.body ? ' title="' + esc(COPY.ancestryItem) + '"' : "") + ">" + (it.equipped ? "Equipped" : "Carried") + "</span>";
+      return '<div class="it' + (todo ? " todo" : "") + (state.pin === id ? " pinned" : "") + '" data-chg="item:' + esc(it.name) + '" data-card="' + id + '" tabindex="0"><span class="nm2"><span class="nmt">' + esc(it.name) + "</span>" + (it.body ? '<span class="slot">(' + esc(it.body) + ")</span>" : "") + '</span><span class="rt">' + right + "</span></div>";
     };
     //past the cap, the last slot becomes "+N more", which opens the rest as a card
     const capped = (list, max, kind) => list.length <= max ? list.map(row).join("") : list.slice(0, max - 1).map(row).join("") + '<div class="it" data-card="more:' + kind + '" tabindex="0" style="color:var(--tan);border-style:dashed">+' + (list.length - max + 1) + " more</div>";
     const none = '<div class="none" style="font-size:13px">None</div>';
-    let html = '<div class="bh">Treasures<span class="r">' + (n ? '<span class="cta">' + n + " to equip</span>" : "") + '</span></div><div class="tbody">';
+    const nOwn = isMine(h) && state.st !== "dead" && state.st !== "fallen" ? inventoryOf(h).filter(it => it.won && !it.equipped).length : 0;
+    const cta = nOwn ? (awayOff() ? '<span class="cta off">' + nOwn + " to equip</span>" : '<button class="cta" data-goto="equip">' + nOwn + " to equip</button>") : "";
+    let html = '<div class="bh">Treasures<span class="r">' + cta + '</span></div><div class="tbody">';
     html += '<div class="sub3">Leveled treasures<span>' + T.lev.length + " of 3 carried</span></div>" + (T.lev.length ? capped(T.lev, state.caps.lev, "lev") : none);
     html += '<div class="sub3">Trinkets<span>' + T.trk.length + "</span></div>" + (T.trk.length ? capped(T.trk, state.caps.trk, "trk") : none);
     const chip = it => '<div class="it' + (state.pin === "it:" + idx(it) ? " pinned" : "") + '" data-card="it:' + idx(it) + '" tabindex="0">' + esc(it.name) + (it.qty > 1 ? '<span class="q">x' + it.qty + "</span>" : "") + "</div>";
@@ -627,20 +935,33 @@
     const keys = (state.where === "game" ? PARTY_GAME : mine ? ROSTER_TOWN : PARTY_GAME).filter(k => byKey[k]);
     const th = k => {
       const x = byKey[k];
-      return '<button class="th' + (isMine(x) && (state.where === "game" || !mine) ? " mine" : "") + (k === h.key ? " cur" : "") + '" data-hero="' + esc(k) + '" title="' + esc(x.name + (isMine(x) ? ", level " + x.level : ", " + x.owner + "'s hero")) + '" aria-label="' + esc(x.name) + '" style="background-image:url(art/' + esc(k) + '.jpg)"></button>';
+      const bd = state.badges && state.where === "town" && isMine(x) ? (BADGES[k] || []) : [];
+      const glyph = { eq: "+", lv: "&#9650;", rs: "&#9651;", aw: "&#8226;" };
+      const tip = x.name + (isMine(x) ? ", Level " + x.level : ", " + x.owner + "'s Hero") + (bd.length ? " - " + bd.map(b => COPY.badge[b]).join(", ") : "");
+      return '<button class="th' + (isMine(x) && (state.where === "game" || !mine) ? " mine" : "") + (k === h.key ? " cur" : "") + '" data-hero="' + esc(k) + '" title="' + esc(tip) + '" aria-label="' + esc(tip) + '" style="background-image:url(art/' + esc(k) + '.jpg)">' +
+        (bd.length ? '<span class="bdg">' + bd.map(b => '<i class="' + b + '">' + glyph[b] + "</i>").join("") + "</span>" : "") + "</button>";
     };
     if (state.where === "town" && mine) return '<div class="sw"><span class="grp">Your roster</span>' + keys.map(th).join("") + "</div>";
     const ours = keys.filter(k => isMine(byKey[k])), theirs = keys.filter(k => !isMine(byKey[k]));
     return '<div class="sw"><span class="grp">' + (state.where === "game" ? "This encounter" : "Your party") + "</span>" + ours.map(th).join("") + '<span class="sep"></span>' + theirs.map(th).join("") + "</div>";
   }
   function topbar(h) {
+    const sigOnClose = state.sig && state.sigui === "button";
+    //D2 "top bar": the bar itself carries the signal in place, so nothing below it moves
+    if (state.sig && state.sigui === "topbar" && state.st !== "fallen") return '<div class="topbar sigbar" role="status"><span class="sigmsg">' + esc(COPY.cause[state.cause](h.name)) + '</span><button class="btn" data-sound="UI.WindowClose" data-flash="Closes the sheet">Close <kbd>Esc</kbd></button></div>';
+    const close = '<button class="btn close' + (sigOnClose ? " sig" : "") + '" data-sound="UI.WindowClose" data-flash="Closes the sheet">' + (sigOnClose ? '<span class="sigt">' + esc(COPY.cause[state.cause](h.name)) + "</span> &middot; " : "") + "Close <kbd>Esc</kbd></button>";
+    //a fallen hero is a memorial: no switcher, no controls
+    if (state.st === "fallen") return '<div class="topbar"><div class="sw"><span class="grp">The Graveyard</span></div>' + close + "</div>";
     let right = "";
-    if (isMine(h)) {
-      right += '<button class="btn" data-flash="Opens the builder\'s Appearance page">Change Appearance</button>';
-      if (progressOf(h).vic === 0) right += '<button class="btn" data-flash="Opens the builder (before the first win)">Edit in Builder</button>';
-    } else right += '<span class="ownerchip">' + esc(h.owner) + "'s hero <i>(read-only)</i></span>";
-    right += '<button class="btn close' + (state.sig ? " sig" : "") + '" data-flash="Closes the sheet">' + (state.sig ? '<span class="sigt">A trigger is waiting</span> &middot; ' : "") + "Close <kbd>Esc</kbd></button>";
-    return '<div class="topbar">' + switcher(h) + right + "</div>";
+    if (state.st === "away") right += '<span class="statechip">' + esc(COPY.awayChip("Denivarius's Game")) + "<small>" + esc(COPY.awayLine) + "</small></span>";
+    if (state.st === "practice") right += '<span class="statechip">' + esc(COPY.practice) + "</span>";
+    if (ownerActs(h) && state.st !== "loading" && state.st !== "failed") {
+      //away: the controls stay where they always are, but switched off; a click says why
+      const flash = text => awayOff() ? ' class="btn off" title="' + esc(COPY.away) + '" data-sound="UI.Error_Generic" data-flash="' + esc(COPY.away) + '"' : ' class="btn" data-flash="' + esc(text) + '"';
+      right += "<button" + flash("Opens the builder's Appearance page") + ">Change Appearance</button>";
+      if (progressOf(h).won === 0) right += "<button" + flash("Opens the builder (before the first win)") + ' title="' + esc(COPY.editTip) + '">Edit in Builder</button>';
+    } else if (!isMine(h)) right += '<span class="ownerchip">' + esc(COPY.ownerChip(h.owner)) + "</span>";
+    return '<div class="topbar">' + switcher(h) + right + close + "</div>";
   }
 
   /* ---------- stats band ---------- */
@@ -653,9 +974,9 @@
   const tile = (l, v, sm) => '<div class="tile' + (sm ? " sm" : "") + '"><div class="lab">' + esc(l) + '</div><div class="val">' + esc(v) + "</div></div>";
   function statsBand(h) {
     const p = h.potency || {};
-    const stat = (l, v) => '<span><span class="st">' + esc(l) + "</span><b>" + esc(v) + "</b></span>";
+    const stat = (l, v, chg) => '<span><span class="st">' + esc(l) + "</span><b" + (chg ? ' data-chg="' + chg + '"' : "") + ">" + esc(v) + "</b></span>";
     const tier = (l, v) => "<span>" + esc(l) + "<b>" + esc(v) + "</b></span>";
-    const body = ["Size", "Speed", "Disengage", "Stability"].map(n => stat(n, h[n.toLowerCase()])).join("");
+    const body = ["Size", "Speed", "Disengage", "Stability"].map(n => stat(n, n === "Speed" ? speedOf(h) : h[n.toLowerCase()], n.toLowerCase())).join("");
     const tiers = tier("Weak", p.weak) + tier("Average", p.average) + tier("Strong", p.strong);
     let right;
     if (state.sp === "centred") right = '<div class="clines"><div class="row">' + body + '</div><div class="row pot"><span class="st">Potency</span>' + tiers + "</div></div>";
@@ -673,7 +994,7 @@
   const GROUPS = ["Main actions", "Maneuvers", "Triggered actions", "Respite activities", "Other", "Free strikes", "Standard actions"];
   function ownAbilities(h) {
     const own = (h.abilities || []).map((a, i) => ({ a: a, id: "own:" + i })).filter(x => !NOT_ABILITIES[x.a.name]);
-    (TRIGGERS[h.key] || []).forEach((a, i) => own.push({ a: a, id: "trg:" + i }));
+    (TRIGGERS[h.key] || h.triggers || []).forEach((a, i) => own.push({ a: a, id: "trg:" + i }));
     return own;
   }
   function groupOf(a) {
@@ -692,7 +1013,7 @@
     const act = a.action || "";
     if (act === "Main Action") return "Main action";
     if (act === "Respite Activity") return "Respite activity";
-    return act || "Free";
+    return act || "No action";
   }
   function costTag(a, h) {
     if (a.cost) return a.cost + " " + (h.resource && h.resource.name || "");
@@ -726,11 +1047,18 @@
     if (a.impl != null && IMPL[a.impl]) html += '<div class="c-impl" style="color:' + IMPL[a.impl][1] + '">' + IMPL[a.impl][0] + "</div>";
     return html;
   }
+  //a leveled treasure shows its 1st, 5th and 9th Level text; tiers the Hero has not reached are dimmed
+  function tierHtml(h, it) {
+    const t = TIERS[it.name];
+    if (!t || it.kind !== "Leveled treasure") return '<div class="c-eff">' + esc(it.desc || "") + "</div>";
+    const lv = progressOf(h).level;
+    return [[1, "1st Level"], [5, "At Level 5"], [9, "At Level 9"]].map((x, i) => '<div class="c-eff' + (lv >= x[0] ? "" : " locked") + '"><b>' + x[1] + ":</b> " + esc(t[i]) + "</div>").join("");
+  }
   function itemCard(it, h) {
     const warn = itemWarn(h, it);
     return '<div class="c-title">' + esc(it.name) + (it.qty > 1 ? "<span>x" + it.qty + "</span>" : "") + '</div><div class="c-type">' + esc(it.kind) + (it.body ? " &middot; " + esc(it.body) : "") + "</div>" +
       '<div class="c-kw"><span>' + ((it.keywords || []).length ? "<b>" + esc(it.keywords.join(", ")) + "</b>" : "No keywords") + "</span><span>" + (it.kind !== "Consumable" && it.equipped ? "Equipped" : "Carried") + "</span></div>" +
-      '<div class="c-eff">' + esc(it.desc || "") + "</div>" + (warn ? '<div class="c-eff" style="color:var(--warn)">' + esc(warn) + ". Weapon and armor treasure only helps when your kit uses that kind of gear.</div>" : "");
+      tierHtml(h, it) + (warn ? '<div class="c-eff" style="color:var(--warn)">' + esc(warn) + " Weapon and armor treasures only help when the kit uses that kind of gear.</div>" : "");
   }
   function moreCard(kind, h) {
     const T = treasureLists(h), c = state.caps;
@@ -742,10 +1070,16 @@
     if (!id) return null;
     const kind = id.slice(0, id.indexOf(":")), idx = id.slice(id.indexOf(":") + 1);
     if (kind === "own") { const a = (h.abilities || [])[+idx]; return a ? abilityCard(a, h) : null; }
-    if (kind === "trg") { const a = (TRIGGERS[h.key] || [])[+idx]; return a ? abilityCard(a, h) : null; }
+    if (kind === "trg") { const a = (TRIGGERS[h.key] || h.triggers || [])[+idx]; return a ? abilityCard(a, h) : null; }
     if (kind === "std") { const a = STD[+idx]; return a ? abilityCard(a, h) : null; }
     if (kind === "it") { const it = inventoryOf(h)[+idx]; return it ? itemCard(it, h) : null; }
     if (kind === "more") return moreCard(idx, h);
+    if (kind === "epic") {
+      const e = EPIC[idx] || ["Epic resource", ""], p = progressOf(h);
+      return '<div class="c-title">' + esc(e[0]) + '</div><div class="c-type">Epic resource &middot; ' + esc(h.className) + " Level 10 feature</div>" +
+        '<div class="c-eff">Each respite adds as much ' + esc(e[0]) + " as the XP it gives, and it lasts until spent. " + esc(e[1]) + "</div>" +
+        (p.vic > 0 ? '<div class="c-eff">' + esc(COPY.epicBank(p.vic, e[0])) + "</div>" : "");
+    }
     return null;
   }
   function arow(id, a, h, compact) {
@@ -765,7 +1099,7 @@
     return GROUPS.filter(g => groups[g]).map(g => {
       const compact = g === "Free strikes" || g === "Standard actions";
       const rows = groups[g].map(x => arow(x.id, x.a, h, compact)).join("");
-      return grpBlock("ab-" + g, g, groups[g].length, compact ? '<div class="compact">' + rows + "</div>" : rows, g === "Standard actions" ? "Every hero can do these" : "");
+      return grpBlock("ab-" + g, g, groups[g].length, compact ? '<div class="compact">' + rows + "</div>" : rows, g === "Standard actions" ? "Every Hero can do these" : "");
     }).join("");
   }
 
@@ -787,7 +1121,7 @@
     const groups = {};
     shownFeatures(h).forEach(([f, i]) => { (groups[f.section] = groups[f.section] || []).push([f, i]); });
     const order = SECTION_ORDER.concat(Object.keys(groups).filter(s => !SECTION_ORDER.includes(s))).filter(s => groups[s]);
-    if (!order.length) return '<div class="empty">No features match these filters.</div>';
+    if (!order.length) return '<div class="empty">No features match. Clear the filters to see them all.</div>';
     return order.map(s => grpBlock("ft-" + s, s === "Core" ? "Core feature" : s, groups[s].length, groups[s].map(([f, i]) => featureCard(f, i, h)).join(""))).join("");
   }
 
@@ -798,8 +1132,18 @@
     state.caps = { lev: 999, trk: 999, con: 999 };
     renderOnce();
   }
+  function skAbilities() {
+    const grp = n => '<div class="grp"><div class="grph"><span class="gl skv">MMMMMMMMMM</span></div>' + skRows(n, "arow", [13, 9, 15, 11]) + "</div>";
+    return grp(3) + grp(2) + grp(4);
+  }
+  function skFeatures() {
+    return Array.from({ length: 3 }, () => '<div class="fcard"><div class="ft"><span class="fn skv">MMMMMMMMM</span></div><span class="skrow skv"></span><span class="skrow skv" style="width:70%"></span></div>').join("");
+  }
   function renderOnce() {
+    //a render replaces the value being previewed, so the hover preview starts over
+    previewing = null;
     const h = byKey[state.hero] || HEROES[0];
+    const skel = state.st === "loading" || state.st === "failed";
     if (!h) { stage.innerHTML = '<div style="padding:40px">Hero data did not load.</div>'; return; }
     const keep = {};
     stage.querySelectorAll("[data-keep]").forEach(el => { keep[el.dataset.keep] = el.scrollTop; });
@@ -807,20 +1151,49 @@
     const total = allFeatures(h).filter(f => f.kind === "normal").length, shown = shownFeatures(h).length;
     const ownCount = ownAbilities(h).length;
     const lists = '<div class="lists">' +
-      '<div class="lhead"><h3>Abilities</h3><span class="cnt">' + ownCount + " of the hero's own, " + STD.length + " every hero has</span></div>" +
+      '<div class="lhead"><h3>Abilities</h3></div>' +
       '<div class="lhead"><h3>Features</h3><span class="cnt">' + (shown === total ? total : shown + " of " + total) + "</span>" +
       PILLARS.map(p => '<button class="chip' + (state.chips.has(p) ? " on" : "") + '" data-chip="' + p + '">' + p + "</button>").join("") +
-      '<input class="search" id="fsearch" type="search" placeholder="Filter" aria-label="Filter features" value="' + esc(state.search) + '"></div>' +
-      '<div class="lbody" data-keep="ab">' + abilitiesBody(h) + '</div><div class="lbody" data-keep="ft">' + featuresBody(h) + "</div></div>";
-    const inGame = state.where === "game";
-    const scene = '<div class="bd' + (inGame ? " map" : "") + '" style="background-image:url(art/' + (inGame ? "battlemap" : "guild") + '.jpg)"></div><div class="bd-shade"></div>';
-    stage.className = "stage scene";
-    stage.innerHTML = scene + '<div class="lay"><aside class="left">' + heroCard(h) + gearBlk(h) + '</aside><main class="main">' + topbar(h) + statsBand(h) + lists + "</main></div>" +
-      '<div class="hcard" id="hcard" hidden><button class="x" data-unpin aria-label="Close card">&#215;</button><div id="hcbody"></div><div class="hint" id="hchint"></div></div>';
+      '<input class="search" id="fsearch" type="search" placeholder="Filter features" aria-label="Filter features" value="' + esc(state.search) + '"></div>' +
+      (skel ? '<div class="lbody">' + skAbilities() + '</div><div class="lbody">' + skFeatures() + "</div></div>"
+            : '<div class="lbody" data-keep="ab">' + abilitiesBody(h) + '</div><div class="lbody" data-keep="ft">' + featuresBody(h) + "</div></div>");
+    const inGame = state.where === "game", grave = state.st === "fallen";
+    const scene = '<div class="bd' + (grave ? " grave" : inGame ? " map" : "") + '" style="background-image:url(art/' + (inGame && !grave ? "battlemap" : "guild") + '.jpg)"></div><div class="bd-shade"></div>';
+    const strip = false;
+    stage.className = "stage scene" + (skel ? " skel" : "") + (state.st === "failed" ? " rm" : "") + (state.rm ? " rm" : "") + (state.where === "game" ? " ingame" : "") + (strip ? " hasstrip" : "") + (state.fs > 1 ? " fs-" + state.fsh : "");
+    stage.style.setProperty("--fs", String(state.fs));
+    stage.setAttribute("aria-busy", skel ? "true" : "false");
+    const stripHtml = strip ? '<div class="sigstrip" role="status"><span>' + esc(COPY.cause[state.cause](h.name)) + '</span><button class="btn" data-sound="UI.WindowClose" data-flash="Closes the sheet">Close <kbd>Esc</kbd></button></div>' : "";
+    stage.innerHTML = scene + stripHtml + '<div class="lay"><aside class="left">' + heroCard(h) + gearBlk(h) + '</aside><main class="main">' + topbar(h) + statsBand(h) + lists + (state.sig && state.sigui === "float" && !skel && state.st !== "fallen" ? '<div class="sigfloat" role="status"><span>' + esc(COPY.cause[state.cause](h.name)) + '</span><button class="btn" data-sound="UI.WindowClose" data-flash="Closes the sheet">Close <kbd>Esc</kbd></button></div>' : "") + "</main></div>" +
+      (skel ? '<span class="sr" role="status">' + esc(COPY.loading(h.name)) + "</span>" : "") + '<div class="hcard" id="hcard" hidden><button class="x" data-unpin aria-label="Close card">&#215;</button><div id="hcbody"></div><div class="hint" id="hchint"></div></div>';
     stage.querySelectorAll("[data-keep]").forEach(el => { if (keep[el.dataset.keep]) el.scrollTop = keep[el.dataset.keep]; });
     if (focusSearch) { const s = document.getElementById("fsearch"); if (s) { s.focus(); const n = s.value.length; try { s.setSelectionRange(n, n); } catch (e) {} } }
     showCard(state.pin || null, !!state.pin);
+    applyFx();
     sync();
+  }
+  //plays the one-shot motion a render was asked for; with Reduce Motion everything just lands
+  let fxTimer = null;
+  function applyFx() {
+    const fx = state.fx, glow = state.glow, from = state.barFrom;
+    state.fx = null; state.glow = null; state.barFrom = null;
+    //a changed value holds gold for a moment even under Reduce Motion (it just settles without the fade)
+    const held = (glow || []).filter(k => !k.startsWith("item:"));
+    if (held.length) {
+      held.forEach(k => stage.querySelectorAll('[data-chg="' + CSS.escape(k) + '"]').forEach(el => el.classList.add("held")));
+      setTimeout(() => stage.querySelectorAll(".held").forEach(el => el.classList.remove("held")), 1400);
+    }
+    if (state.rm) return;
+    if (fx) { clearTimeout(fxTimer); stage.classList.add("fx-" + fx); fxTimer = setTimeout(() => stage.classList.remove("fx-" + fx), 1000); }
+    (glow || []).forEach(k => stage.querySelectorAll('[data-chg="' + CSS.escape(k) + '"]').forEach(el => el.classList.add(k.startsWith("item:") ? "glow" : "held")));
+    const f = from != null ? stage.querySelector(".card .bar .f") : null;
+    if (f) { const to = f.style.width; f.style.width = from; void f.offsetWidth; f.style.transition = "width 320ms ease-out"; f.style.width = to; }
+  }
+  let toastTimer = null;
+  function sound(text) {
+    const t = document.getElementById("toast");
+    t.textContent = text; t.classList.add("on");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("on"), 1800);
   }
   function scale() { return state.zoom === "full" ? 1 : Math.min(1, wrap.clientWidth / 1920); }
   //position the card beside its row, in stage units (the stage is CSS-scaled)
@@ -832,7 +1205,7 @@
     const row = id ? stage.querySelector('[data-card="' + CSS.escape(id) + '"]') : null;
     if (!html || !row) { card.hidden = true; return; }
     document.getElementById("hcbody").innerHTML = html;
-    document.getElementById("hchint").textContent = pinned ? "Pinned. Click elsewhere or press Escape to close." : "Click to pin.";
+    document.getElementById("hchint").textContent = pinned ? "Click elsewhere or press Esc to close." : "Click to keep it open.";
     card.classList.toggle("pinned", pinned);
     card.hidden = false;
     const k = scale(), sr = stage.getBoundingClientRect(), rr = row.getBoundingClientRect();
@@ -847,7 +1220,12 @@
     document.querySelectorAll("#ctl-where button").forEach(b => b.classList.toggle("on", b.dataset.where === state.where));
     document.querySelectorAll("#ctl-sp button").forEach(b => b.classList.toggle("on", b.dataset.sp === state.sp));
     document.getElementById("ctl-hero").value = state.hero;
-    [["ctl-sig", "sig"]].forEach(([id, k]) => { const el = document.getElementById(id); if (el) el.setAttribute("aria-pressed", String(state[k])); });
+    document.getElementById("ctl-stam").value = state.stam;
+    document.getElementById("ctl-st").value = state.st;
+    opSig.value = state.sigui; opCause.value = state.cause; opSpend.value = state.spend; opFs.value = String(state.fs);
+    document.getElementById("op-si").setAttribute("aria-pressed", String(state.si));
+    document.getElementById("ctl-prog").value = state.prog;
+    [["ctl-vet", "vet"], ["ctl-imm", "imm"], ["ctl-twokit", "twokit"], ["ctl-res", "res"], ["ctl-sig", "sig"]].forEach(([id, k]) => document.getElementById(id).setAttribute("aria-pressed", String(state[k])));
   }
   function fit() {
     if (state.zoom === "full") { wrap.classList.add("full"); stage.style.transform = "none"; wrap.style.height = "auto"; return; }
@@ -862,9 +1240,52 @@
   }
 
   const heroSel = document.getElementById("ctl-hero");
-  heroSel.innerHTML = HEROES.filter(h => h.key === "fury" || h.key === VETERAN_KEY).map(h => '<option value="' + esc(h.key) + '">' + esc(h.name) + " (level " + esc(h.level) + (isMine(h) ? ")" : ", " + esc(h.owner) + "'s)") + "</option>").join("");
-  heroSel.addEventListener("change", () => { state.hero = heroSel.value; state.pin = null; render(); });
-
+  heroSel.innerHTML = HEROES.filter(h => h.key === "fury" || h.key === VETERAN_KEY).map(h => '<option value="' + esc(h.key) + '">' + esc(h.name) + " (Level " + esc(h.level) + (isMine(h) ? ")" : ", " + esc(h.owner) + "'s)") + "</option>").join("");
+  heroSel.addEventListener("change", () => { state.hero = heroSel.value; state.pin = null; state.hp = null; state.fx = "swap"; render(); });
+  const stamSel = document.getElementById("ctl-stam");
+  stamSel.innerHTML = STAM_STATES.map(s => '<option value="' + s[0] + '">' + esc(s[1]) + "</option>").join("");
+  stamSel.addEventListener("change", () => { state.stam = stamSel.value; render(); });
+  //each state brings the place it happens in: away is a town state, dead and practice happen in a game
+  const stSel = document.getElementById("ctl-st");
+  stSel.innerHTML = SHEET_STATES.map(x => '<option value="' + x[0] + '">' + esc(x[1]) + "</option>").join("");
+  stSel.addEventListener("change", () => {
+    state.st = stSel.value; state.pin = null;
+    if (state.st === "away") { state.where = "town"; if (!isMine(byKey[state.hero])) state.hero = "fury"; }
+    if (state.st === "dead" || state.st === "practice") state.where = "game";
+    render();
+  });
+  let replayTimer = null;
+  document.getElementById("ctl-replay").addEventListener("click", () => {
+    clearTimeout(replayTimer);
+    const back = state.st === "loading" ? "normal" : state.st;
+    state.st = "loading"; state.pin = null; render();
+    sound("No sound while loading");
+    replayTimer = setTimeout(() => { if (state.st === "loading") { state.st = back; state.fx = "arrive"; render(); } }, 1600);
+  });
+  document.getElementById("mo-open").addEventListener("click", () => { state.pin = null; state.fx = "opening"; render(); sound("Sound: UI.WindowOpen"); });
+  //damage and healing move the card's bar from where it was, with the hero card's wash
+  function changeStamina(delta) {
+    const h = byKey[state.hero], s = stamOf(h);
+    state.barFrom = (Math.max(0, Math.min(1, s.cur / s.max)) * 98).toFixed(2) + "%";
+    state.hp = Math.max(-s.w, Math.min(s.max, s.cur + delta));
+    const now = Date.now();
+    if (now - state.lastWash > 1000) { state.fx = delta < 0 ? "hurt" : "heal"; state.lastWash = now; }
+    render();
+    sound("No sound: the fight already plays its own");
+  }
+  document.getElementById("mo-hurt").addEventListener("click", () => changeStamina(-7));
+  document.getElementById("mo-heal").addEventListener("click", () => changeStamina(7));
+  document.getElementById("mo-ready").addEventListener("click", () => { state.prog = "ready"; state.fx = "sweep"; render(); sound("No sound: the Training Grounds celebrates the level-up"); });
+  document.getElementById("mo-rm").addEventListener("click", e => { state.rm = !state.rm; e.currentTarget.setAttribute("aria-pressed", String(state.rm)); render(); });
+  const opSig = document.getElementById("op-sig"), opCause = document.getElementById("op-cause"), opSpend = document.getElementById("op-spend"), opFs = document.getElementById("op-fs");
+  opSig.addEventListener("change", () => { state.sigui = opSig.value; state.sig = true; render(); });
+  opCause.addEventListener("change", () => { state.cause = opCause.value; state.sig = true; render(); });
+  opSpend.addEventListener("change", () => { state.spend = opSpend.value; if (state.spend !== "off" && state.stam === "full") state.stam = "winded"; state.where = "town"; render(); });
+  opFs.addEventListener("change", () => { state.fs = parseFloat(opFs.value); render(); });
+  document.getElementById("op-si").addEventListener("click", e => { state.si = !state.si; render(); });
+  const progSel = document.getElementById("ctl-prog");
+  progSel.innerHTML = PROG_STATES.map(x => '<option value="' + x[0] + '">' + esc(x[1]) + "</option>").join("");
+  progSel.addEventListener("change", () => { state.prog = progSel.value; render(); });
   document.addEventListener("input", e => { if (e.target.id === "fsearch") { state.search = e.target.value; render(); } });
   stage.addEventListener("mouseover", e => {
     if (state.pin) return;
@@ -873,24 +1294,65 @@
     if (id !== state.hover) { state.hover = id; showCard(id, false); }
   });
   stage.addEventListener("mouseleave", () => { if (!state.pin) { state.hover = null; showCard(null, false); } });
+  let previewing = null;
+  function clearPreview() {
+    if (!previewing) return;
+    previewing.el.textContent = previewing.was; previewing.el.classList.remove("pv"); previewing = null;
+  }
+  stage.addEventListener("mouseover", e => {
+    const row = e.target.closest(".it[data-chg]");
+    const name = row ? row.dataset.chg.slice(5) : null;
+    if (previewing && previewing.name === name) return;
+    clearPreview();
+    const h = byKey[state.hero], it = name ? inventoryOf(h).find(x => x.name === name) : null;
+    const pv = it && ownerActs(h) && !awayOff() ? previewOf(h, it) : null;
+    const el = pv ? stage.querySelector('[data-chg="speed"]') : null;
+    if (el) { previewing = { name: name, el: el, was: el.textContent }; el.textContent = String(pv[2]); el.classList.add("pv"); }
+  });
+  stage.addEventListener("mouseleave", clearPreview);
   document.addEventListener("keydown", e => { if (e.key === "Escape" && state.pin) { state.pin = null; render(); } });
   document.addEventListener("click", e => {
-    const t = e.target.closest("[data-where],[data-sp],[data-bd],[data-mp],[data-zoom],[data-hero],[data-chip],[data-flash],[data-grp],[data-more],[data-melee],[data-unpin],[data-card],#ctl-vet,#ctl-imm,#ctl-prog,#ctl-twokit,#ctl-res,#ctl-sig");
+    //D5: a changed value keeps its tag until the next click anywhere
+    const t = e.target.closest("[data-where],[data-sp],[data-bd],[data-mp],[data-zoom],[data-hero],[data-chip],[data-flash],[data-equip],[data-spend],[data-retry],[data-goto],[data-grp],[data-more],[data-melee],[data-unpin],[data-card],#ctl-vet,#ctl-imm,#ctl-twokit,#ctl-res,#ctl-sig");
+    if (state.armed && !(t && t.dataset.spend)) { state.armed = false; if (!t) render(); }
     if (!t) { if (state.pin && !e.target.closest("#hcard")) { state.pin = null; render(); } return; }
-    const toggles = { "ctl-vet": "vet", "ctl-imm": "imm", "ctl-prog": "prog", "ctl-twokit": "twokit", "ctl-res": "res", "ctl-sig": "sig" };
+    if (t.dataset.spend) {
+      //"twice": the first click arms the ring and says so; the second spends; anything else disarms
+      if (state.spend === "ring2" && !state.armed) { state.armed = true; render(); sound("Sound: Mouse.Click"); return; }
+      state.armed = false;
+      const h = byKey[state.hero], s = stamOf(h);
+      state.barFrom = (Math.max(0, Math.min(1, s.cur / s.max)) * 98).toFixed(2) + "%";
+      state.hp = Math.min(s.max, s.cur + h.recoveries.value); state.recUsed += 1; state.fx = "heal"; state.glow = [];
+      render(); sound("Sound: Ability.Heal_Generic"); return;
+    }
+    if (t.dataset.retry) { state.st = "loading"; render(); setTimeout(() => { if (state.st === "loading") { state.st = "normal"; state.fx = "arrive"; render(); } }, 1200); sound("Sound: Mouse.Click"); return; }
+    if (t.dataset.goto) {
+      const row = stage.querySelector(".it.todo");
+      if (row) { row.scrollIntoView({ block: "nearest" }); row.classList.remove("glow"); void row.offsetWidth; row.classList.add("glow"); }
+      sound("Sound: Mouse.Click"); return;
+    }
+    const toggles = { "ctl-vet": "vet", "ctl-imm": "imm", "ctl-twokit": "twokit", "ctl-res": "res", "ctl-sig": "sig" };
     if (toggles[t.id]) { state[toggles[t.id]] = !state[toggles[t.id]]; if (t.id === "ctl-twokit") state.hero = "tactician"; if (t.id === "ctl-vet" && !isMine(byKey[state.hero])) state.hero = "fury"; state.pin = null; render(); return; }
     if (t.dataset.mp) { state.mp = t.dataset.mp; try { localStorage.setItem("eotw-r6-mp", state.mp); } catch (err) {} render(); return; }
     if (t.dataset.zoom) { state.zoom = t.dataset.zoom; sync(); fit(); return; }
     if (t.dataset.where) { state.where = t.dataset.where; state.pin = null; render(); return; }
     if (t.dataset.sp) { state.sp = t.dataset.sp; try { localStorage.setItem("eotw-r10-sp", state.sp); } catch (err) {} render(); return; }
-    if (t.dataset.hero) { state.hero = t.dataset.hero; state.pin = null; render(); return; }
-    if (t.dataset.chip) { const c = t.dataset.chip; state.chips.has(c) ? state.chips.delete(c) : state.chips.add(c); render(); return; }
-    if (t.dataset.flash) { flash(t, t.dataset.flash); return; }
-    if (t.dataset.grp) { const g = t.dataset.grp; state.closed.has(g) ? state.closed.delete(g) : state.closed.add(g); render(); return; }
-    if (t.dataset.more) { const m = t.dataset.more; state.more.has(m) ? state.more.delete(m) : state.more.add(m); render(); return; }
+    if (t.dataset.hero) { const changed = t.dataset.hero !== state.hero; state.hero = t.dataset.hero; state.pin = null; if (changed) { state.hp = null; state.recUsed = 0; state.fx = "swap"; } render(); sound("Sound: Mouse.Click"); return; }
+    if (t.dataset.chip) { const c = t.dataset.chip; state.chips.has(c) ? state.chips.delete(c) : state.chips.add(c); render(); sound("Sound: Mouse.Click"); return; }
+    if (t.dataset.flash) { flash(t, t.dataset.flash); sound("Sound: " + (t.dataset.sound || "Mouse.Click")); return; }
+    if (t.dataset.equip) {
+      //equipping lands at once; the row and every value the item changes glow so you can see what it did
+      const h = byKey[state.hero], name = t.dataset.equip, it = inventoryOf(h).find(x => x.name === name);
+      const on = !(it && it.equipped);
+      const pv = it ? previewOf(h, it) : null;
+      state.eq[name] = on; state.glow = ["item:" + name].concat(name === "Lightning Treads" ? ["speed"] : []);
+      render(); sound("Sound: " + (on ? "UI.Inv_Place" : "UI.Inv_Grab")); return;
+    }
+    if (t.dataset.grp) { const g = t.dataset.grp; state.closed.has(g) ? state.closed.delete(g) : state.closed.add(g); render(); sound("Sound: Mouse.Click"); return; }
+    if (t.dataset.more) { const m = t.dataset.more; state.more.has(m) ? state.more.delete(m) : state.more.add(m); render(); sound("Sound: Mouse.Click"); return; }
     if (t.dataset.melee) { if (!t.disabled) { state.meleeFrom = t.dataset.melee; render(); } return; }
     if (t.hasAttribute("data-unpin")) { state.pin = null; render(); return; }
-    if (t.dataset.card) { const id = t.dataset.card; state.pin = state.pin === id ? null : id; render(); }
+    if (t.dataset.card) { const id = t.dataset.card; state.pin = state.pin === id ? null : id; render(); sound("Sound: Mouse.Click"); }
   });
   stage.addEventListener("keydown", e => { const r = e.target.closest && e.target.closest("[data-card]"); if (r && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); state.pin = state.pin === r.dataset.card ? null : r.dataset.card; render(); } });
   window.addEventListener("resize", () => { fit(); if (state.pin) showCard(state.pin, true); });

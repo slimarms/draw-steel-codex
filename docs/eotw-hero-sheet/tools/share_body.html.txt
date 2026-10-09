@@ -1,7 +1,7 @@
 <div class="page">
   <header class="intro">
     <h1>EotW hero sheet</h1>
-    <p>A read-only hero sheet for Encounter of the Week, shown with two real pregens: a <b>level 1 Dwarf Fury</b> fresh from the builder, and a <b>level 6 Orc Conduit</b> who has been playing for a while, with treasure, immunities and XP. Hover any ability or item to see its card, and click to pin it. Use Where to see the sheet in town or during an encounter.</p>
+    <p><b>Updated 9 October: the design is locked</b> and the build starts next. A read-only hero sheet for Encounter of the Week, shown with two real pregens: a <b>Level 1 Dwarf Fury</b> fresh from the builder, and a <b>Level 6 Orc Conduit</b> who has been playing for a while, with treasure, immunities, XP and two Victories banked. Hover any ability or item to see its card, and click to pin it. Use Where to see the sheet in town or during an encounter, and State for the other situations the sheet handles.</p>
   </header>
 
   <div class="controls" role="toolbar" aria-label="Preview controls">
@@ -12,10 +12,23 @@
         <button data-where="game">In an encounter</button>
       </div>
     </div>
+    <div class="ctl"><span>State</span><select id="ctl-st" aria-label="Sheet state"></select></div>
     <div class="ctl"><span>Show</span>
-      <button class="tog" id="ctl-sig" aria-pressed="false">A trigger is waiting</button>
+      <button class="tog" id="ctl-sig" aria-pressed="false">Something is waiting on you</button>
     </div>
     <div class="ctl"><span>Zoom</span><div class="seg" id="ctl-zoom"><button data-zoom="fit">Fit</button><button data-zoom="full">100%</button></div></div>
+  </div>
+  <!-- controls the full review mock has; kept hidden so the shared script runs unchanged -->
+  <div hidden>
+    <select id="ctl-stam"></select><select id="ctl-prog"></select><button id="ctl-replay"></button>
+    <button id="ctl-vet"></button><button id="ctl-imm"></button><button id="ctl-twokit"></button><button id="ctl-res"></button>
+    <button id="mo-open"></button><button id="mo-hurt"></button><button id="mo-heal"></button><button id="mo-ready"></button><button id="mo-rm"></button>
+    <select id="op-sig"><option value="button"></option><option value="topbar"></option><option value="float"></option></select>
+    <select id="op-cause"><option value="trigger"></option><option value="save"></option><option value="roll"></option><option value="story"></option><option value="act"></option></select>
+    <select id="op-spend"><option value="off"></option><option value="ring"></option><option value="ring2"></option></select>
+    <select id="op-fs"><option value="1"></option><option value="1.2"></option><option value="1.4"></option></select>
+    <button id="op-si"></button>
+    <div class="toast" id="toast"></div>
   </div>
 
   <div class="stage-wrap" id="wrap"><div class="stage" id="stage"></div></div>
@@ -24,32 +37,33 @@
     <section class="note">
       <h2>What is different for EotW, and why</h2>
       <ul>
-        <li><b>Read-only by design.</b> The sheet only has the actions the rules allow: equip or unequip treasure, change appearance, and edit in the builder before the first win. Nothing can edit stamina or other numbers, so EotW's "enforce everything" holds.</li>
-        <li><b>One sheet everywhere.</b> The Guild, the town strip and the in-game hero card all open this sheet, and teammates' heroes open read-only. The other ways into the old editable sheet (the C key, the token menu, search, chat commands) would point here.</li>
-        <li><b>It looks like EotW.</b> The hero card, enlarged, anchors the sheet with the same stamina bar, recoveries ring, resource and surge icons as the HUD card, so players learn it once. Panels are frosted glass over where you are: the Hero's Guild in town, the battle map in an encounter.</li>
-        <li><b>Everything on one screen.</b> No tabs: abilities and features sit side by side, and the left column never scrolls. Hovering shows the same ability card the action bar uses; clicking pins it.</li>
-        <li><b>Laid out the way you use it.</b> Characteristics sit with skills, grouped by skill group, because a test is a characteristic plus a skill. Size, speed, disengage, stability and potency sit beside them.</li>
-        <li><b>Abilities follow the feature tags.</b> Only real abilities show, plus the standard actions and free strikes every hero has, which helps newer players. Features the book writes as prose stay in Features.</li>
-        <li><b>Kit, or what the class uses instead.</b> Prayer and ward for a Conduit, enchantment and ward for an Elementalist, and so on. A Tactician's two kits read as one kit, with the damage bonus choice made in town.</li>
-        <li><b>Treasure by type, with an equip prompt.</b> Leveled treasure (with the carry-three count), trinkets and consumables. Won treasure currently arrives unequipped and does nothing until it is equipped, so the sheet flags it.</li>
-        <li><b>Progress on the card.</b> Level, the bar to the next level (XP on hover) and Victories.</li>
-        <li><b>Safe to open mid-encounter.</b> The sheet sits over the map. If a trigger, save or roll is waiting on you, the Close button turns gold and says so; EotW prompts wait rather than time out, so nothing is lost.</li>
+        <li><b>Read-only by design.</b> The sheet only has the actions the rules allow: equip or unequip treasure, spend a Recovery outside combat by clicking the Recoveries ring, change appearance, and edit in the builder before the Hero wins an encounter. Nothing edits Stamina or other numbers, so EotW's "enforce everything" holds.</li>
+        <li><b>The sheet shows the Hero; the town changes them.</b> Levelling up, taking a respite and the Hero's history belong to places in town (a Training Grounds and so on). The sheet points there: "Head to the Training Grounds to Level your Hero."</li>
+        <li><b>Built for your levelling answer.</b> Victories sit beside Recoveries, because pushing on with Victories banked and Recoveries low is now the player's decision. The XP bar shows, hatched, the XP the next respite will add, and says when a respite would Level the Hero. At Level 10 the bar becomes the class's epic resource.</li>
+        <li><b>One sheet everywhere.</b> The Guild, the town strip and the party view open this sheet, and teammates' Heroes open read-only, in town and in an encounter. The other ways into the old editable sheet (the C key, the token menu, search, chat commands) would point here.</li>
+        <li><b>The character panel stays the combat companion.</b> Conditions and effects live there; the sheet's numbers match the panel's. If something waits on you while the sheet is open, its top bar turns gold and says what (a trigger, a save, a roll, the story continuing, or the Heroes being able to act).</li>
+        <li><b>It looks like EotW.</b> The hero card, enlarged, anchors the sheet with the same stamina bar, recoveries ring, resource and surge icons as the HUD card. Panels are frosted glass over where you are: the Hero's Guild in town, the battle map in an encounter.</li>
+        <li><b>Everything on one screen.</b> No tabs: abilities and features side by side, and the left column never scrolls. Hovering shows the same ability card the action bar uses; clicking pins it.</li>
+        <li><b>Laid out the way you use it.</b> Characteristics sit with skills, grouped by skill group, because a test is a characteristic plus a skill. Abilities follow the feature tags, including each Hero's heroic abilities and triggered actions, plus the standard actions and free strikes every Hero has.</li>
+        <li><b>Treasure you can read.</b> Leveled treasure (with the carry-three count), trinkets and consumables. Hovering an item shows the value it would change in gold; equipping changes it. Armor or weapons the kit cannot use say "No benefit", and leveled treasure shows its Level 5 and 9 text.</li>
+        <li><b>Every state handled.</b> Away in a party, dead mid-encounter, fallen (opened from the Graveyard as a memorial), Danger Rooms practice, loading (a skeleton of the whole layout) and a failure to load. Reduce Motion, Font Size up to 140% and the Status Icons setting are all respected.</li>
       </ul>
     </section>
     <section class="note">
-      <h2>Open questions</h2>
+      <h2>Questions for you (rules calls; none changes the layout)</h2>
       <ul>
-        <li><b>Progression.</b> Is levelling done with XP (victories become XP at a respite, 16 XP per level), or something else in EotW? Where does a level-up happen?</li>
-        <li><b>Moving items.</b> Can players move items between their own heroes, share them within a party, or trade with other players? Today Give To, Set Quantity and Duplicate can inflate won treasure.</li>
+        <li><b>What carries home after an encounter.</b> Pushing on only costs something if spent Recoveries and Stamina come home with the Hero. Today nothing spent comes home. Should it? And consumables used or won?</li>
         <li><b>Carrying three leveled treasures.</b> Hard cap, allow it with a warning, or automate the respite Presence test?</li>
-        <li><b>Edit in Builder.</b> Your doc says before a hero's first encounter; the code allows it until the first victory, so a hero who lost stays rebuildable. Which do you want?</li>
-        <li><b>Teammates' sheets.</b> OK to open them read-only during an encounter as well as in town?</li>
-        <li><b>Closing the other routes.</b> Pointing the C key, token menu, search and chat commands at this sheet touches core code. OK to do?</li>
-        <li><b>Noticed along the way.</b> The AI's "Waiting for..." banner hides whenever any panel window is open, including the character panel the HUD card opens. Intended?</li>
-        <li><b>Also noticed.</b> In EotW every hero's character panel is view-only, which also blocks play actions such as the Summoner's Sacrifice Minions and ending an Elementalist's persistent ability.</li>
+        <li><b>Equipping while a party forms.</b> The City refuses changes to a Hero claimed by any party, so a player waiting at the Gate cannot equip the treasure they just won. Heroes are copied in at Begin, so allowing equip and appearance changes until then would carry in safely. Lock only once the game is underway?</li>
+        <li><b>Edit in Builder.</b> Your doc says before a Hero's first encounter; the sheet allows it until the Hero wins one, so a Hero who lost stays rebuildable. Which do you want?</li>
+        <li><b>Town places.</b> The sheet points to a Training Grounds for levelling, a respite, and a Record location for the Hero's history. Where do these live, and what does a respite offer once respite activities exist (and how often)?</li>
+        <li><b>Encounters for levelled Heroes.</b> Every Hero is still clamped to Level 1 on arrival; levelled Heroes need level bands or scaling.</li>
+        <li><b>Your hero card file.</b> Three small changes would carry to the sheet: the Status Icons shapes on the stamina bar, the damage wash at most once a second at 30% (flashing safety), and how temporary Stamina is drawn (it disappears at full Stamina today).</li>
+        <li><b>Closing the other routes.</b> Pointing the C key, token menu, search and chat commands at this sheet touches core code. Flagging it before the build gets there.</li>
+        <li><b>Still noticed.</b> The AI's "Waiting for..." banner hides whenever any panel window is open, and the EotW character panel's view-only mode blocks play actions such as the Summoner's Sacrifice Minions.</li>
       </ul>
     </section>
   </div>
 
-  <p class="foot">Built with real pregen data from the Codex. The typeface stands in for Berlingske Slab, the heroic resource icon is a placeholder, and all wording is draft.</p>
+  <p class="foot">Built with real pregen data from the Codex (read at full Level 1). The typeface stands in for Berlingske Slab; the heroic resource, epic resource and status icons are stand-ins for the Codex's own. The wording is signed off.</p>
 </div>
