@@ -1,9 +1,12 @@
 local mod = dmhub.GetModLoading()
 
 --The Encounter of the Week hero sheet: a full-screen, read-only reference
---for one EotW Hero, drawn over where the player is (the Hero's Guild in
---town, the blurred battle map in a game). It lives in this core mod, like
+--for one EotW Hero, drawn over where the player is (the town screen that is
+--open, or the blurred battle map in a game). It lives in this core mod, like
 --EotwHeroCard.lua, because it opens at the titlescreen as well as in game.
+--Inside EotW every route to a Hero's sheet opens this one: in a game through
+--the EotW interface's openSheet (EncounterOfTheWeekHud.lua), in town through
+--the roster, strip, Graveyard and lineup clicks.
 --Design brief and build plan: docs/eotw-hero-sheet/brief.md; the mock in
 --docs/eotw-hero-sheet/mock/layouts.html is the reference for every state.
 --
