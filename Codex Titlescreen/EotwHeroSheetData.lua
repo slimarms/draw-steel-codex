@@ -1254,13 +1254,20 @@ local SECTION_ORDER = {
     "stats", "words", "kit", "treasures", "abilities", "features",
 }
 
+--The sections that read the feature index (FeatureCategoriser.BuildIndex), the
+--costly part of a read.
+local INDEX_SECTIONS = { titles = true, kit = true, abilities = true, features = true }
+
 --- Reads everything the EotW hero sheet shows for one Hero into one table.
 --- Pass the Hero's token (a map token in game or a lobby character in town).
 --- Returns nil when the Hero has no properties yet (still loading). Sections
 --- that fail are left out and named in data.errors as "{section}: {error}".
---- @param tok CharacterToken
+--- `only` reads just the named sections (e.g. {"vitals", "resource"}), for a
+--- cheap live refresh; the feature index is built only when one needs it.
+--- @param tok CharacterToken|nil
+--- @param only? string[]
 --- @return table|nil
-function EotwHeroSheet.Data(tok)
+function EotwHeroSheet.Data(tok, only)
     if tok == nil then
         return nil
     end
@@ -1270,17 +1277,36 @@ function EotwHeroSheet.Data(tok)
         return nil
     end
 
+    local wanted = nil
+    if only ~= nil then
+        wanted = {}
+        for _,name in ipairs(only) do
+            wanted[name] = true
+        end
+    end
+
     local d = { charid = tok.charid, errors = {} }
     local ctx = { index = { features = {} } }
-    local ok, err = pcall(function() ctx.index = FeatureCategoriser.BuildIndex(p) end)
-    if not ok then
-        d.errors[#d.errors+1] = "index: " .. tostring(err)
+    local needsIndex = true
+    if wanted ~= nil then
+        needsIndex = false
+        for name in pairs(INDEX_SECTIONS) do
+            needsIndex = needsIndex or wanted[name] == true
+        end
+    end
+    if needsIndex then
+        local ok, err = pcall(function() ctx.index = FeatureCategoriser.BuildIndex(p) end)
+        if not ok then
+            d.errors[#d.errors+1] = "index: " .. tostring(err)
+        end
     end
 
     for _,name in ipairs(SECTION_ORDER) do
-        local okSection, errSection = pcall(Sections[name], d, tok, p, ctx)
-        if not okSection then
-            d.errors[#d.errors+1] = name .. ": " .. tostring(errSection)
+        if wanted == nil or wanted[name] then
+            local okSection, errSection = pcall(Sections[name], d, tok, p, ctx)
+            if not okSection then
+                d.errors[#d.errors+1] = name .. ": " .. tostring(errSection)
+            end
         end
     end
     return d

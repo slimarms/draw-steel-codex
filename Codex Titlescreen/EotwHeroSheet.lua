@@ -34,7 +34,19 @@ local C = {
     HAIRLINE = "#ffffff14",
     SKEL = "#ffffff0f",
     SKEL_LIT = "#ffffff24",
+    --the one gold: act on this / it landed (ready to Level, surges)
+    GOLD = "#ffd66bff",
+    --text on the card's dark plate, a cool grey that reads over any art
+    PLATE_TEXT = "#c6d0daff",
+    PLATE = "#000000c4",
+    --the hatched stretch of the XP bar: cream stripes on a faint cream ground
+    HATCH = "#dfcfc0e6",
+    HATCH_GROUND = "#dfcfc040",
 }
+
+--The card's sections a live refresh re-reads (any character change): cheap,
+--with no feature index. Titles and the rest are read once when the Hero loads.
+local LIVE_SECTIONS = { "identity", "progress", "vitals", "resource" }
 
 --Layout at the 1920x1080 design size (see the mock): a 400px left column
 --that never scrolls, and the main column taking the rest.
@@ -47,6 +59,20 @@ local KIT_HEIGHT = 110
 local MAIN_GAP = 16
 local TOPBAR_HEIGHT = 60
 local STATS_HEIGHT = 218
+
+--The plate's inner width: the plate is 10px in from the card on each side and
+--pads 14px inside. The XP bar's hatch and notch are placed in pixels from it.
+local PLATE_INNER = LEFT_WIDTH - 20 - 28
+--The level numbers either side of the XP bar, and the gaps around the bar.
+local LEVEL_NUMBER_WIDTH = 22
+local XP_BAR_WIDTH = PLATE_INNER - 2 * LEVEL_NUMBER_WIDTH - 16
+local XP_BAR_HEIGHT = 10
+--One hatch stripe every HATCH_STEP pixels, for the XP the next respite adds.
+local HATCH_STEP = 4
+--Surges show one icon each, nine at most (they would outgrow the corner).
+local MAX_SURGE_ICONS = 9
+--Titles listed under the name, at most (locked design).
+local MAX_TITLES = 5
 
 --How long a Hero may take to arrive before the sheet gives up and offers
 --Try again. Lobby characters in town can take a few seconds to sync.
@@ -186,7 +212,227 @@ local RULES = {
         selectors = { "eotwsButton", "press" },
         brightness = 0.85,
     },
+
+    --the card: art full-bleed (or the dark ground when there is none), greyed
+    --for a Hero who is dead or fallen
+    {
+        selectors = { "eotwsCard" },
+        bgimage = "panels/square.png",
+        bgcolor = "#151515ff",
+        borderWidth = 1,
+        borderColor = "#000000cc",
+        cornerRadius = 10,
+    },
+    {
+        selectors = { "eotwsCard", "dead" },
+        saturation = 0,
+        brightness = 0.7,
+    },
+    {
+        selectors = { "eotwsPlate" },
+        bgimage = "panels/square.png",
+        bgcolor = C.PLATE,
+        cornerRadius = 8,
+    },
+    {
+        selectors = { "eotwsPlateText" },
+        color = C.PLATE_TEXT,
+        fontSize = 12.5,
+    },
+    {
+        selectors = { "eotwsPlateStrong" },
+        color = "white",
+        fontSize = 14,
+        bold = true,
+    },
+    {
+        selectors = { "eotwsSubtitle" },
+        color = C.PLATE_TEXT,
+        fontSize = 14,
+        tmargin = 2,
+        width = "100%",
+    },
+    {
+        selectors = { "eotwsTitle" },
+        color = C.CREAM,
+        fontSize = 14,
+        italics = true,
+    },
+    {
+        selectors = { "eotwsTitle", "hover" },
+        color = C.CREAM_LIGHT,
+    },
+    {
+        selectors = { "eotwsMedal" },
+        width = 15,
+        height = 15,
+        valign = "center",
+        bgimage = "phosphor/medal-fill.png",
+        bgcolor = C.TAN,
+    },
+    {
+        selectors = { "eotwsLevelNumber" },
+        color = "white",
+        fontSize = 14,
+        bold = true,
+        width = LEVEL_NUMBER_WIDTH,
+        textAlignment = "center",
+        valign = "center",
+    },
+    {
+        selectors = { "eotwsLevelNumber", "next" },
+        color = C.PLATE_TEXT,
+    },
+    {
+        selectors = { "eotwsLevelNumber", "next", "reach" },
+        color = C.CREAM_LIGHT,
+    },
+    {
+        selectors = { "eotwsLevelNumber", "next", "ready" },
+        color = C.GOLD,
+    },
+    {
+        selectors = { "eotwsXpBar" },
+        bgimage = "panels/square.png",
+        bgcolor = "#ffffff1f",
+        cornerRadius = 5,
+    },
+    {
+        selectors = { "eotwsXpFill" },
+        bgimage = "panels/square.png",
+        bgcolor = "white",
+        cornerRadius = 5,
+        gradient = gui.Gradient{
+            point_a = { x = 0, y = 0 },
+            point_b = { x = 1, y = 0 },
+            stops = {
+                { position = 0, color = C.TAN },
+                { position = 1, color = C.CREAM },
+            },
+        },
+    },
+    {
+        selectors = { "eotwsXpFill", "ready" },
+        gradient = gui.Gradient{
+            point_a = { x = 0, y = 0 },
+            point_b = { x = 1, y = 0 },
+            stops = {
+                { position = 0, color = C.GOLD },
+                { position = 1, color = C.GOLD },
+            },
+        },
+    },
+    {
+        selectors = { "eotwsReadyLine" },
+        color = C.GOLD,
+        fontSize = 14,
+        bold = true,
+        width = "100%",
+    },
+    {
+        selectors = { "eotwsRespiteLine" },
+        color = C.CREAM_LIGHT,
+        fontSize = 13.5,
+        bold = true,
+        width = "100%",
+    },
+    {
+        selectors = { "eotwsEpic" },
+        fontSize = 13,
+        valign = "center",
+    },
+    {
+        selectors = { "eotwsEpicIcon" },
+        width = 14,
+        height = 14,
+        valign = "center",
+        bgcolor = C.CREAM_LIGHT,
+    },
+    {
+        selectors = { "eotwsNote" },
+        fontSize = 13,
+    },
+    {
+        selectors = { "eotwsStatusIcon" },
+        width = 14,
+        height = 14,
+        bgcolor = "white",
+    },
+    --the Recoveries ring: Recoveries left in a dark disc
+    {
+        selectors = { "eotwsRing" },
+        width = 42,
+        height = 42,
+        valign = "center",
+        bgimage = "panels/square.png",
+        bgcolor = "#000000a0",
+        cornerRadius = 21,
+        borderWidth = 2,
+        borderColor = "#dfcfc099",
+    },
+    {
+        selectors = { "eotwsRing", "empty" },
+        borderColor = "#c94040cc",
+    },
+    {
+        selectors = { "eotwsRingNumber" },
+        color = C.CREAM_LIGHT,
+        fontSize = 18,
+        bold = true,
+        halign = "center",
+        valign = "center",
+    },
+    {
+        selectors = { "eotwsVitalNumber" },
+        color = "white",
+        fontSize = 20,
+        bold = true,
+        valign = "center",
+    },
+    {
+        selectors = { "eotwsResourceIcon" },
+        width = 17,
+        height = 17,
+        valign = "center",
+        bgcolor = "white",
+    },
+    {
+        selectors = { "eotwsEpitaph" },
+        color = C.PLATE_TEXT,
+        fontSize = 14,
+        width = "100%",
+    },
+    {
+        selectors = { "eotwsSurges" },
+        width = "auto",
+        height = "auto",
+        flow = "horizontal",
+        hpad = 7,
+        vpad = 5,
+        borderBox = true,
+        bgimage = "panels/square.png",
+        bgcolor = C.PLATE,
+        cornerRadius = 8,
+    },
+    {
+        selectors = { "eotwsSurgeIcon" },
+        width = 15,
+        height = 15,
+        lmargin = 1,
+        rmargin = 1,
+        bgimage = "game-icons/surge.png",
+        bgcolor = C.GOLD,
+    },
 }
+
+--The sheet's rules after the hero card's, whose stamina bar the card reuses.
+--Built once so the theme's merge cache (keyed by table) is hit every open.
+local SHEET_RULES = {}
+for _,list in ipairs({ EotwHeroCard.rules, RULES }) do
+    for _,rule in ipairs(list) do
+        SHEET_RULES[#SHEET_RULES+1] = rule
+    end
+end
 
 --The sheet that is open, if any. Only one at a time: opening another Hero
 --replaces it.
@@ -269,8 +515,242 @@ end
 
 --- the card (left column, top) -------------------------------------------------
 
---The hero card at sheet size. In C0 only the name line is live: the loading
---line, the Hero's name once loaded, or the failure line with Try again.
+local MIDDOT = "\u{00B7}"
+
+---@param n number
+---@return string
+local function Ordinal(n)
+    if n == 1 then
+        return "1st"
+    elseif n == 2 then
+        return "2nd"
+    elseif n == 3 then
+        return "3rd"
+    end
+    return string.format("%dth", n)
+end
+
+--Builds a hover that shows whatever text the panel's data.tip holds right
+--now, so a panel can change its tooltip without being rebuilt.
+---@param element Panel
+local function HoverTip(element)
+    local tip = element.data.tip
+    if tip ~= nil and tip ~= "" then
+        gui.Tooltip(tip)(element)
+    end
+end
+
+--A thin vertical rule between the vitals cells.
+---@return Panel
+local function VRule()
+    return gui.Panel{
+        width = 1,
+        height = 30,
+        valign = "center",
+        hmargin = 10,
+        bgimage = "panels/square.png",
+        bgcolor = C.HAIRLINE,
+    }
+end
+
+--A run of diagonal stripes clipped to a box: the hatched stretch of the XP
+--bar, and the swatch beside the Level 10 epic resource.
+---@param width number
+---@param height number
+---@param args? table extra panel fields
+---@return Panel
+local function Hatch(width, height, args)
+    local stripes = {}
+    for i = 0, math.ceil((width + height) / HATCH_STEP) do
+        stripes[#stripes+1] = gui.Panel{
+            floating = true,
+            halign = "left",
+            valign = "center",
+            x = i * HATCH_STEP - height,
+            width = 2,
+            height = height * 3,
+            rotate = 45,
+            bgimage = "panels/square.png",
+            bgcolor = C.HATCH,
+            interactable = false,
+        }
+    end
+    local fields = {
+        width = width,
+        height = height,
+        flow = "none",
+        clip = true,
+        bgimage = "panels/square.png",
+        bgcolor = C.HATCH_GROUND,
+        children = stripes,
+    }
+    for k,v in pairs(args or {}) do
+        fields[k] = v
+    end
+    return gui.Panel(fields)
+end
+
+--The level row under the subtitle: Level, the XP bar (the XP banked
+--Victories will add at the next respite hatched after the fill, a notch where
+--it starts) and the next Level; at Level 10, the class's epic resource
+--instead. Then the owner's own lines: ready to Level, or a respite would Level.
+---@param d table EotwHeroSheet.Data
+---@param fallen boolean
+---@return Panel[]
+local function LevelRow(d, fallen)
+    local p = d.progress
+    if p == nil then
+        return {}
+    end
+    --a fallen Hero's progress is frozen: no respite and no Level up are coming
+    local victories = cond(fallen, 0, p.victories)
+    local ready = p.readyToLevel and not fallen
+    local reach = p.respiteWouldLevel and not fallen
+
+    local rows = {}
+    if p.maxLevel then
+        local epic = p.epic or { name = "", value = 0, gainAtRespite = 0 }
+        local cells = {
+            Text("10", { "eotwsLevelNumber" }),
+            gui.Panel{
+                classes = { cond(epic.iconid ~= nil, "eotwsEpicIcon", "collapsed") },
+                bgimage = epic.iconid or "panels/square.png",
+                lmargin = 8,
+            },
+            Text(string.format("%s <b>%d</b>", epic.name, epic.value), { "eotwsPlateText", "eotwsEpic" }, { lmargin = 7 }),
+        }
+        if victories > 0 then
+            cells[#cells+1] = gui.Panel{
+                width = "auto",
+                height = "auto",
+                halign = "right",
+                valign = "center",
+                flow = "horizontal",
+                data = { tip = string.format("%d %s %d XP and %d %s at the next respite.",
+                    victories, cond(victories == 1, "Victory becomes", "Victories become"), victories, victories, epic.name) },
+                hover = HoverTip,
+                Hatch(18, 7, { valign = "center", cornerRadius = 3 }),
+                Text(string.format("+%d at the next respite", victories), { "eotwsPlateText" }, { lmargin = 6, valign = "center" }),
+            }
+        end
+        rows[#rows+1] = gui.Panel{
+            width = "100%",
+            height = "auto",
+            tmargin = 9,
+            flow = "horizontal",
+            children = cells,
+        }
+        return rows
+    end
+
+    local per = math.max(1, p.xpPerLevel)
+    local into = math.max(0, p.xpIntoLevel)
+    local fill = cond(ready, 1, math.min(1, into / per))
+    local tip
+    if ready then
+        tip = string.format("%d XP: enough for Level %d.", into, p.nextLevel)
+    else
+        tip = string.format("%d of %d XP to Level %d.", into, per, p.nextLevel)
+    end
+
+    local barChildren = {
+        gui.Panel{
+            classes = { "eotwsXpFill", cond(ready, "ready", "normal") },
+            floating = true,
+            halign = "left",
+            width = math.max(0, XP_BAR_WIDTH * fill),
+            height = "100%",
+        },
+    }
+    if victories > 0 and not ready then
+        local hatchEnd = math.min(1, (into + victories) / per)
+        local hatchWidth = math.floor(XP_BAR_WIDTH * (hatchEnd - fill))
+        if hatchWidth > 0 then
+            barChildren[#barChildren+1] = Hatch(hatchWidth, XP_BAR_HEIGHT, {
+                floating = true,
+                halign = "left",
+                x = XP_BAR_WIDTH * fill,
+            })
+        end
+        barChildren[#barChildren+1] = gui.Panel{
+            floating = true,
+            halign = "left",
+            x = XP_BAR_WIDTH * fill - 1,
+            width = 2,
+            height = "100%",
+            bgimage = "panels/square.png",
+            bgcolor = "black",
+        }
+        tip = string.format("%s %d %s %d XP at the next respite.", tip, victories,
+            cond(victories == 1, "Victory becomes", "Victories become"), victories)
+        if reach then
+            tip = string.format("%s Enough for Level %d.", tip, p.nextLevel)
+        end
+    end
+
+    rows[#rows+1] = gui.Panel{
+        width = "100%",
+        height = "auto",
+        tmargin = 9,
+        flow = "horizontal",
+        Text(tostring(p.level), { "eotwsLevelNumber" }),
+        gui.Panel{
+            classes = { "eotwsXpBar" },
+            width = XP_BAR_WIDTH,
+            height = XP_BAR_HEIGHT,
+            hmargin = 8,
+            valign = "center",
+            flow = "none",
+            clip = true,
+            data = { tip = tip },
+            hover = HoverTip,
+            children = barChildren,
+        },
+        Text(tostring(p.nextLevel), { "eotwsLevelNumber", "next", cond(ready, "ready", cond(reach, "reach", "normal")) }),
+    }
+
+    --only the owner sees these: they speak to the player ("your Hero")
+    if d.mine and not fallen then
+        if ready then
+            rows[#rows+1] = Text("Head to the Training Grounds to Level your Hero.", { "eotwsReadyLine" }, { tmargin = 6 })
+        elseif reach then
+            rows[#rows+1] = Text("A respite would Level this Hero.", { "eotwsRespiteLine" }, { tmargin = 6 })
+        end
+    end
+    return rows
+end
+
+--The line under the stamina bar: where Winded starts (or that the Hero is
+--Winded, Dying or Dead) on the left, where Dead starts on the right.
+---@param s table d.stamina
+---@return string left, string right
+local function StaminaNote(s)
+    local left
+    if s.state == "dead" then
+        left = "<b>Dead</b>"
+    elseif s.state == "dying" then
+        left = "<b>Dying</b>"
+    elseif s.state == "winded" then
+        left = string.format("<b>Winded</b> at %d", s.winded)
+    else
+        left = string.format("Winded at <b>%d</b>", s.winded)
+    end
+    return left, string.format("Dead at <b>%d</b>", s.deadAt)
+end
+
+--The status shape the character panel pairs with the stamina colour, for the
+--Status Icons accessibility setting.
+local STATUS_ICONS = {
+    healthy = "drawsteel/Icon_STA_Healthy.png",
+    winded = "drawsteel/Icon_STA_Winded.png",
+    dying = "drawsteel/Icon_STA_Dying.png",
+    dead = "drawsteel/Icon_STA_Dying.png",
+}
+
+--The hero card at sheet size: the Hero's art full-bleed, with a plate at the
+--bottom holding the name, titles, subtitle, level row, stamina and vitals.
+--Until the Hero loads the plate shows a skeleton and "Loading {Hero}...".
+--ctx.fallen (from the Graveyard) swaps the vitals for the epitaph.
 ---@param ctx table
 ---@return Panel
 local function CardRegion(ctx)
@@ -289,33 +769,10 @@ local function CardRegion(ctx)
         Text("Try again", nil, { fontSize = 13, bold = true, valign = "center" }),
     }
 
-    local plate = gui.Panel{
-        floating = true,
-        halign = "center",
-        valign = "bottom",
-        width = LEFT_WIDTH - 20,
+    local skeleton = gui.Panel{
+        width = "100%",
         height = "auto",
-        bmargin = 10,
-        hpad = 14,
-        vpad = 12,
-        borderBox = true,
         flow = "vertical",
-        bgimage = "panels/square.png",
-        bgcolor = "#000000c4",
-        cornerRadius = 8,
-        eotwsState = function(element, state)
-            if state == "failed" then
-                nameLabel.text = ctx.FailedText()
-            elseif state == "ready" then
-                nameLabel.text = ctx.HeroName()
-            else
-                nameLabel.text = ctx.LoadingText()
-            end
-            retryButton:SetClass("collapsed", state ~= "failed")
-        end,
-
-        nameLabel,
-        retryButton,
         --subtitle, then the level row and its numbers
         Skel(190, 16, { tmargin = 6 }),
         gui.Panel{
@@ -350,17 +807,378 @@ local function CardRegion(ctx)
         },
     }
 
-    return gui.Panel{
+    --the live plate, filled from the Hero's data once loaded. Each part below
+    --is rebuilt only when what it shows changes (see Paint).
+    local titlesLine = gui.Panel{
+        classes = { "collapsed" },
+        width = "100%",
+        height = "auto",
+        tmargin = 3,
+        flow = "horizontal",
+        wrap = true,
+    }
+    local subtitle = Text("", { "eotwsSubtitle" })
+    local levelRow = gui.Panel{
+        width = "100%",
+        height = "auto",
+        flow = "vertical",
+    }
+
+    --the stamina bar is the hero card's own (S1), drawn larger; the status
+    --shape sits inside its left end when Status Icons is on.
+    local statusIcon = gui.Panel{
+        classes = { "eotwsStatusIcon", "collapsed" },
+        floating = true,
+        halign = "left",
+        valign = "center",
+        x = 6,
+        interactable = false,
+    }
+    local bar = EotwHeroCard.CreateStaminaBar(ctx.charid, { height = 22, fontSize = 13 })
+    local noteLeft = Text("", { "eotwsPlateText", "eotwsNote" })
+    local noteRight = Text("", { "eotwsPlateText", "eotwsNote" }, { halign = "right" })
+    local staminaBlock = gui.Panel{
+        width = "100%",
+        height = "auto",
+        tmargin = 9,
+        flow = "vertical",
+        gui.Panel{
+            width = "100%",
+            height = "auto",
+            flow = "none",
+            bar,
+            statusIcon,
+        },
+        gui.Panel{
+            width = "100%",
+            height = "auto",
+            tmargin = 5,
+            flow = "horizontal",
+            noteLeft,
+            noteRight,
+        },
+    }
+
+    --vitals: Recoveries ring + label, Victories, the heroic resource
+    local ringLabel = Text("", { "eotwsRingNumber" })
+    local ring = gui.Panel{
+        classes = { "eotwsRing" },
+        data = { tip = "" },
+        hover = HoverTip,
+        ringLabel,
+    }
+    local recoveriesSub = Text("", { "eotwsPlateText" })
+    local recoveriesCell = gui.Panel{
+        width = "auto",
+        height = "auto",
+        lmargin = 10,
+        valign = "center",
+        flow = "vertical",
+        data = { tip = "" },
+        hover = HoverTip,
+        Text("Recoveries", { "eotwsPlateStrong" }),
+        recoveriesSub,
+    }
+    local victoriesNumber = Text("", { "eotwsVitalNumber" })
+    local victoriesWord = Text("", { "eotwsPlateText" }, { lmargin = 6, valign = "bottom", bmargin = 3 })
+    local victoriesCell = gui.Panel{
+        width = "auto",
+        height = "auto",
+        valign = "center",
+        flow = "horizontal",
+        data = { tip = "" },
+        hover = HoverTip,
+        victoriesNumber,
+        victoriesWord,
+    }
+    local resourceIcon = gui.Panel{
+        classes = { "eotwsResourceIcon" },
+        bgimage = "panels/square.png",
+        interactable = false,
+    }
+    local resourceNumber = Text("", { "eotwsVitalNumber" }, { lmargin = 7 })
+    local resourceCell = gui.Panel{
+        width = "auto",
+        height = "auto",
+        valign = "center",
+        flow = "horizontal",
+        data = { tip = "" },
+        hover = HoverTip,
+        resourceIcon,
+        resourceNumber,
+    }
+    local vitals = gui.Panel{
+        width = "100%",
+        height = "auto",
+        flow = "vertical",
+        Hairline(),
+        gui.Panel{
+            width = "100%",
+            height = "auto",
+            flow = "horizontal",
+            ring,
+            recoveriesCell,
+            gui.Panel{
+                width = "auto",
+                height = "auto",
+                halign = "right",
+                valign = "center",
+                flow = "horizontal",
+                VRule(),
+                victoriesCell,
+                VRule(),
+                resourceCell,
+            },
+        },
+    }
+
+    --a fallen Hero (from the Graveyard): where they fell and who played them
+    local epitaphLabel = Text("", { "eotwsEpitaph" })
+    local epitaph = gui.Panel{
+        classes = { "collapsed" },
+        width = "100%",
+        height = "auto",
+        flow = "vertical",
+        Hairline(),
+        epitaphLabel,
+    }
+
+    --one surge icon per surge in a corner of the art just above the plate
+    local surges = gui.Panel{
+        classes = { "eotwsSurges", "collapsed" },
+        floating = true,
+        halign = "right",
+        valign = "top",
+        x = -4,
+        y = -(15 + 10 + 8),
+        data = { tip = "", count = nil },
+        hover = HoverTip,
+    }
+
+    local live = gui.Panel{
+        classes = { "collapsed" },
+        width = "100%",
+        height = "auto",
+        flow = "vertical",
+        titlesLine,
+        subtitle,
+        levelRow,
+        staminaBlock,
+        vitals,
+        epitaph,
+    }
+
+    local card
+
+    --what each part last showed, so a live refresh rebuilds only what changed
+    local seen = {}
+
+    ---@param d table EotwHeroSheet.Data (all of it, or the live sections)
+    local function Paint(d)
+        local fallen = ctx.fallen ~= nil
+        local dead = fallen or (d.stamina ~= nil and d.stamina.state == "dead")
+        card:SetClass("dead", dead)
+
+        if d.titles ~= nil then
+            local names = {}
+            for i,t in ipairs(d.titles) do
+                if i <= MAX_TITLES then
+                    names[#names+1] = t.name
+                end
+            end
+            local sig = table.concat(names, "|")
+            if sig ~= seen.titles then
+                seen.titles = sig
+                local children = {}
+                if #names > 0 then
+                    children[1] = gui.Panel{ classes = { "eotwsMedal" }, rmargin = 5 }
+                end
+                for i = 1, #names do
+                    local t = d.titles[i]
+                    local lines = {
+                        string.format("<b>%s</b>", t.name),
+                        string.format("Title %s %s echelon", MIDDOT, Ordinal(t.echelon)),
+                    }
+                    if t.flavor ~= nil and t.flavor ~= "" then
+                        lines[#lines+1] = string.format("<i>%s</i>", t.flavor)
+                    end
+                    if t.deed ~= nil and t.deed ~= "" then
+                        lines[#lines+1] = string.format("<b>Earned:</b> %s", t.deed)
+                    end
+                    for _,b in ipairs(t.benefits or {}) do
+                        if b.name ~= nil and b.text ~= nil then
+                            lines[#lines+1] = string.format("<b>%s</b> %s", b.name, b.text)
+                        elseif b.text ~= nil then
+                            lines[#lines+1] = b.text
+                        end
+                    end
+                    --a title keeps its comma, so a long line wraps after one
+                    children[#children+1] = gui.Panel{
+                        width = "auto",
+                        height = "auto",
+                        flow = "horizontal",
+                        rmargin = 5,
+                        Text(t.name, { "eotwsTitle" }, {
+                            data = { tip = table.concat(lines, "\n\n") },
+                            hover = HoverTip,
+                        }),
+                        Text(cond(i < #names, ",", ""), { "eotwsTitle", "sep" }),
+                    }
+                end
+                titlesLine.children = children
+                titlesLine:SetClass("collapsed", #names == 0)
+            end
+        end
+
+        if d.level ~= nil then
+            local line = string.format("Level %d %s %s", d.level, d.ancestry or "", d.className or "")
+            if d.subclass ~= nil and d.subclass ~= "" then
+                line = string.format("%s %s %s", line, MIDDOT, d.subclass)
+            end
+            subtitle.text = line
+        end
+
+        local p = d.progress
+        if p ~= nil then
+            local sig = string.format("%d|%d|%d|%d|%s|%s|%s|%s", p.level, p.xpIntoLevel, p.victories,
+                cond(p.epic ~= nil, p.epic and p.epic.value or 0, 0), tostring(p.readyToLevel),
+                tostring(p.respiteWouldLevel), tostring(d.mine), tostring(fallen))
+            if sig ~= seen.level then
+                seen.level = sig
+                levelRow.children = LevelRow(d, fallen)
+            end
+        end
+
+        local s = d.stamina
+        if s ~= nil then
+            local left, right = StaminaNote(s)
+            noteLeft.text = left
+            noteRight.text = right
+            local icons = ThemeEngine.GetAccessibility().statusIcons
+            statusIcon:SetClass("collapsed", not icons)
+            statusIcon.bgimage = STATUS_ICONS[s.state] or STATUS_ICONS.healthy
+        end
+
+        local r = d.recoveries
+        if r ~= nil then
+            ringLabel.text = tostring(r.current)
+            ring:SetClass("empty", r.current <= 0)
+            local tip = string.format("Each Recovery regains %d Stamina.", r.value)
+            ring.data.tip = tip
+            recoveriesCell.data.tip = tip
+            recoveriesSub.text = string.format("of %d %s +%d each", r.max, MIDDOT, r.value)
+        end
+
+        if p ~= nil then
+            local resourceName = (d.resource ~= nil and d.resource.name) or "Heroic Resource"
+            victoriesNumber.text = tostring(p.victories)
+            victoriesWord.text = cond(p.victories == 1, "Victory", "Victories")
+            victoriesCell.data.tip = string.format(
+                "Starts each combat with %d extra %s. Victories become XP at the next respite.",
+                p.victories, resourceName)
+        end
+
+        if d.resource ~= nil then
+            local res = d.resource
+            resourceIcon:SetClass("collapsed", res.iconid == nil)
+            if res.iconid ~= nil then
+                resourceIcon.bgimage = res.iconid
+            end
+            resourceNumber.text = tostring(cond(dead, 0, res.value))
+            resourceCell.data.tip = res.name or "Heroic Resource"
+        end
+
+        if d.surges ~= nil then
+            local count = cond(dead, 0, math.min(MAX_SURGE_ICONS, d.surges))
+            if count ~= surges.data.count then
+                surges.data.count = count
+                local icons = {}
+                for _ = 1, count do
+                    icons[#icons+1] = gui.Panel{ classes = { "eotwsSurgeIcon" }, interactable = false }
+                end
+                surges.children = icons
+            end
+            surges:SetClass("collapsed", count == 0)
+            surges.data.tip = string.format("%d %s. Spend them for extra damage or potency.",
+                d.surges, cond(d.surges == 1, "surge", "surges"))
+        end
+
+        vitals:SetClass("collapsed", fallen)
+        staminaBlock:SetClass("collapsed", fallen)
+        epitaph:SetClass("collapsed", not fallen)
+        if fallen then
+            local f = ctx.fallen
+            local who = cond(d.mine, "you", f.playedBy or d.ownerName or "")
+            epitaphLabel.text = string.format("Fell in <b>%s</b>, week %s\nPlayed by %s",
+                f.encounter or "", tostring(f.week or ""), who)
+        end
+    end
+
+    local plate = gui.Panel{
+        classes = { "eotwsPlate" },
+        floating = true,
+        halign = "center",
+        valign = "bottom",
+        width = LEFT_WIDTH - 20,
+        height = "auto",
+        bmargin = 10,
+        hpad = 14,
+        vpad = 12,
+        borderBox = true,
+        flow = "vertical",
+
+        surges,
+        nameLabel,
+        retryButton,
+        skeleton,
+        live,
+    }
+
+    card = gui.Panel{
+        classes = { "eotwsCard" },
         width = LEFT_WIDTH,
         height = CARD_HEIGHT,
         flow = "none",
-        bgimage = "panels/square.png",
-        bgcolor = "#151515ff",
-        borderWidth = 1,
-        borderColor = "#000000cc",
-        cornerRadius = 10,
+
+        --the sheet read the Hero (ctx.data) and moved to "ready": show it
+        eotwsState = function(element, state)
+            if state == "failed" then
+                nameLabel.text = ctx.FailedText()
+            elseif state == "ready" then
+                nameLabel.text = ctx.HeroName()
+            else
+                nameLabel.text = ctx.LoadingText()
+            end
+            retryButton:SetClass("collapsed", state ~= "failed")
+            local ready = state == "ready" and ctx.data ~= nil
+            skeleton:SetClass("collapsed", ready)
+            live:SetClass("collapsed", not ready)
+            if ready then
+                local tok = ctx.Token()
+                if tok ~= nil then
+                    EotwHeroCard.ApplyPortrait(element, tok, LEFT_WIDTH / CARD_HEIGHT)
+                end
+                Paint(ctx.data)
+                bar:FireEvent("refreshCard")
+            end
+        end,
+
+        --any character change: re-read the cheap live sections and repaint
+        --what changed (the stamina bar watches for itself).
+        monitorGame = "/characters",
+        refreshGame = function(element)
+            if ctx.state ~= "ready" then
+                return
+            end
+            local d = EotwHeroSheet.Data(ctx.Token(), LIVE_SECTIONS)
+            if d ~= nil then
+                Paint(d)
+            end
+        end,
+
         plate,
     }
+    return card
 end
 
 --- kit and treasures (left column) ---------------------------------------------
@@ -857,6 +1675,9 @@ end
 ---            summary's name). Defaults to the token's name.
 ---   context  "town" or "game"; defaults to where the player is now. Picks
 ---            the backdrop, the mount point and the switcher's label.
+---   fallen   for a fallen Hero opened from the Graveyard: { encounter =
+---            where they fell, week = n, playedBy = player name }. Greys the
+---            art and shows the epitaph in place of the vitals.
 --- @param args table
 --- @return Panel|nil sheet the open sheet, or nil if there was nowhere to mount it
 function EotwHeroSheet.Show(args)
@@ -889,6 +1710,10 @@ function EotwHeroSheet.Show(args)
         frost = false,
         --set once a Transparent UI flip has scheduled the rebuild
         rebuilding = false,
+        --EotwHeroSheet.Data for the Hero, read when it loads
+        data = nil,
+        --a fallen Hero opened from the Graveyard: {encounter, week, playedBy}
+        fallen = args.fallen,
     }
 
     function ctx.Token()
@@ -930,6 +1755,10 @@ function EotwHeroSheet.Show(args)
 
     local function SetState(state)
         ctx.state = state
+        --read the Hero once on arrival; the regions render from this table
+        if state == "ready" then
+            ctx.data = EotwHeroSheet.Data(ctx.Token())
+        end
         if root ~= nil and root.valid then
             if state ~= "loading" then
                 root:FireEventTree("eotwsShimmer", false)
@@ -988,7 +1817,7 @@ function EotwHeroSheet.Show(args)
         --reacts while it is open.
         bgimage = "panels/square.png",
         bgcolor = "#00000000",
-        styles =ThemeEngine.MergeStyles(RULES),
+        styles = ThemeEngine.MergeStyles(SHEET_RULES),
 
         captureEscape = true,
         --EXIT_DIALOG: roll dialogs, modals, popups and dropdowns above it
