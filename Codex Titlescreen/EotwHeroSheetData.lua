@@ -1417,6 +1417,26 @@ function Sections.features(d, tok, p, ctx)
         end
     end
 
+    --the Level 10 feature that grants the epic resource (the card's hover on
+    --the epic resource's name): whichever feature carries a resource modifier
+    --for the epic resource, so it holds for every class
+    d.epicFeature = nil
+    for _,e in ipairs(ctx.index.features) do
+        local found = false
+        pcall(function()
+            for _,m in ipairs(e.feature:try_get("modifiers", {})) do
+                if m:try_get("behavior") == "resource" and m:try_get("resourceType") == CharacterResource.epicResourceId then
+                    found = true
+                end
+            end
+        end)
+        if found and d.epicFeature == nil then
+            local text = nil
+            pcall(function() text = Clean(e.feature:GetDescription()) end)
+            d.epicFeature = { name = e.feature.name, text = text, feature = e.feature }
+        end
+    end
+
     d.features = { sections = {}, total = total }
     for _,s in ipairs(FEATURE_SECTIONS) do
         if #sections[s.id].items > 0 then

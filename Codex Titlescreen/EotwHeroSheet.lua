@@ -1585,14 +1585,43 @@ local function Hatch(width, height, args)
     return gui.Panel(fields)
 end
 
+--The Level 10 epic feature as card content: its name and its text.
+---@param f table d.epicFeature
+---@return Panel
+local function EpicCardContent(f)
+    return gui.Panel{
+        width = 440,
+        height = "auto",
+        flow = "vertical",
+        gui.Label{
+            text = f.name or "",
+            width = "100%",
+            height = "auto",
+            fontSize = FS(20),
+            bold = true,
+            color = C.CREAM_LIGHT,
+        },
+        gui.Label{
+            text = f.text or "",
+            width = "100%",
+            height = "auto",
+            tmargin = 6,
+            fontSize = FS(14),
+            color = C.CREAM,
+            textWrap = true,
+        },
+    }
+end
+
 --The level row under the subtitle: Level, the XP bar (the XP banked
 --Victories will add at the next respite hatched after the fill, a notch where
 --it starts) and the next Level; at Level 10, the class's epic resource
 --instead. Then the owner's own lines: ready to Level, or a respite would Level.
 ---@param d table EotwHeroSheet.Data
 ---@param fallen boolean
+---@param epicFeature table|nil d.epicFeature from the full read: the Level 10 feature card
 ---@return Panel[]
-local function LevelRow(d, fallen)
+local function LevelRow(d, fallen, epicFeature)
     local p = d.progress
     if p == nil then
         return {}
@@ -1612,7 +1641,21 @@ local function LevelRow(d, fallen)
                 bgimage = epic.iconid or "panels/square.png",
                 lmargin = 8,
             },
-            Text(string.format("%s <b>%d</b>", epic.name, epic.value), { "eotwsPlateText", "eotwsEpic" }, { lmargin = 7 }),
+            --hovering the epic resource shows the class's Level 10 feature
+            --that grants it (C6 in the Copy manifest); a click keeps it open
+            Text(string.format("%s <b>%d</b>", epic.name, epic.value), { "eotwsPlateText", "eotwsEpic" }, {
+                lmargin = 7,
+                hover = function(element)
+                    if epicFeature ~= nil then
+                        element.tooltip = CardFrame(EpicCardContent(epicFeature), false)
+                    end
+                end,
+                click = function(element)
+                    if epicFeature ~= nil then
+                        PinPanel(element, CardFrame(EpicCardContent(epicFeature), true))
+                    end
+                end,
+            }),
         }
         if victories > 0 then
             cells[#cells+1] = gui.Panel{
@@ -2099,7 +2142,7 @@ local function CardRegion(ctx)
                 tostring(p.respiteWouldLevel), tostring(d.mine), tostring(fallen))
             if sig ~= seen.level then
                 seen.level = sig
-                levelRow.children = LevelRow(d, fallen)
+                levelRow.children = LevelRow(d, fallen, ctx.data ~= nil and ctx.data.epicFeature or nil)
             end
         end
 
