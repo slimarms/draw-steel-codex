@@ -4282,7 +4282,13 @@ end
 ---@param ctx table
 ---@return Panel
 local function Backdrop(ctx)
-    --darker at the left edge, where the card's plate reads over it.
+    --darker at the left edge, where the card's plate reads over it. Darker
+    --again in town, where the scene between the plates stays sharp (in a
+    --game everything behind is already blurred and tinted).
+    local edge, middle, right = 0.5, 0.3, 0.42
+    if not ctx.inGame then
+        edge, middle, right = 0.62, 0.45, 0.55
+    end
     local shade = gui.Panel{
         floating = true,
         width = "100%",
@@ -4294,9 +4300,9 @@ local function Backdrop(ctx)
             point_a = { x = 0, y = 0.5 },
             point_b = { x = 1, y = 0.5 },
             stops = {
-                { position = 0, color = core.Color{ r = 1, g = 1, b = 1, a = 0.5 } },
-                { position = 0.45, color = core.Color{ r = 1, g = 1, b = 1, a = 0.3 } },
-                { position = 1, color = core.Color{ r = 1, g = 1, b = 1, a = 0.42 } },
+                { position = 0, color = core.Color{ r = 1, g = 1, b = 1, a = edge } },
+                { position = 0.45, color = core.Color{ r = 1, g = 1, b = 1, a = middle } },
+                { position = 1, color = core.Color{ r = 1, g = 1, b = 1, a = right } },
             },
         },
     }
