@@ -1454,6 +1454,21 @@ function CharSheet.CreateCharacterSheet(params)
 		end,
 
 		show = function(element, info, tabid)
+			--a game mode's own interface may show its own view of this
+			--character instead (Encounter of the Week's hero sheet). The
+			--sheet then stays hidden and tells the engine it closed, so the
+			--next open (c, the radial, search...) starts afresh.
+			local token = info ~= nil and info.token or nil
+			if token ~= nil and GameHud ~= nil and GameHud.CustomInterfaceOpenSheet ~= nil
+					and GameHud.CustomInterfaceOpenSheet(token, tabid) then
+				element:SetClass("collapsed", true)
+				dmhub.Schedule(0.01, function()
+					if dmhub.inCharacterSheet then
+						dmhub.CloseCharacterSheet()
+					end
+				end)
+				return
+			end
             element.data.richstatusid = dmhub.PushUserRichStatus("Viewing Character Sheet", element.data.richstatusid)
 			SelectTab(tabid or CharSheet.defaultSheet)
 			resultPanel:PulseClassTree("fadein")

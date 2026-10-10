@@ -1326,6 +1326,9 @@ end
 --replaces it.
 ---@type Panel|nil
 local m_sheet = nil
+--The character the open sheet shows.
+---@type string|nil
+local m_sheetCharid = nil
 
 --- shared pieces ------------------------------------------------------------
 
@@ -2253,8 +2256,13 @@ local function CardRegion(ctx)
         if fallen then
             local f = ctx.fallen
             local who = cond(d.mine, "you", f.playedBy or d.ownerName or "")
-            epitaphLabel.text = string.format("Fell in <b>%s</b>, week %s\nPlayed by %s",
-                f.encounter or "", tostring(f.week or ""), who)
+            --the week comes from the City's schedule; without one the line ends
+            --at the encounter
+            local fell = string.format("Fell in <b>%s</b>", f.encounter or "")
+            if f.week ~= nil then
+                fell = string.format("%s, week %s", fell, tostring(f.week))
+            end
+            epitaphLabel.text = string.format("%s\nPlayed by %s", fell, who)
         end
     end
 
@@ -2817,6 +2825,7 @@ local function TreasuresRegion(ctx)
                             audio.FireSoundEvent("UI.Inv_Place")
                             EotwHeroSheet.Equip(tok, it.itemid)
                         end
+                        ctx.PushToCity()
                         ctx.Reread()
                     end,
                     Text(cond(it.equipped, "Unequip", "Equip"), { "eotwsSmallButtonText" }),
@@ -4489,11 +4498,14 @@ function EotwHeroSheet.Show(args)
         fallen = args.fallen,
     }
 
+    --A Hero fetched from the City (a fallen Hero, a teammate's) is a
+    --detached token the game cannot look up by id, so the token passed in
+    --stands in when the lookup finds nothing.
     function ctx.Token()
         if ctx.charid == nil then
-            return nil
+            return args.token
         end
-        return dmhub.GetCharacterById(ctx.charid)
+        return dmhub.GetCharacterById(ctx.charid) or args.token
     end
 
     function ctx.HeroName()
@@ -4625,16 +4637,23 @@ function EotwHeroSheet.Show(args)
             return
         end
         audio.FireSoundEvent("Ability.Heal_Generic")
-        if rawget(_G, "EotwRoster") ~= nil then
-            local heroid = ctx.charid
-            --a beat, so the change has landed before the push reads the Hero
-            dmhub.Schedule(0.3, function()
-                if not mod.unloaded then
-                    EotwRoster.PushHero(heroid)
-                end
-            end)
-        end
+        ctx.PushToCity()
         ctx.Reread()
+    end
+
+    --Send the Hero back to the City after the sheet changed it in town (an
+    --equip, a spent Recovery), so the roster keeps the change.
+    function ctx.PushToCity()
+        if ctx.inGame or rawget(_G, "EotwRoster") == nil then
+            return
+        end
+        local heroid = ctx.charid
+        --a beat, so the change has landed before the push reads the Hero
+        dmhub.Schedule(0.3, function()
+            if not mod.unloaded then
+                EotwRoster.PushHero(heroid)
+            end
+        end)
     end
 
     function ctx.Retry()
@@ -4784,6 +4803,7 @@ function EotwHeroSheet.Show(args)
 
     host:AddChild(root)
     m_sheet = root
+    m_sheetCharid = charid
 
     --open: fade and rise (not on a switch between Heroes, not under Reduce Motion)
     if not args.switching then
@@ -4817,6 +4837,13 @@ function EotwHeroSheet.Close()
         m_sheet:DestroySelf()
     end
     m_sheet = nil
+end
+
+--- True while the sheet is open on this character (the c key toggles it).
+--- @param charid string|nil
+--- @return boolean
+function EotwHeroSheet.IsShowing(charid)
+    return EotwHeroSheet.IsOpen() and charid ~= nil and m_sheetCharid == charid
 end
 
 --- True while a hero sheet is open.

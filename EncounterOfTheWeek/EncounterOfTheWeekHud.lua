@@ -1007,5 +1007,26 @@ pcall(function()
             end
             return nil
         end,
+
+        --every route to a hero's full character sheet (c / i, the radial,
+        --search, /opensheet...) opens the EotW hero sheet instead. Other
+        --tokens (monsters, objects) keep the normal sheet.
+        openSheet = function(token, tabid)
+            local sheet = rawget(_G, "EotwHeroSheet")
+            if sheet == nil or token == nil then
+                return false
+            end
+            local isHero = false
+            pcall(function() isHero = token.properties ~= nil and token.properties:IsHero() end)
+            if not isHero then
+                return false
+            end
+            --c toggles: asked again for the Hero on show, it closes
+            if sheet.IsShowing ~= nil and sheet.IsShowing(token.charid) then
+                sheet.Close()
+                return true
+            end
+            return sheet.Show{ charid = token.charid, context = "game" } ~= nil
+        end,
     }
 end)

@@ -3326,6 +3326,15 @@ CreateScreen = function(args)
             extras = extras,
             --another player's roster hero: CreateDetachedCharacter registered its art.
             artRegistered = not mine and heroEntry.kind == "roster",
+            --a lineup card opens its Hero in the EotW hero sheet (a teammate's
+            --read-only); nothing while a teammate's Hero is still on its way
+            click = function()
+                if tok == nil then
+                    return
+                end
+                audio.FireSoundEvent("Mouse.Click")
+                EotwHeroSheet.Show{ token = tok, charid = tok.charid, context = "town" }
+            end,
         }
     end
 
@@ -6040,8 +6049,10 @@ CreateScreen = function(args)
                                     local className, ancestry, level = EotwRoster.HeroDetails(tok)
                                     return EotwRoster.FormatDetails(level, ancestry, className)
                                 end,
+                                --the town's cards open the EotW hero sheet
                                 click = function()
-                                    EotwRoster.EditHero(heroid)
+                                    audio.FireSoundEvent("Mouse.Click")
+                                    EotwHeroSheet.Show{ charid = heroid, context = "town" }
                                 end,
                                 --back to the guild: inactive, not deleted.
                                 dismiss = {

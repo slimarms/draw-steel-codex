@@ -899,6 +899,12 @@ end
 --      characterPanelAccess = function(token) end,
 --                                       --override CharacterPanel access:
 --                                       --"edit"|"view"|"none"|nil=normal
+--      openSheet = function(token, tabid) end,
+--                                       --a character sheet is opening for
+--                                       --token: return true to show your
+--                                       --own view instead (the full sheet
+--                                       --then closes itself); nil/false
+--                                       --opens the normal sheet
 --      playersPopout = function() end,  --content for the popout under the
 --                                       --title bar's players row (replaces
 --                                       --the Heroes panel there); nil=normal
@@ -1044,6 +1050,19 @@ GameHud.CustomInterfaceCharacterPanelAccess = function(token)
 		return access
 	end
 	return nil
+end
+
+--Offer the active interface the character sheet a token is about to open.
+--True when it showed its own view instead (the caller must then not open
+--the full sheet); false for the normal sheet (no interface, no hook, or the
+--hook declined or failed).
+GameHud.CustomInterfaceOpenSheet = function(token, tabid)
+	local provider = GameHud.CustomInterface()
+	if provider == nil or type(provider.openSheet) ~= "function" then
+		return false
+	end
+	local ok, handled = pcall(provider.openSheet, token, tabid)
+	return ok and handled == true
 end
 
 --Offer the active interface a say in the user leaving the game ("leave")
