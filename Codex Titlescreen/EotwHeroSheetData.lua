@@ -1001,6 +1001,45 @@ function EotwHeroSheet.EquipPreview(tok, itemid, slot)
     return changes
 end
 
+--- spending a Recovery (C8) --------------------------------------------------------
+
+--- Whether the Hero can spend a Recovery right now: one left, and below their
+--- Stamina maximum (the sheet also limits it to the owner, in town).
+--- @param tok CharacterToken
+--- @return boolean
+function EotwHeroSheet.CanSpendRecovery(tok)
+    local ok = false
+    pcall(function()
+        local p = tok.properties
+        local id = CharacterResource.recoveryResourceId
+        local info = (dmhub.GetTable(CharacterResource.tableName) or {})[id]
+        local left = (p:GetResources()[id] or 0) - (p:GetResourceUsage(id, info and info.usageLimit) or 0)
+        ok = left > 0 and p:CurrentHitpoints() < p:MaxHitpoints()
+    end)
+    return ok
+end
+
+--- Spends one Recovery: regains the Recovery value in Stamina (uploaded, undoable),
+--- the same as the character panel's Use Recovery. Returns true if it did.
+--- @param tok CharacterToken
+--- @return boolean
+function EotwHeroSheet.SpendRecovery(tok)
+    if not EotwHeroSheet.CanSpendRecovery(tok) then
+        return false
+    end
+    tok:ModifyProperties{
+        description = "Use Recovery",
+        execute = function()
+            local p = tok.properties
+            local id = CharacterResource.recoveryResourceId
+            local info = (dmhub.GetTable(CharacterResource.tableName) or {})[id]
+            p:Heal(p:RecoveryAmount(), "Use Recovery")
+            p:ConsumeResource(id, info and info.usageLimit or "long", 1, "Used Recovery")
+        end,
+    }
+    return true
+end
+
 --- abilities ------------------------------------------------------------------
 
 --The row tags for an ability (A4: the action type, with "No action" in place

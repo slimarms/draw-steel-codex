@@ -392,6 +392,11 @@ local RULES = {
         borderColor = "#dfcfc099",
     },
     {
+        selectors = { "eotwsRing", "spendable", "hover" },
+        bgcolor = "#f3ede72e",
+        borderColor = C.CREAM_LIGHT,
+    },
+    {
         selectors = { "eotwsRing", "empty" },
         borderColor = "#c94040cc",
     },
@@ -1928,11 +1933,28 @@ local function CardRegion(ctx)
 
     --vitals: Recoveries ring + label, Victories, the heroic resource
     local ringLabel = Text("", { "eotwsRingNumber" })
+    --your own Hero in town can spend a Recovery straight from the ring (C8):
+    --hovering shows "+{value}", one click spends it
     local ring = gui.Panel{
-        classes = { "eotwsRing" },
-        data = { tip = "" },
-        hover = HoverTip,
-        click = PinTip,
+        classes = { "eotwsRing", "eotwsFocusable" },
+        canFocus = true,
+        data = { tip = "", spendable = false, count = "", gain = 0 },
+        hover = function(element)
+            if element.data.spendable then
+                ringLabel.text = string.format("+%d", element.data.gain)
+            end
+            HoverTip(element)
+        end,
+        dehover = function(element)
+            ringLabel.text = element.data.count
+        end,
+        click = function(element)
+            if element.data.spendable then
+                ctx.SpendRecovery()
+            else
+                PinTip(element)
+            end
+        end,
         ringLabel,
     }
     local recoveriesSub = Text("", { "eotwsPlateText" })
@@ -2172,7 +2194,21 @@ local function CardRegion(ctx)
                 end
                 return tip .. "\n\n" .. more
             end
-            ring.data.tip = WithSources(stats.recoveries)
+            --spending: town only, your own living Hero, not away, a Recovery
+            --left and Stamina below its maximum
+            local s = d.stamina
+            local dead = ctx.fallen ~= nil or (s ~= nil and s.state == "dead")
+            local spendable = not ctx.inGame and d.mine == true and not dead and ctx.AwayParty() == nil
+                and r.current > 0 and s ~= nil and s.current < s.max
+            ring:SetClass("spendable", spendable)
+            ring.data.spendable = spendable
+            ring.data.gain = r.value
+            ring.data.count = tostring(r.current)
+            if spendable then
+                ring.data.tip = string.format("Click to spend a Recovery: regain %d Stamina.", r.value)
+            else
+                ring.data.tip = WithSources(stats.recoveries)
+            end
             recoveriesCell.data.tip = WithSources(stats.recoveryValue)
             recoveriesSub.text = string.format("of %d %s +%d each", r.max, MIDDOT, r.value)
         end
@@ -2289,6 +2325,14 @@ local function CardRegion(ctx)
         end,
         staminaGained = function(element)
             Wash("healed")
+        end,
+
+        --the sheet read the Hero again (an equip, a spent Recovery, the
+        --roster arriving): repaint from it
+        eotwsData = function(element)
+            if ctx.state == "ready" and ctx.data ~= nil then
+                Paint(ctx.data)
+            end
         end,
 
         --any character change: re-read the cheap live sections and repaint
@@ -3411,6 +3455,17 @@ local function TopBarRegion(ctx)
         end,
         thinkTime = SIGNAL_POLL_SECONDS,
         think = function(element)
+            --in town the roster can arrive from the City after the sheet opened:
+            --once it lists this Hero, read again so the owner's controls appear
+            if not ctx.inGame and ctx.state == "ready" and ctx.data ~= nil and not ctx.data.mine
+                    and not ctx.rereadPending and rawget(_G, "EotwRoster") ~= nil then
+                local onRoster = false
+                pcall(function() onRoster = EotwRoster.FindHero(ctx.charid) ~= nil end)
+                if onRoster then
+                    ctx.rereadPending = true
+                    ctx.Reread()
+                end
+            end
             Rebuild(element)
         end,
     }
@@ -4516,6 +4571,7 @@ function EotwHeroSheet.Show(args)
                 return
             end
             ctx.data = ctx.ReadData()
+            ctx.rereadPending = false
             if ctx.data ~= nil then
                 root:FireEventTree("eotwsData")
             end
@@ -4558,6 +4614,27 @@ function EotwHeroSheet.Show(args)
             return previewHeld
         end
         return nil
+    end
+
+    --Spend one of the Hero's Recoveries from the card's ring (C8), then send
+    --the Hero back to the City so the roster keeps the change.
+    function ctx.SpendRecovery()
+        local tok = ctx.Token()
+        if tok == nil or not EotwHeroSheet.SpendRecovery(tok) then
+            audio.FireSoundEvent("UI.Error_Generic")
+            return
+        end
+        audio.FireSoundEvent("Ability.Heal_Generic")
+        if rawget(_G, "EotwRoster") ~= nil then
+            local heroid = ctx.charid
+            --a beat, so the change has landed before the push reads the Hero
+            dmhub.Schedule(0.3, function()
+                if not mod.unloaded then
+                    EotwRoster.PushHero(heroid)
+                end
+            end)
+        end
+        ctx.Reread()
     end
 
     function ctx.Retry()
