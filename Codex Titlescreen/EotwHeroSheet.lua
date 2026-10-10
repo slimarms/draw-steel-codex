@@ -4276,8 +4276,9 @@ end
 
 --- backdrop ----------------------------------------------------------------------
 
---What sits behind the sheet: the Guild's art in town; in a game the live
---battle map, blurred and darkened by the engine's background blur.
+--What sits behind the sheet: where the player is. In town, the town screen
+--that is open (map, Guild...) under a shade; in a game, the live battle map,
+--blurred and darkened.
 ---@param ctx table
 ---@return Panel
 local function Backdrop(ctx)
@@ -4327,15 +4328,15 @@ local function Backdrop(ctx)
         return backdrop
     end
 
-    --no credit badge: the sheet covers the corner it would sit in, and the
-    --Guild scene under the sheet carries the art's credit already.
-    return CreatorCredit.Backdrop{
-        width = ctx.stageWidth,
-        height = ctx.stageHeight,
-        image = EncounterOfTheWeek.GUILD_ART,
-        aspect = 16 / 9,
-        badge = false,
-        children = { shade },
+    --in town the sheet sits over whatever town screen is open (the map, the
+    --Guild, the Graveyard...), so the backdrop is that screen itself: only the
+    --shade is drawn, and the plates frost what is behind them
+    return gui.Panel{
+        floating = true,
+        width = "100%",
+        height = "100%",
+        interactable = false,
+        shade,
     }
 end
 
