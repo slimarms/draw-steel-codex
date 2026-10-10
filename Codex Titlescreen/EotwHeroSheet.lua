@@ -28,13 +28,12 @@ local C = {
     INK = "#10110Fff",
     CARD = "#1a1b18ff",
     CARD_HOVER = "#262722ff",
-    --a plate over a scene: lighter over the Guild, near-opaque over a map
-    --so the map's detail does not fight the text.
-    BLOCK_TOWN = "#11100ea8",
-    BLOCK_GAME = "#0e0d0bdb",
+    --every plate and the top bar, in town and in a game: dark enough that
+    --text reads over the brightest scene behind (the town map), with a hint
+    --of the frosted scene still showing
+    BLOCK = "#0e0d0bdb",
     BLOCK_OPAQUE = "#14130fff",
     BLOCK_EDGE = "#ffffff1a",
-    TOPBAR = "#0a0a09b8",
     HAIRLINE = "#ffffff14",
     SKEL = "#ffffff0f",
     SKEL_LIT = "#ffffff24",
@@ -185,14 +184,10 @@ local RULES = {
     {
         selectors = { "eotwsBlock" },
         bgimage = "panels/square.png",
-        bgcolor = C.BLOCK_TOWN,
+        bgcolor = C.BLOCK,
         borderWidth = 1,
         borderColor = C.BLOCK_EDGE,
         cornerRadius = 10,
-    },
-    {
-        selectors = { "eotwsBlock", "ingame" },
-        bgcolor = C.BLOCK_GAME,
     },
     --the Transparent UI setting is off: solid plates, nothing shows through
     {
@@ -769,7 +764,7 @@ local RULES = {
     {
         selectors = { "eotwsTopBar" },
         bgimage = "panels/square.png",
-        bgcolor = C.TOPBAR,
+        bgcolor = C.BLOCK,
         cornerRadius = 10,
     },
     --you're needed: the bar itself turns gold, so nothing below it moves
@@ -1385,7 +1380,7 @@ end
 ---@param args table panel fields
 ---@return Panel
 local function Block(ctx, args)
-    args.classes = { "eotwsBlock", cond(ctx.inGame, "ingame", "town"), cond(ctx.transparent, "see", "opaque") }
+    args.classes = { "eotwsBlock", cond(ctx.transparent, "see", "opaque") }
     --an engine without frost: the map blur under the plate, as before
     args.blurBackground = ctx.transparent and not ctx.frost
     if args.pad == nil and args.hpad == nil then
