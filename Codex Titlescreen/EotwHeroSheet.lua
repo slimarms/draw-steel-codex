@@ -1477,27 +1477,60 @@ end
 ---@type Panel|nil
 local m_pinned = nil
 
---A hover card or a pinned one: the content plus the hint underneath (A5).
---Set directly, not by class: tooltips and popups draw outside the sheet.
+--A hover or pinned card beside its row. The codex's ability card draws its
+--own background, so it shows bare, as the action bar shows it (James
+--2026-10-10, option D; the A5 hint line is gone). Cards without their own
+--background (items, triggered actions, the Level 10 feature) keep the
+--codex's plain tooltip frame.
 ---@param content Panel
----@param pinned boolean
+---@param framed boolean
 ---@return Panel
-local function CardFrame(content, pinned)
-    return gui.TooltipFrame(gui.Panel{
+local function CardFrame(content, framed)
+    if framed then
+        return gui.TooltipFrame(content, { halign = "right", valign = "center" })
+    end
+    return gui.Panel{
         width = "auto",
         height = "auto",
-        flow = "vertical",
+        halign = "right",
+        valign = "center",
         content,
-        gui.Label{
-            text = cond(pinned, "Click elsewhere or press Esc to close.", "Click to keep it open."),
-            width = "auto",
-            height = "auto",
-            tmargin = 8,
-            fontSize = 12,
-            italics = true,
-            color = C.MUTED,
-        },
-    }, { halign = "right", valign = "center" })
+    }
+end
+
+--How long the mouse rests on a row before its card is built and shown.
+--Building a card is costly, so sweeping or scrolling over a list builds none
+--and nothing flickers (the rules glossary's hover dwell).
+local CARD_DELAY_SECONDS = 0.35
+
+--A row's hover: show the card build() makes once the mouse has rested for
+--CARD_DELAY_SECONDS. The element needs a data table; pair with LeaveCard.
+---@param element Panel
+---@param build fun(): Panel|nil
+local function HoverCard(element, build)
+    local data = element.data
+    data.cardGen = (data.cardGen or 0) + 1
+    data.cardHover = true
+    local gen = data.cardGen
+    dmhub.Schedule(CARD_DELAY_SECONDS, function()
+        if mod.unloaded or not element.valid then
+            return
+        end
+        if element.data.cardGen ~= gen or not element.data.cardHover then
+            return
+        end
+        local card = build()
+        if card ~= nil then
+            element.tooltip = card
+        end
+    end)
+end
+
+--The row's dehover: a card still waiting to show never does.
+---@param element Panel
+local function LeaveCard(element)
+    element.data.cardHover = false
+    element.data.cardGen = (element.data.cardGen or 0) + 1
 end
 
 --Pins `popup` open beside `element` until the player clicks elsewhere or
@@ -1653,13 +1686,16 @@ local function LevelRow(d, fallen, epicFeature)
             --that grants it (C6 in the Copy manifest); a click keeps it open
             Text(string.format("%s <b>%d</b>", epic.name, epic.value), { "eotwsPlateText", "eotwsEpic" }, {
                 lmargin = 7,
+                data = {},
                 hover = function(element)
                     if epicFeature ~= nil then
-                        element.tooltip = CardFrame(EpicCardContent(epicFeature), false)
+                        HoverCard(element, function() return CardFrame(EpicCardContent(epicFeature), true) end)
                     end
                 end,
+                dehover = LeaveCard,
                 click = function(element)
                     if epicFeature ~= nil then
+                        LeaveCard(element)
                         PinPanel(element, CardFrame(EpicCardContent(epicFeature), true))
                     end
                 end,
@@ -2856,10 +2892,13 @@ local function TreasuresRegion(ctx)
                 --No benefit chip keep their own tooltips
                 Text(nameText, { "eotwsItemName", "row", "eotwsFocusable" }, {
                     canFocus = true,
+                    data = {},
                     hover = function(element)
-                        element.tooltip = CardFrame(ItemCard(it, tok), false)
+                        HoverCard(element, function() return CardFrame(ItemCard(it, tok), true) end)
                     end,
+                    dehover = LeaveCard,
                     click = function(element)
+                        LeaveCard(element)
                         PinPanel(element, CardFrame(ItemCard(it, tok), true))
                     end,
                 }),
@@ -2921,10 +2960,13 @@ local function TreasuresRegion(ctx)
                 rmargin = 5,
                 tmargin = 5,
                 flow = "horizontal",
+                data = {},
                 hover = function(element)
-                    element.tooltip = CardFrame(ItemCard(it, tok), false)
+                    HoverCard(element, function() return CardFrame(ItemCard(it, tok), true) end)
                 end,
+                dehover = LeaveCard,
                 click = function(element)
+                    LeaveCard(element)
                     PinPanel(element, CardFrame(ItemCard(it, tok), true))
                 end,
                 children = parts,
@@ -3928,16 +3970,20 @@ local function AbilityRow(item, tok, compact)
     return gui.Panel{
         classes = { "eotwsFocusable", "eotwsAbilityRow", cond(compact, "compact", "full"), cond(m_fontScale >= LARGE_TEXT_SCALE, "single", "pair") },
         canFocus = true,
+        data = {},
+        --a triggered action's card has no background of its own, so it is framed
         hover = function(element)
-            local card = AbilityCardContent(item, tok)
-            if card ~= nil then
-                element.tooltip = CardFrame(card, false)
-            end
+            HoverCard(element, function()
+                local card = AbilityCardContent(item, tok)
+                return card ~= nil and CardFrame(card, item.ability == nil) or nil
+            end)
         end,
+        dehover = LeaveCard,
         click = function(element)
+            LeaveCard(element)
             local card = AbilityCardContent(item, tok)
             if card ~= nil then
-                PinPanel(element, CardFrame(card, true))
+                PinPanel(element, CardFrame(card, item.ability == nil))
             end
         end,
         children = children,
