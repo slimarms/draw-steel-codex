@@ -2167,15 +2167,17 @@ function FeatureCategoriser.IsTacPanelEntry(creature, entry)
     return true
 end
 
---- Build the curated tac-panel index (same shape as BuildIndex: features,
---- groups, order, counts, total) containing only the passive "what else"
---- entries. Reuses the cached full index, so the per-call cost is the
---- predicate sweep.
+--- A walker over the features a creature actually has, shared by the tac panel
+--- (BuildTacIndex) and the EotW hero sheet. walker.Collect(feature, bucketId,
+--- accept, out) explodes one feature into its LEAVES: a CharacterFeatureList
+--- descends into its features (an unowned domain's list is skipped), a
+--- CharacterFeatureChoice resolves to the options picked (choices within choices
+--- included), and every other feature is a leaf, appended to `out` when
+--- accept(leaf, bucketId) says so. walker.IsDomainScaffolding(name) names the
+--- domain bundles and markers that are structure, not capabilities.
 --- @param creature creature
---- @return table index
-function FeatureCategoriser.BuildTacIndex(creature)
-    local full = FeatureCategoriser.BuildIndexCached(creature)
-
+--- @return table walker
+function FeatureCategoriser.NewLeafWalker(creature)
     --Owned domains: the build pipeline lists EVERY domain's features (and the
     --per-level "Domain Feature" choices offer all domains as options), but a
     --Conduit only has the domains it chose. Drop capabilities named after a
@@ -2190,12 +2192,7 @@ function FeatureCategoriser.BuildTacIndex(creature)
     end)
     local hasDomains = next(ownedDomains) ~= nil
 
-    --The heroic resource (Wrath / Ferocity / Essence ...) has its own tac box.
-    --It is sometimes a `resource` modifier (caught by IsPassiveFeature) but
-    --sometimes an attribute+triggers feature named after the resource, so also
-    --drop a capability whose name IS the heroic resource name.
-    local heroicResourceName = nil
-    pcall(function() heroicResourceName = creature:GetHeroicResourceName() end)
+    local walker = {}
 
     --An unowned domain bundle ("Storm Domain", "All Domains"), pruned before
     --recursing so the features of domains the creature does not have never
@@ -2211,23 +2208,22 @@ function FeatureCategoriser.BuildTacIndex(creature)
     --"<X> Domain"/"<X> Domains" name (the bundle), or a domain stored under just
     --its name (e.g. the Censor's "Life"). The real domain capabilities have
     --descriptive names ("War Domain Piety", "Font of Grace") and are kept.
-    local function isDomainScaffolding(name)
+    function walker.IsDomainScaffolding(name)
         if type(name) ~= "string" then return false end
         if name:match("^.- Domains?$") then return true end
         if ownedDomains[name] then return true end
         return false
     end
 
-    --Explode each kept entry into the actual passive capabilities it yields.
     --A made choice's chosen option is often NOT a leaf: a domain pick resolves
     --to a CharacterFeatureList ("Life Domain") that wraps the real feature
     --("Blessing of Life"), and a feature can wrap a further CharacterFeatureChoice
     --whose own pick is sometimes an ability. So we recurse: descend lists,
     --resolve nested choices to the made selection, prune unowned-domain lists
-    --at the wrapper, and only emit the surviving passive LEAVES (with their own
+    --at the wrapper, and only keep the surviving LEAVES (with their own
     --name + description) -- never the "list of features" wrapper.
     local lc = (creature ~= nil and creature:GetLevelChoices()) or {}
-    local function collectLeaves(feature, out, depth, bucketId)
+    local function collectLeaves(feature, out, depth, bucketId, accept)
         if feature == nil or depth > 6 then return end
         local tn = nil
         pcall(function() tn = feature.typeName end)
@@ -2238,7 +2234,7 @@ function FeatureCategoriser.BuildTacIndex(creature)
             local kids = nil
             pcall(function() kids = feature:try_get("features", {}) end)
             if type(kids) == "table" then
-                for _,sub in ipairs(kids) do collectLeaves(sub, out, depth + 1, bucketId) end
+                for _,sub in ipairs(kids) do collectLeaves(sub, out, depth + 1, bucketId, accept) end
             end
         elseif tn == "CharacterFeatureChoice" then
             local guid = nil
@@ -2254,15 +2250,77 @@ function FeatureCategoriser.BuildTacIndex(creature)
                 if g ~= nil then byGuid[g] = o end
             end
             for _,id in ipairs(made) do
-                if byGuid[id] ~= nil then collectLeaves(byGuid[id], out, depth + 1, bucketId) end
+                if byGuid[id] ~= nil then collectLeaves(byGuid[id], out, depth + 1, bucketId, accept) end
             end
         else
-            --A leaf feature: keep it if it is a passive capability. Domain
-            --scaffolding is dropped at emit (it applies to plain entries too).
-            if FeatureCategoriser.IsPassiveFeature(feature, bucketId) then
+            if accept(feature, bucketId) then
                 out[#out+1] = feature
             end
         end
+    end
+
+    ---@param feature any
+    ---@param bucketId string|nil
+    ---@param accept fun(leaf: any, bucketId: string|nil): boolean
+    ---@param out table
+    function walker.Collect(feature, bucketId, accept, out)
+        collectLeaves(feature, out, 0, bucketId, accept)
+    end
+
+    return walker
+end
+
+--- Whether a feature grants skills or languages (the stats band and the tac
+--- panel's Skills section show those).
+--- @param feature any
+--- @return boolean
+function FeatureCategoriser.FeatureGrantsSkillOrLanguage(feature)
+    return categoriserFeatureGrantsSkillOrLanguage(feature)
+end
+
+--- Whether a feature only raises the five characteristics (shown as numbers).
+--- @param feature any
+--- @return boolean
+function FeatureCategoriser.FeatureIsOnlyCharacteristics(feature)
+    return categoriserFeatureIsOnlyCharacteristics(feature)
+end
+
+--- The section a choice slot belongs to by what it offers ("skill",
+--- "language", "perk", "ancestry"), or nil for a feature that is not one of
+--- those choice slots. A skill or language slot found inside a class feature
+--- belongs to the Skills / Languages lists, not a feature list.
+--- @param feature any
+--- @return string|nil
+function FeatureCategoriser.ChoiceBucket(feature)
+    local tn = nil
+    pcall(function() tn = feature.typeName end)
+    if tn == nil then return nil end
+    return CATEGORISER_CHOICE_BUCKET[tn]
+end
+
+--- Build the curated tac-panel index (same shape as BuildIndex: features,
+--- groups, order, counts, total) containing only the passive "what else"
+--- entries. Reuses the cached full index, so the per-call cost is the
+--- predicate sweep.
+--- @param creature creature
+--- @return table index
+function FeatureCategoriser.BuildTacIndex(creature)
+    local full = FeatureCategoriser.BuildIndexCached(creature)
+
+    --The heroic resource (Wrath / Ferocity / Essence ...) has its own tac box.
+    --It is sometimes a `resource` modifier (caught by IsPassiveFeature) but
+    --sometimes an attribute+triggers feature named after the resource, so also
+    --drop a capability whose name IS the heroic resource name.
+    local heroicResourceName = nil
+    pcall(function() heroicResourceName = creature:GetHeroicResourceName() end)
+
+    --Explode each kept entry into the actual passive capabilities it yields
+    --(only passive leaves are kept; domain scaffolding is dropped at emit, since
+    --it applies to plain entries too).
+    local walker = FeatureCategoriser.NewLeafWalker(creature)
+    local isDomainScaffolding = walker.IsDomainScaffolding
+    local function collectLeaves(feature, out, depth, bucketId)
+        walker.Collect(feature, bucketId, FeatureCategoriser.IsPassiveFeature, out)
     end
 
     local features = {}

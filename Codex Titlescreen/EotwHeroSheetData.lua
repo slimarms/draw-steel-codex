@@ -15,15 +15,6 @@ local mod = dmhub.GetModLoading()
 
 local CHARACTERISTIC_IDS = { "mgt", "agl", "rea", "inu", "prs" }
 
---Skill groups in the order the sheet lists them (S1).
-local SKILL_GROUPS = {
-    { id = "crafting", name = "Crafting" },
-    { id = "exploration", name = "Exploration" },
-    { id = "interpersonal", name = "Interpersonal" },
-    { id = "intrigue", name = "Intrigue" },
-    { id = "lore", name = "Lore" },
-}
-
 --Ability groups in display order (A2). Free strikes and Standard actions are
 --every Hero's global abilities; the rest are the Hero's own.
 local ABILITY_GROUPS = {
@@ -57,7 +48,18 @@ local FEATURE_SKIP_BUCKETS = {
     skill = true, language = true, condition = true, effect = true, custom = true, other = true,
 }
 
-local PILLARS = { Combat = true, Exploration = true, Montage = true, Negotiation = true, Respite = true }
+--Whether a tag is one of the game-mode pillars (Combat, Exploration...), from
+--the registered feature tags.
+---@param tag string
+---@return boolean
+local function IsPillar(tag)
+    for _,t in ipairs(GameSystem.featureTags or {}) do
+        if t.name == tag then
+            return t.gameMode == true
+        end
+    end
+    return false
+end
 
 --Whether an index entry is a choice slot (a perk, domain or ward pick...).
 ---@param e table
@@ -71,37 +73,23 @@ local function IsChoice(e)
     return type(tn) == "string" and string.find(tn, "Choice", 1, true) ~= nil
 end
 
---A class's kit-equivalent choices, matched on the choice feature's name, and the
---rules name the sheet uses as the header (K1).
-local KIT_EQUIVALENTS = {
-    { pattern = "Prayer", header = "Prayer" },
-    { pattern = "Enchantment", header = "Enchantment" },
-    { pattern = "Augmentation", header = "Augmentation" },
-    { pattern = "Ward", header = "Ward" },
-    { pattern = "Summoner's Kit", header = "Kit" },
-}
-
---Weapon treasure keywords and the kit weapon types they need. A kit lists its
---weapons as Light / Medium / Heavy / Bow / Polearm / Whip / Net / Unarmed.
-local WEAPON_KEYWORDS = {
-    ["Light Weapon"] = { "Light" },
-    ["Medium Weapon"] = { "Medium" },
-    ["Heavy Weapon"] = { "Heavy" },
-    ["Bow"] = { "Bow" },
-    ["Polearm"] = { "Polearm" },
-    ["Whip"] = { "Whip" },
-    ["Ensnaring"] = { "Net", "Whip" },
-    ["Unarmed"] = { "Unarmed" },
-}
-
-local ARMOR_KEYWORDS = {
-    ["Light Armor"] = "Light",
-    ["Medium Armor"] = "Medium",
-    ["Heavy Armor"] = "Heavy",
-}
-
---Keywords that describe what an item is made of rather than where it is worn.
-local NON_SLOT_KEYWORDS = { Magic = true, Psionic = true, Consumable = true }
+--Treasure keyword -> the kit gear it needs, from the kit editor's own lists
+--(Kit.weaponTypes: "Light Weapon" needs a Light weapon, "Bow" a Bow;
+--Kit.armorTypes: "Heavy Armor" needs Heavy armor).
+---@return table<string, string> weapons
+---@return table<string, string> armor
+local function GearKeywords()
+    local weapons, armor = {}, {}
+    for _,w in ipairs(Kit.weaponTypes or {}) do
+        weapons[w.pattern or w.id] = w.id
+    end
+    for _,a in ipairs(Kit.armorTypes or {}) do
+        if a.id ~= "None" then
+            armor[a.text] = a.id
+        end
+    end
+    return weapons, armor
+end
 
 --- text helpers -------------------------------------------------------------
 
@@ -464,19 +452,20 @@ function Sections.words(d, tok, p)
     local byGroup = {}
     for _,skill in ipairs(Skill.SkillsInfo) do
         if p:ProficientInSkill(skill) then
-            --8 of the 10 crafting skills carry no category in the data
-            local cat = skill:try_get("category") or "crafting"
+            --a plain read: Skill's type default ("crafting") covers the skills
+            --whose data leaves the category unset
+            local cat = skill.category
             local list = byGroup[cat] or {}
             byGroup[cat] = list
             list[#list+1] = skill.name
         end
     end
     d.skills = {}
-    for _,g in ipairs(SKILL_GROUPS) do
+    for _,g in ipairs(Skill.categories) do
         local list = byGroup[g.id]
         if list ~= nil then
             table.sort(list)
-            d.skills[#d.skills+1] = { id = g.id, name = g.name, skills = list }
+            d.skills[#d.skills+1] = { id = g.id, name = g.text, skills = list }
         end
     end
 
@@ -647,27 +636,35 @@ function Sections.kit(d, tok, p, ctx)
         end
     end
 
-    --classes without a kit: their kit-equivalent choices, by rules name
+    --classes without a kit: their features tagged "Kit Equivalent" in the data
+    --(the Prayer, Ward, Enchantment and Augmentation choices, the Summoner's
+    --Kit). A choice shows its pick ("None chosen" when empty); a plain feature
+    --shows itself. The header is the rules name, the slot's last word made
+    --singular ("Conduit Ward" -> Ward, "Prayers" -> Prayer, K1).
     if result.kind == "none" then
         for _,e in ipairs(ctx.index.features) do
-            if e.bucket == "class" and IsChoice(e) and e.name ~= nil then
-                for _,eq in ipairs(KIT_EQUIVALENTS) do
-                    if string.find(e.name, eq.pattern, 1, true) then
-                        local chosen = (e.chosen or {})[1]
-                        local text = nil
-                        if chosen ~= nil then
-                            pcall(function() text = Clean(chosen:GetDescription()) end)
-                        end
-                        result.kind = "equivalent"
-                        result.entries[#result.entries+1] = {
-                            header = eq.header,
-                            name = chosen ~= nil and chosen.name or nil,
-                            text = text,
-                            choice = e.name,
-                        }
-                        break
-                    end
+            local tagged = false
+            pcall(function() tagged = (e.feature:try_get("tags") or {})["Kit Equivalent"] == true end)
+            if tagged and type(e.name) == "string" then
+                local pick = (e.chosen or {})[1]
+                if pick == nil and not IsChoice(e) then
+                    pick = e.feature
                 end
+                local text = nil
+                if pick ~= nil then
+                    pcall(function() text = Clean(pick:GetDescription()) end)
+                end
+                local header = string.match(e.name, "(%S+)%s*$") or e.name
+                if string.match(header, "[^s]s$") then
+                    header = string.sub(header, 1, -2)
+                end
+                result.kind = "equivalent"
+                result.entries[#result.entries+1] = {
+                    header = header,
+                    name = pick ~= nil and pick.name or nil,
+                    text = text,
+                    choice = e.name,
+                }
             end
         end
     end
@@ -691,18 +688,17 @@ end
 ---@param gear table|nil the kit's gear, nil without a kit
 ---@return string|nil reason "nokit", "armor" or "weapon"
 local function NoBenefitReason(keywords, gear)
+    local weaponKeywords, armorKeywords = GearKeywords()
     local weaponNeeds = nil
     local armorNeeds = nil
     for kw,_ in pairs(keywords) do
-        if WEAPON_KEYWORDS[kw] ~= nil then
+        if weaponKeywords[kw] ~= nil then
             weaponNeeds = weaponNeeds or {}
-            for _,w in ipairs(WEAPON_KEYWORDS[kw]) do
-                weaponNeeds[#weaponNeeds+1] = w
-            end
+            weaponNeeds[#weaponNeeds+1] = weaponKeywords[kw]
         end
-        if ARMOR_KEYWORDS[kw] ~= nil then
+        if armorKeywords[kw] ~= nil then
             armorNeeds = armorNeeds or {}
-            armorNeeds[#armorNeeds+1] = ARMOR_KEYWORDS[kw]
+            armorNeeds[#armorNeeds+1] = armorKeywords[kw]
         end
     end
     if weaponNeeds == nil and armorNeeds == nil then
@@ -756,9 +752,11 @@ function Sections.treasures(d, tok, p, ctx)
             kind = "consumable"
         end
         local keywords = item:try_get("keywords", {})
+        --the slot: the first registered item keyword (Neck, Ring, Heavy Armor...);
+        --material words like Magic and Psionic are not registered
         local body = nil
         for _,kw in ipairs(SortedKeys(keywords)) do
-            if not NON_SLOT_KEYWORDS[kw] then
+            if GameSystem.itemKeywords[kw] then
                 body = kw
                 break
             end
@@ -1036,64 +1034,60 @@ end
 
 --- features -------------------------------------------------------------------
 
---Text that only restates a skill or language grant, which the stats band shows.
----@param text string
----@return boolean
-local function IsGrantText(text)
-    local t = string.lower(text)
-    for _,prefix in ipairs({ "you are proficient with", "you know how to speak", "you can speak", "choose one", "choose two", "choose 1", "choose 2", "choose a skill", "choose a language" }) do
-        if string.sub(t, 1, #prefix) == prefix then
-            return true
-        end
-    end
-    return string.match(t, "^you have the .- skill") ~= nil or string.match(t, "^you gain the .- skill") ~= nil
-end
-
---Whether a feature only grants skills/languages, raises characteristics, or
---defines a resource with no text: things the stats band and vitals already
---show, so the Features list leaves them out.
+--Whether a leaf feature shows in the Features list. The display-kind tags
+--decide first (Ability and Trigger features show as ability cards, Hidden ones
+--nowhere). Then what the sheet shows elsewhere stays out: the kit's own stats
+--(the Kit card), characteristic raises (the tiles), a resource with no text,
+--and skill or language grants (the words row) unless a pillar tag marks the
+--grant as saying more (Telepathic Speech).
 ---@param feature any
 ---@return boolean
-local function ShownElsewhere(feature)
-    local mods = {}
-    pcall(function() mods = feature:try_get("modifiers", {}) end)
-    if #mods == 0 then
+local function ShowsAsFeature(feature)
+    local kind = "normal"
+    pcall(function() kind = feature:DisplayKind() end)
+    if kind ~= "normal" then
         return false
     end
-    local allGrants = true
-    local allCharacteristics = true
-    local allResources = true
+    local choiceBucket = FeatureCategoriser.ChoiceBucket(feature)
+    if choiceBucket == "skill" or choiceBucket == "language" then
+        return false
+    end
+    local mods = {}
+    pcall(function() mods = feature:try_get("modifiers", {}) end)
+    local allResources = #mods > 0
     for _,m in ipairs(mods) do
-        local behavior = m:try_get("behavior")
-        local subtype = m:try_get("subtype")
-        local skills = m:try_get("skills")
-        local grants = subtype == "skill" or subtype == "language"
-            or (behavior ~= "power" and type(skills) == "table" and #skills > 0)
-        allGrants = allGrants and grants
-        local attr = m:try_get("attribute")
-        allCharacteristics = allCharacteristics and behavior == "attribute"
-            and (attr == "mgt" or attr == "agl" or attr == "rea" or attr == "inu" or attr == "prs")
+        local behavior = nil
+        pcall(function() behavior = m.behavior end)
+        if behavior == "kitmodifyability" then
+            return false
+        end
         allResources = allResources and behavior == "resource"
     end
-    if allCharacteristics then
-        return true
-    end
-    if allGrants then
-        local text = ""
-        pcall(function() text = Clean(feature:GetDescription()) or "" end)
-        return text == "" or IsGrantText(text)
+    if FeatureCategoriser.FeatureIsOnlyCharacteristics(feature) then
+        return false
     end
     if allResources then
         local text = nil
         pcall(function() text = Clean(feature:GetDescription()) end)
-        return text == nil or text == ""
+        if text == nil or text == "" then
+            return false
+        end
     end
-    return false
+    if FeatureCategoriser.FeatureGrantsSkillOrLanguage(feature) then
+        for _,t in ipairs(FeatureTags(feature)) do
+            if IsPillar(t) then
+                return true
+            end
+        end
+        return false
+    end
+    return true
 end
 
---Features by section (F1-F7): visible features only (tagged Ability, Trigger
---or Hidden ones show as ability cards or not at all); a choice shows the
---option the Hero picked, "Chosen for {choice}".
+--Features by section (F1-F7). Each index entry is walked down to the features
+--the Hero really has (FeatureCategoriser.NewLeafWalker: lists opened, choices -
+--and choices within choices - resolved to the options picked, other domains
+--pruned); a pick shows as its own feature, "Chosen for {choice}".
 function Sections.features(d, tok, p, ctx)
     local sections = {}
     for _,s in ipairs(FEATURE_SECTIONS) do
@@ -1102,25 +1096,12 @@ function Sections.features(d, tok, p, ctx)
     local seen = {}
     local total = 0
 
-    local function Add(sectionid, feature, name, chosenFor, fallbackText)
+    local function Add(sectionid, feature, name, chosenFor)
         if feature == nil or name == nil then
-            return
-        end
-        local kind = "normal"
-        pcall(function() kind = feature:DisplayKind() end)
-        if kind ~= "normal" or ShownElsewhere(feature) then
-            return
-        end
-        --level-table placeholders ("1st-Level Domain Feature") point at a pick
-        --that shows on its own
-        if string.match(name, "^%d+%a%a%-%s?Level .-Feature$") or string.match(name, "^%d+%a%a%-%s?Level .-Abilit") then
             return
         end
         local text = nil
         pcall(function() text = Clean(feature:GetDescription()) end)
-        if text == nil or text == "" then
-            text = fallbackText
-        end
         local key = name .. "|" .. (text or "")
         if seen[key] then
             return
@@ -1130,7 +1111,7 @@ function Sections.features(d, tok, p, ctx)
         local pillars = {}
         local core = false
         for _,t in ipairs(tags) do
-            if PILLARS[t] then
+            if IsPillar(t) then
                 pillars[#pillars+1] = t
             elseif t == "Core Feature" then
                 core = true
@@ -1148,15 +1129,28 @@ function Sections.features(d, tok, p, ctx)
         total = total + 1
     end
 
+    local walker = FeatureCategoriser.NewLeafWalker(p)
     for _,e in ipairs(ctx.index.features) do
-        local kitStats = e.bucket == "kit" and type(e.name) == "string" and string.find(e.name, " Kit Stats$") ~= nil
-        if not FEATURE_SKIP_BUCKETS[e.bucket or "other"] and not kitStats then
-            if IsChoice(e) then
+        if not FEATURE_SKIP_BUCKETS[e.bucket or "other"] then
+            local choice = IsChoice(e)
+            local leaves = {}
+            if choice then
                 for _,c in ipairs(e.chosen or {}) do
-                    Add(e.bucket, c, c.name, e.name)
+                    walker.Collect(c, e.bucket, ShowsAsFeature, leaves)
                 end
             else
-                Add(e.bucket, e.feature, e.name, nil, nil)
+                walker.Collect(e.feature, e.bucket, ShowsAsFeature, leaves)
+            end
+            for _,leaf in ipairs(leaves) do
+                local name = nil
+                pcall(function() name = leaf.name end)
+                --a title's entry is named for the title; its leaf is the benefit
+                if e.bucket == "title" then
+                    name = e.name
+                end
+                if not walker.IsDomainScaffolding(name) then
+                    Add(e.bucket, leaf, name, cond(choice and name ~= e.name, e.name, nil))
+                end
             end
         end
     end
