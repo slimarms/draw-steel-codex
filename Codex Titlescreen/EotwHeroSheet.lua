@@ -81,6 +81,10 @@ local LOAD_TIMEOUT = 15
 local SHIMMER_SECONDS = 0.7
 --How long a stat equipping just changed stays gold before it settles.
 local PREVIEW_HOLD_SECONDS = 1.5
+--Motion (C6): the sheet opens with a 200ms fade and rise; the card's wash
+--for a hit or a heal fires at most once a second.
+local OPEN_SECONDS = 0.2
+local WASH_MIN_GAP = 1
 --A feature description longer than this starts folded behind Show more (F6).
 local FEATURE_FOLD_CHARS = 300
 --About 75 characters a line at the description's font size (locked design).
@@ -428,6 +432,73 @@ local RULES = {
         rmargin = 1,
         bgimage = "game-icons/surge.png",
         bgcolor = C.GOLD,
+    },
+    --motion: the cover the sheet opens behind, and the layout's rise
+    {
+        selectors = { "eotwsOpener" },
+        bgimage = "panels/square.png",
+        bgcolor = "#0b0b0aff",
+    },
+    {
+        selectors = { "eotwsOpener", "done" },
+        bgcolor = "#0b0b0a00",
+        transitionTime = OPEN_SECONDS,
+    },
+    {
+        selectors = { "eotwsRise" },
+        y = 12,
+    },
+    {
+        selectors = { "eotwsRise", "done" },
+        y = 0,
+        transitionTime = OPEN_SECONDS,
+    },
+    --the card's art fades in over its dark ground (on open and on a switch)
+    {
+        selectors = { "eotwsArtCover" },
+        bgimage = "panels/square.png",
+        bgcolor = "#151515ff",
+        cornerRadius = 10,
+    },
+    {
+        selectors = { "eotwsArtCover", "shown" },
+        bgcolor = "#15151500",
+        transitionTime = 0.25,
+    },
+    --the card's wash for a hit or a heal, at 30%; PulseClass fades it out
+    --over the pulse rule's transitionTime
+    {
+        selectors = { "eotwsWash" },
+        bgimage = "panels/square.png",
+        bgcolor = "#00000000",
+        cornerRadius = 10,
+    },
+    {
+        selectors = { "eotwsWash", "hurt" },
+        bgcolor = "#ff3b3b4d",
+        transitionTime = 0.45,
+        easing = "easeOutCubic",
+    },
+    {
+        selectors = { "eotwsWash", "healed" },
+        bgcolor = "#3bff7b4d",
+        transitionTime = 0.45,
+        easing = "easeOutCubic",
+    },
+    --the one light sweep across the XP bar the first time a Hero is ready
+    {
+        selectors = { "eotwsSweep" },
+        width = 46,
+        height = "100%",
+        x = -46,
+        bgimage = "panels/square.png",
+        bgcolor = "#fffbe8b3",
+    },
+    {
+        selectors = { "eotwsSweep", "go" },
+        x = XP_BAR_WIDTH,
+        transitionTime = 0.9,
+        easing = "easeInOutCubic",
     },
     --abilities and features
     {
@@ -1262,6 +1333,10 @@ end
 
 local MIDDOT = "\u{00B7}"
 
+--Heroes whose ready-to-Level sweep has played this session (charid -> true):
+--it plays once, the first time the sheet shows them ready.
+local m_swept = {}
+
 ---@param n number
 ---@return string
 local function Ordinal(n)
@@ -1505,6 +1580,23 @@ local function LevelRow(d, fallen)
         if reach then
             tip = string.format("%s Enough for Level %d.", tip, p.nextLevel)
         end
+    end
+
+    --ready to Level for the first time this session: one light sweep
+    if ready and d.charid ~= nil and not m_swept[d.charid] and not ThemeEngine.GetAccessibility().reduceMotion then
+        m_swept[d.charid] = true
+        local sweep = gui.Panel{
+            classes = { "eotwsSweep" },
+            floating = true,
+            halign = "left",
+            interactable = false,
+        }
+        barChildren[#barChildren+1] = sweep
+        dmhub.Schedule(0.35, function()
+            if sweep.valid then
+                sweep:SetClass("go", true)
+            end
+        end)
     end
 
     rows[#rows+1] = gui.Panel{
@@ -1803,6 +1895,30 @@ local function CardRegion(ctx)
 
     local card
 
+    --the dark ground the art fades in from (see eotwsState)
+    local artCover = gui.Panel{
+        classes = { "eotwsArtCover" },
+        floating = true,
+        width = "100%",
+        height = "100%",
+        interactable = false,
+    }
+    local washPanel = gui.Panel{
+        classes = { "eotwsWash" },
+        floating = true,
+        width = "100%",
+        height = "100%",
+        interactable = false,
+    }
+    local lastWash = -WASH_MIN_GAP
+    local function Wash(kind)
+        if ThemeEngine.GetAccessibility().reduceMotion or dmhub.Time() - lastWash < WASH_MIN_GAP then
+            return
+        end
+        lastWash = dmhub.Time()
+        washPanel:PulseClass(kind)
+    end
+
     --what each part last showed, so a live refresh rebuilds only what changed
     local seen = {}
 
@@ -2005,7 +2121,27 @@ local function CardRegion(ctx)
                 end
                 Paint(ctx.data)
                 bar:FireEvent("refreshCard")
+                --the art fades in over the card's dark ground; at once under
+                --Reduce Motion
+                if ThemeEngine.GetAccessibility().reduceMotion then
+                    artCover:SetClass("collapsed", true)
+                else
+                    dmhub.Schedule(0.05, function()
+                        if artCover.valid then
+                            artCover:SetClass("shown", true)
+                        end
+                    end)
+                end
             end
+        end,
+
+        --fired up from the stamina bar when the Hero loses or regains
+        --Stamina: a 30% wash, at most once a second, none under Reduce Motion
+        staminaLost = function(element)
+            Wash("hurt")
+        end,
+        staminaGained = function(element)
+            Wash("healed")
         end,
 
         --any character change: re-read the cheap live sections and repaint
@@ -2025,7 +2161,9 @@ local function CardRegion(ctx)
             end
         end,
 
+        artCover,
         plate,
+        washPanel,
     }
     return card
 end
@@ -2853,7 +2991,7 @@ local function Thumb(ctx, charid, mineEdge, own)
                 return
             end
             audio.FireSoundEvent("Mouse.Click")
-            EotwHeroSheet.Show{ charid = charid, context = ctx.context }
+            EotwHeroSheet.Show{ charid = charid, context = ctx.context, switching = true }
         end,
     }
     EotwHeroCard.ApplyPortrait(thumb, tok, 40 / 56)
@@ -3957,6 +4095,13 @@ local function FindHost(ctx)
     return host
 end
 
+--Whether the sheet draws see-through: Transparent UI is on and the colour
+--scheme is not a high-contrast one (those get solid plates and backdrop).
+---@return boolean
+local function SeeThrough()
+    return dmhub.GetSettingValue("graphics:uiblur") ~= false and not ThemeEngine.GetAccessibility().highContrast
+end
+
 --- Opens the hero sheet full screen for one EotW Hero, replacing any sheet
 --- already open. Escape or Close closes it.
 ---
@@ -3970,6 +4115,8 @@ end
 ---            summary's name). Defaults to the token's name.
 ---   context  "town" or "game"; defaults to where the player is now. Picks
 ---            the backdrop, the mount point and the switcher's label.
+---   switching  true when moving between Heroes from the switcher: no open
+---            sound or motion, only the card's art fades in.
 ---   fallen   for a fallen Hero opened from the Graveyard: { encounter =
 ---            where they fell, week = n, playedBy = player name }. Greys the
 ---            art and shows the epitaph in place of the vitals.
@@ -4002,7 +4149,7 @@ function EotwHeroSheet.Show(args)
         loadStarted = dmhub.Time(),
         shimmerLit = false,
         --the Transparent UI setting; off means solid plates and backdrop
-        transparent = dmhub.GetSettingValue("graphics:uiblur") ~= false,
+        transparent = SeeThrough(),
         frost = false,
         --set once a Transparent UI flip has scheduled the rebuild
         rebuilding = false,
@@ -4178,6 +4325,31 @@ function EotwHeroSheet.Show(args)
         ListsRegion(ctx),
     }
 
+    local animate = not args.switching and not ThemeEngine.GetAccessibility().reduceMotion
+    local layout = gui.Panel{
+        classes = { cond(animate, "eotwsRise", "eotwsStill") },
+        floating = true,
+        width = "100%",
+        height = "100%",
+        pad = PAD,
+        borderBox = true,
+        flow = "horizontal",
+        leftColumn,
+        mainColumn,
+    }
+    --a dark cover over everything that fades away as the sheet opens (panel
+    --opacity does not reach children, so the sheet cannot fade itself)
+    local opener = nil
+    if animate then
+        opener = gui.Panel{
+            classes = { "eotwsOpener" },
+            floating = true,
+            width = "100%",
+            height = "100%",
+            interactable = false,
+        }
+    end
+
     root = gui.Panel{
         id = "eotwHeroSheet",
         floating = true,
@@ -4202,6 +4374,7 @@ function EotwHeroSheet.Show(args)
             if ClosePin() then
                 return
             end
+            audio.FireSoundEvent("UI.WindowClose")
             ctx.Close()
         end,
 
@@ -4214,7 +4387,7 @@ function EotwHeroSheet.Show(args)
                 element:DestroySelf()
                 return
             end
-            if (dmhub.GetSettingValue("graphics:uiblur") ~= false) ~= ctx.transparent and not ctx.rebuilding then
+            if SeeThrough() ~= ctx.transparent and not ctx.rebuilding then
                 ctx.rebuilding = true
                 dmhub.Schedule(0.01, function()
                     if mod.unloaded or m_sheet ~= element or not element.valid then
@@ -4248,20 +4421,34 @@ function EotwHeroSheet.Show(args)
         end,
 
         Backdrop(ctx),
-        gui.Panel{
-            floating = true,
-            width = "100%",
-            height = "100%",
-            pad = PAD,
-            borderBox = true,
-            flow = "horizontal",
-            leftColumn,
-            mainColumn,
-        },
+        layout,
     }
+    if opener ~= nil then
+        root:AddChild(opener)
+    end
 
     host:AddChild(root)
     m_sheet = root
+
+    --open: fade and rise (not on a switch between Heroes, not under Reduce Motion)
+    if not args.switching then
+        audio.FireSoundEvent("UI.WindowOpen")
+    end
+    if animate then
+        dmhub.Schedule(0.02, function()
+            if layout.valid then
+                layout:SetClass("done", true)
+            end
+            if opener ~= nil and opener.valid then
+                opener:SetClass("done", true)
+            end
+        end)
+        dmhub.Schedule(OPEN_SECONDS + 0.1, function()
+            if opener ~= nil and opener.valid then
+                opener:DestroySelf()
+            end
+        end)
+    end
 
     if IsLoaded() then
         SetState("ready")
