@@ -62,6 +62,14 @@ local LEFT_GAP = 14
 local CARD_HEIGHT = 520
 local MAIN_GAP = 16
 local TOPBAR_HEIGHT = 60
+--The kit plate and stats band are at least this tall at 100% Font Size, so
+--switching between most Heroes moves nothing below them; a Hero with more to
+--show still grows them. Sized to fit the pregens and a typical roster Hero.
+local KIT_MIN_HEIGHT = 186
+local STATS_MIN_HEIGHT = 207
+--A plate's top and bottom padding. A minHeight is measured inside it, and only
+--what is inside grows with Font Size: minHeight = FS(height - 2 * PLATE_VPAD).
+local PLATE_VPAD = 12
 
 --The plate's inner width: the plate is 10px in from the card on each side and
 --pads 14px inside. The XP bar's hatch and notch are placed in pixels from it.
@@ -2389,6 +2397,15 @@ local function CardRegion(ctx)
             end
         end,
 
+        --the switcher moved to another Hero: forget what the plate showed, and
+        --cover the art again so the new Hero's fades in (see eotwsState)
+        eotwsSwitch = function(element)
+            seen = {}
+            surges.data.count = nil
+            bar:FireEvent("setCharid", ctx.charid)
+            artCover:SetClass("shown", false)
+        end,
+
         --any character change: re-read the cheap live sections and repaint
         --what changed (the stamina bar watches for itself).
         monitorGame = "/characters",
@@ -2501,6 +2518,27 @@ local function KitGrid(entries)
         flow = "vertical",
         children = rows,
     }
+end
+
+--Everything the kit card shows, as one string: two Heroes with the same
+--signature get the same card.
+---@param kit table|nil d.kit
+---@return string
+local function KitSignature(kit)
+    if kit == nil then
+        return "none"
+    end
+    local parts = { tostring(kit.kind), tostring(kit.combined), tostring(kit.meleeFrom), tostring(m_fontScale) }
+    for _,e in ipairs(kit.entries or {}) do
+        parts[#parts+1] = string.format("%s|%s|%s", tostring(e.header), tostring(e.name), tostring(e.text))
+        local gear = e.gear or {}
+        parts[#parts+1] = table.concat(gear.armor or {}, ",") .. "/" .. table.concat(gear.weapons or {}, ",")
+        for _,b in ipairs(e.bonuses or {}) do
+            parts[#parts+1] = string.format("%s=%s<%s|%s|%s", tostring(b.label), tostring(b.value),
+                tostring(b.from), tostring(b.other), tostring(b.otherFrom))
+        end
+    end
+    return table.concat(parts, "\n")
 end
 
 --The kit card's content (K1-K5): the kit, the Tactician's two kits read as
@@ -2629,14 +2667,23 @@ local function KitRegion(ctx)
             },
         }
     end
+    --the kit on show, so a refill (another Hero, an equip) rebuilds the card
+    --only when the kit differs
+    local shownSignature = nil
     local function Fill(element)
-        if ctx.state == "ready" and ctx.data ~= nil then
+        if ctx.state ~= "ready" or ctx.data == nil then
+            return
+        end
+        local sig = KitSignature(ctx.data.kit)
+        if sig ~= shownSignature then
+            shownSignature = sig
             element.children = KitContent(ctx.data)
         end
     end
     return Block(ctx, {
         width = LEFT_WIDTH,
         height = "auto",
+        minHeight = FS(KIT_MIN_HEIGHT - 2 * PLATE_VPAD),
         tmargin = LEFT_GAP,
         flow = "vertical",
         children = skeleton,
@@ -3036,6 +3083,11 @@ local function TreasuresRegion(ctx)
         flow = "vertical",
         eotwsState = Rebuild,
         eotwsData = Rebuild,
+        --another Hero starts at the top of their list
+        eotwsSwitch = function(element)
+            todoRow = nil
+            body.vscrollPosition = 1
+        end,
         gui.Panel{
             width = "100%",
             height = "auto",
@@ -3272,7 +3324,12 @@ local function Thumb(ctx, charid, mineEdge, own)
                 return
             end
             audio.FireSoundEvent("Mouse.Click")
-            EotwHeroSheet.Show{ charid = charid, context = ctx.context, switching = true }
+            ctx.SwitchTo(charid)
+        end,
+        --the switcher moved: the outline follows the Hero on show
+        eotwsSwitch = function(element)
+            element:SetClass("current", charid == ctx.charid)
+            element:SetClass("other", charid ~= ctx.charid)
         end,
     }
     EotwHeroCard.ApplyPortrait(thumb, tok, 40 / 56)
@@ -3316,62 +3373,84 @@ local function OwnerButton(label, tip, offTip, action)
     }
 end
 
---The top bar's normal content: the switcher, state chips, owner controls or
---the owner chip, and Close. A fallen Hero gets only "The Graveyard" + Close.
+--The switcher's Heroes: your roster in town, this encounter's Heroes in a
+--game (yours first); a teammate's Hero in town shows just them.
 ---@param ctx table
----@return Panel[]
-local function TopBarContent(ctx)
-    if ctx.fallen ~= nil then
-        return {
-            Text("The Graveyard", { "eotwsSwitchLabel" }, { valign = "center" }),
-            CloseButton(ctx),
-        }
-    end
-
-    local d = ctx.data or {}
-    local mine = d.mine == true
-    local children = {}
-
-    --the switcher: your roster in town, this encounter's Heroes in a game
-    --(yours first); a teammate's Hero in town shows "Your party"
-    local label
+---@return string label
+---@return table[] ours { charid, mineEdge, own } your Heroes
+---@return table[] theirs the other players' Heroes
+local function SwitcherEntries(ctx)
     local ours, theirs = {}, {}
     if ctx.inGame then
-        label = "This encounter"
         for _,entry in ipairs(EotwHeroCard.CollectHeroes()) do
             if entry.mine then
-                ours[#ours+1] = Thumb(ctx, entry.charid, true, true)
+                ours[#ours+1] = { charid = entry.charid, mineEdge = true, own = true }
             else
-                theirs[#theirs+1] = Thumb(ctx, entry.charid, false, false)
+                theirs[#theirs+1] = { charid = entry.charid, mineEdge = false, own = false }
             end
         end
-    elseif mine and rawget(_G, "EotwRoster") ~= nil then
-        label = "Your roster"
+        return "This encounter", ours, theirs
+    end
+    if ctx.data ~= nil and ctx.data.mine == true and rawget(_G, "EotwRoster") ~= nil then
         for _,hero in ipairs(EotwRoster.GetHeroes() or {}) do
-            ours[#ours+1] = Thumb(ctx, hero.heroid, false, true)
+            ours[#ours+1] = { charid = hero.heroid, mineEdge = false, own = true }
         end
-    else
-        label = "Your party"
-        theirs[1] = Thumb(ctx, ctx.charid, false, false)
+        return "Your roster", ours, theirs
+    end
+    theirs[1] = { charid = ctx.charid, mineEdge = false, own = false }
+    return "Your party", ours, theirs
+end
+
+--Who the switcher lists, so it is rebuilt only when a Hero joins, leaves or
+--finishes loading. A switch does not change it: the thumbnails move their
+--outline themselves (Thumb's eotwsSwitch).
+---@param label string
+---@param ours table[]
+---@param theirs table[]
+---@return string
+local function SwitcherSignature(label, ours, theirs)
+    local parts = { label }
+    for _,list in ipairs({ ours, theirs }) do
+        for _,e in ipairs(list) do
+            parts[#parts+1] = string.format("%s:%s:%s", e.charid, tostring(e.mineEdge),
+                tostring(dmhub.GetCharacterById(e.charid) ~= nil))
+        end
+        parts[#parts+1] = "/"
+    end
+    return table.concat(parts, "|")
+end
+
+--The switcher: its label, then a thumbnail per Hero. It takes the width the
+--right-hand controls leave, and clips rather than pushing them off the bar.
+---@param ctx table
+---@param label string
+---@param ours table[]
+---@param theirs table[]
+---@return Panel
+local function SwitcherPanel(ctx, label, ours, theirs)
+    local own, other = {}, {}
+    for _,e in ipairs(ours) do
+        own[#own+1] = Thumb(ctx, e.charid, e.mineEdge, e.own)
+    end
+    for _,e in ipairs(theirs) do
+        other[#other+1] = Thumb(ctx, e.charid, e.mineEdge, e.own)
     end
     --a big roster (up to twelve) gets smaller thumbnails so it fits
-    local count = #ours + #theirs
+    local count = #own + #other
     local size = cond(count > 9, "tiny", cond(count > 6, "small", "full"))
     local switcher = { Text(label, { "eotwsSwitchLabel" }, { valign = "center", rmargin = 4 }) }
-    for _,t in ipairs(ours) do
+    for _,t in ipairs(own) do
         t:SetClass(size, true)
         switcher[#switcher+1] = t
     end
-    if #ours > 0 and #theirs > 0 then
+    if #own > 0 and #other > 0 then
         switcher[#switcher+1] = gui.Panel{ classes = { "eotwsSwitchSep" } }
     end
-    for _,t in ipairs(theirs) do
+    for _,t in ipairs(other) do
         t:SetClass(size, true)
         switcher[#switcher+1] = t
     end
-    --the switcher takes the width the right-hand controls leave, and clips
-    --rather than pushing them off the bar
-    children[#children+1] = gui.Panel{
+    return gui.Panel{
         width = "100% available",
         height = "100%",
         flow = "horizontal",
@@ -3382,8 +3461,39 @@ local function TopBarContent(ctx)
         bgcolor = "white",
         children = switcher,
     }
+end
 
-    --right-hand side, packed against Close
+--Whether the practice-only chip shows: a Danger Room game.
+---@param ctx table
+---@return boolean
+local function IsPractice(ctx)
+    local practice = false
+    if ctx.inGame and rawget(_G, "EncounterOfTheWeekGame") ~= nil then
+        pcall(function() practice = EncounterOfTheWeekGame.IsPracticeGame() end)
+    end
+    return practice
+end
+
+--Whether the Hero on show may still be rebuilt in the builder: your own, until
+--they win an encounter.
+---@param ctx table
+---@return boolean
+local function CanEditInBuilder(ctx)
+    local hero = nil
+    if rawget(_G, "EotwRoster") ~= nil then
+        pcall(function() hero = EotwRoster.FindHero(ctx.charid) end)
+    end
+    return hero ~= nil and #(hero.completed or {}) == 0
+end
+
+--The bar's right-hand side, packed against Close: the away and practice
+--chips, then your own Hero's controls (town) or whose Hero this is. The
+--buttons act on the Hero on show when clicked, so they survive a switch.
+---@param ctx table
+---@return Panel[]
+local function RightContent(ctx)
+    local d = ctx.data or {}
+    local mine = d.mine == true
     local right = {}
     local away = ctx.AwayParty()
     if away ~= nil then
@@ -3394,11 +3504,7 @@ local function TopBarContent(ctx)
             Text("Changes are off until the party ends.", { "eotwsStateChipSmall" }),
         }
     end
-    local practice = false
-    if ctx.inGame and rawget(_G, "EncounterOfTheWeekGame") ~= nil then
-        pcall(function() practice = EncounterOfTheWeekGame.IsPracticeGame() end)
-    end
-    if practice then
+    if IsPractice(ctx) then
         right[#right+1] = gui.Panel{
             classes = { "eotwsStateChip" },
             Text("Danger Rooms: practice only", { "eotwsStateChipText" }),
@@ -3410,8 +3516,8 @@ local function TopBarContent(ctx)
         --the town is where the Hero changes: appearance always, the full
         --builder only until the Hero's first encounter is won
         local offTip = cond(away ~= nil, "Not while away with a party.", nil)
-        local heroid = ctx.charid
         right[#right+1] = OwnerButton("Change Appearance", nil, offTip, function()
+            local heroid = ctx.charid
             local host = ctx.host
             local tok = ctx.Token()
             ctx.Close()
@@ -3432,9 +3538,9 @@ local function TopBarContent(ctx)
                 }
             end
         end)
-        local hero = rawget(_G, "EotwRoster") ~= nil and EotwRoster.FindHero(heroid) or nil
-        if hero ~= nil and #(hero.completed or {}) == 0 then
+        if CanEditInBuilder(ctx) then
             right[#right+1] = OwnerButton("Edit in Builder", "Change any choice until this Hero wins an encounter.", offTip, function()
+                local heroid = ctx.charid
                 local host = ctx.host
                 ctx.Close()
                 EotwRoster.EditHero(heroid, host)
@@ -3447,15 +3553,18 @@ local function TopBarContent(ctx)
         }
     end
     right[#right+1] = CloseButton(ctx)
+    return right
+end
 
-    children[#children+1] = gui.Panel{
-        width = "auto",
-        height = "100%",
-        halign = "right",
-        flow = "horizontal",
-        children = right,
-    }
-    return children
+--What RightContent would show, so it is rebuilt only when that changes.
+---@param ctx table
+---@return string
+local function RightSignature(ctx)
+    local d = ctx.data or {}
+    local dead = d.stamina ~= nil and d.stamina.state == "dead"
+    local editable = d.mine == true and not ctx.inGame and CanEditInBuilder(ctx)
+    return string.format("%s|%s|%s|%s|%s|%s|%s", tostring(ctx.AwayParty()), tostring(IsPractice(ctx)),
+        tostring(d.mine == true), tostring(dead), tostring(ctx.state), tostring(d.ownerName), tostring(editable))
 end
 
 ---@param ctx table
@@ -3481,29 +3590,65 @@ local function TopBarRegion(ctx)
         }
     end
 
-    --what the bar shows now, so it is rebuilt only when that changes
-    local shownSignature = nil
+    --what the bar shows: "needed" (the gold line), "normal" (the switcher and
+    --the right-hand side) or "fallen". Each part is rebuilt only when what it
+    --shows changes, so a switch between Heroes leaves the switcher in place.
+    local mode = nil
+    local neededText = nil
+    local switcherSig = nil
+    local rightSig = nil
+    ---@type Panel|nil
+    local right = nil
 
     local function Rebuild(element)
         if ctx.state ~= "ready" then
             return
         end
-        local needed = NeededLine(ctx)
-        local away = ctx.AwayParty()
-        local sig = string.format("%s|%s|%s", tostring(needed), tostring(away), tostring(ctx.data ~= nil and ctx.data.mine))
-        if sig == shownSignature then
+        if ctx.fallen ~= nil then
+            if mode ~= "fallen" then
+                mode = "fallen"
+                element:SetClass("needed", false)
+                element.children = {
+                    Text("The Graveyard", { "eotwsSwitchLabel" }, { valign = "center" }),
+                    CloseButton(ctx),
+                }
+            end
             return
         end
-        shownSignature = sig
+
+        local needed = NeededLine(ctx)
         element:SetClass("needed", needed ~= nil)
         if needed ~= nil then
-            --the bar turns gold in place: nothing below it moves
-            element.children = {
-                Text(needed, { "eotwsNeededText" }, { valign = "center", width = "100% available" }),
-                CloseButton(ctx, true),
+            if mode ~= "needed" or needed ~= neededText then
+                mode = "needed"
+                neededText = needed
+                --the bar turns gold in place: nothing below it moves
+                element.children = {
+                    Text(needed, { "eotwsNeededText" }, { valign = "center", width = "100% available" }),
+                    CloseButton(ctx, true),
+                }
+            end
+            return
+        end
+
+        local label, ours, theirs = SwitcherEntries(ctx)
+        local sig = SwitcherSignature(label, ours, theirs)
+        if mode ~= "normal" or sig ~= switcherSig or right == nil or not right.valid then
+            mode = "normal"
+            switcherSig = sig
+            rightSig = nil
+            right = gui.Panel{
+                width = "auto",
+                height = "100%",
+                halign = "right",
+                flow = "horizontal",
             }
-        else
-            element.children = TopBarContent(ctx)
+            element.children = { SwitcherPanel(ctx, label, ours, theirs), right }
+        end
+        local rs = RightSignature(ctx)
+        if rs ~= rightSig then
+            rightSig = rs
+            right.children = RightContent(ctx)
         end
     end
 
@@ -3523,12 +3668,10 @@ local function TopBarRegion(ctx)
                 if ctx.inGame and ctx.storySignature == nil then
                     ctx.storySignature = StorySignature()
                 end
-                shownSignature = nil
                 Rebuild(element)
             end
         end,
         eotwsData = function(element)
-            shownSignature = nil
             Rebuild(element)
         end,
         thinkTime = SIGNAL_POLL_SECONDS,
@@ -3665,45 +3808,57 @@ local function StatsSkeleton()
     }
 end
 
---The band filled from the Hero's data: characteristic tiles; centred lines
---for Size, Speed (with movement types, "Speed 6 (fly)"), Disengage,
---Stability, the Potency pill, Wealth and Renown; then the words row.
----@param d table EotwHeroSheet.Data
----@return Panel[]
-local function StatsContent(d)
-    local tiles = {}
-    for i,c in ipairs(d.characteristics or {}) do
-        tiles[#tiles+1] = gui.Panel{
+--The stats band for a Hero with `count` characteristics: the tiles; centred
+--lines for Size, Speed (with movement types, "Speed 6 (fly)"), Disengage,
+--Stability, the Potency pill, Wealth and Renown; then the words row. Built
+--once and repainted in place for each Hero by Update. Only the skills, whose
+--groups vary in number, are rebuilt (and only when they differ).
+---@param count number
+---@return table band { children = Panel[], count = number, Update = fun(d: table) }
+local function StatsBand(count)
+    --a stat's number, and the text a preview falls back to
+    local function Set(element, key, text)
+        element.data.key = key
+        element.data.text = text
+        element.text = text
+        element:SetClass("preview", false)
+    end
+
+    local tiles, tileLabels, tileValues = {}, {}, {}
+    for i = 1, count do
+        tileLabels[i] = Text("", { "eotwsTileLabel" })
+        tileValues[i] = StatValue("", "", { "eotwsTileValue" }, SignedText)
+        tiles[i] = gui.Panel{
             classes = { "eotwsTile" },
             lmargin = cond(i == 1, 0, 7),
-            data = { tip = SourcesTip(c) },
+            data = { tip = "" },
             hover = HoverTip,
             click = PinTip,
-            Text(c.name, { "eotwsTileLabel" }),
-            StatValue(c.name, SignedText(c.value), { "eotwsTileValue" }, SignedText),
+            tileLabels[i],
+            tileValues[i],
         }
     end
 
-    local stats = d.stats or {}
     --one "LABEL value" pair on a centred line; hover shows its sources
-    local function Pair(label, key, value, sources, first, extra)
-        local children = {
-            Text(label, { "eotwsStatLabel" }, { valign = "center" }),
-            StatValue(key, tostring(value), { "eotwsStatValue" }),
-        }
+    local pairsByKey = {}
+    local function Pair(key, first, extra)
+        local value = StatValue(key, "", { "eotwsStatValue" })
+        local children = { Text(key, { "eotwsStatLabel" }, { valign = "center" }), value }
         if extra ~= nil then
             children[#children+1] = extra
         end
-        return gui.Panel{
+        local panel = gui.Panel{
             width = "auto",
             height = "auto",
             lmargin = cond(first, 0, 26),
             flow = "horizontal",
-            data = { tip = SourcesTip(sources) },
+            data = { tip = "" },
             hover = HoverTip,
             click = PinTip,
             children = children,
         }
+        pairsByKey[key] = { panel = panel, value = value }
+        return panel
     end
     local function Line(children, args)
         local fields = {
@@ -3719,76 +3874,56 @@ local function StatsContent(d)
         return gui.Panel(fields)
     end
 
-    local speedExtra = nil
-    if #(d.movement or {}) > 0 then
-        speedExtra = Text(string.format("(%s)", table.concat(d.movement, ", ")), { "eotwsMovement" }, { valign = "center", lmargin = 5 })
-    end
-    local function Value(s)
-        return s ~= nil and s.value or ""
-    end
+    local speedExtra = Text("", { "eotwsMovement" }, { valign = "center", lmargin = 5 })
     local body = Line({
-        Pair("Size", "Size", Value(stats.size), stats.size, true),
-        Pair("Speed", "Speed", Value(stats.speed), stats.speed, false, speedExtra),
-        Pair("Disengage", "Disengage", Value(stats.disengage), stats.disengage),
-        Pair("Stability", "Stability", Value(stats.stability), stats.stability),
+        Pair("Size", true),
+        Pair("Speed", false, speedExtra),
+        Pair("Disengage"),
+        Pair("Stability"),
     })
 
-    local potency = d.potency or {}
-    local function Tier(label, value)
+    local tiers = {}
+    local function Tier(label)
+        local value = Text("", { "eotwsStatValue" }, { lmargin = 8 })
+        tiers[#tiers+1] = value
         return gui.Panel{
             width = "auto",
             height = "auto",
             lmargin = 20,
             flow = "horizontal",
             Text(label, { "eotwsTierLabel" }, { valign = "center" }),
-            Text(tostring(value or ""), { "eotwsStatValue" }, { lmargin = 8 }),
+            value,
         }
     end
     local potencyLine = Line({
         Text("Potency", { "eotwsStatLabel" }, { valign = "center" }),
-        Tier("Weak", potency.weak),
-        Tier("Average", potency.average),
-        Tier("Strong", potency.strong),
+        Tier("Weak"),
+        Tier("Average"),
+        Tier("Strong"),
     }, { classes = { "eotwsPotency" }, tmargin = 7 })
 
     --Wealth and Renown: labels only, no tooltip (round 13)
+    local wealth = Text("", { "eotwsStatValue", "small" }, { lmargin = 8 })
+    local renown = Text("", { "eotwsStatValue", "small" }, { lmargin = 8 })
     local standing = Line({
         Text("Wealth", { "eotwsStatLabel" }, { valign = "center" }),
-        Text(tostring(d.wealth or 0), { "eotwsStatValue", "small" }, { lmargin = 8 }),
+        wealth,
         Text("Renown", { "eotwsStatLabel" }, { valign = "center", lmargin = 26 }),
-        Text(tostring(d.renown or 0), { "eotwsStatValue", "small" }, { lmargin = 8 }),
+        renown,
     }, { tmargin = 7 })
 
     --the words row: skills by group, then plain lists ("None" when empty)
-    local function List(items)
-        if items == nil or #items == 0 then
-            return Text("None", { "eotwsNone" })
-        end
-        return Text(table.concat(items, ", "), { "eotwsWords" }, { width = "100%" })
-    end
-    local skillUnits = {}
-    for _,g in ipairs(d.skills or {}) do
-        --a group and its skills stay together; the row wraps between groups
-        skillUnits[#skillUnits+1] = gui.Panel{
-            width = "auto",
-            height = "auto",
-            rmargin = 18,
-            flow = "horizontal",
-            Text(g.name, { "eotwsSkillGroup" }, { valign = "center" }),
-            Text(table.concat(g.skills, ", "), { "eotwsWords" }, { lmargin = 5 }),
-        }
-    end
-    local skills
-    if #skillUnits == 0 then
-        skills = Text("None", { "eotwsNone" })
-    else
-        skills = gui.Panel{
-            width = "100%",
-            height = "auto",
-            flow = "horizontal",
-            wrap = true,
-            children = skillUnits,
-        }
+    local skills = gui.Panel{
+        width = "100%",
+        height = "auto",
+        flow = "horizontal",
+        wrap = true,
+    }
+    local lists = {}
+    local function List()
+        local label = Text("", { "eotwsWords" }, { width = "100%" })
+        lists[#lists+1] = label
+        return label
     end
     local function Words(label, width, content, first)
         return gui.Panel{
@@ -3799,7 +3934,7 @@ local function StatsContent(d)
         }
     end
 
-    return {
+    local children = {
         gui.Panel{
             width = "100%",
             height = "auto",
@@ -3830,23 +3965,96 @@ local function StatsContent(d)
             height = "auto",
             flow = "horizontal",
             Words("Skills", "46%", skills, true),
-            Words("Languages", "17%", List(d.languages)),
-            Words("Immunities", "21%", List(d.immunities)),
-            Words("Weaknesses", "16%", List(d.weaknesses)),
+            Words("Languages", "17%", List()),
+            Words("Immunities", "21%", List()),
+            Words("Weaknesses", "16%", List()),
         },
     }
+
+    --the skills on show, so they are rebuilt only when they differ
+    local shownSkills = nil
+
+    ---@param d table EotwHeroSheet.Data
+    local function Update(d)
+        for i,c in ipairs(d.characteristics or {}) do
+            if tiles[i] ~= nil then
+                tiles[i].data.tip = SourcesTip(c)
+                tileLabels[i].text = c.name
+                Set(tileValues[i], c.name, SignedText(c.value))
+            end
+        end
+
+        local stats = d.stats or {}
+        for key,pair in pairs(pairsByKey) do
+            local s = stats[string.lower(key)]
+            pair.panel.data.tip = SourcesTip(s)
+            Set(pair.value, key, tostring(s ~= nil and s.value or ""))
+        end
+        local movement = d.movement or {}
+        speedExtra:SetClass("collapsed", #movement == 0)
+        speedExtra.text = string.format("(%s)", table.concat(movement, ", "))
+
+        local potency = d.potency or {}
+        tiers[1].text = tostring(potency.weak or "")
+        tiers[2].text = tostring(potency.average or "")
+        tiers[3].text = tostring(potency.strong or "")
+        wealth.text = tostring(d.wealth or 0)
+        renown.text = tostring(d.renown or 0)
+
+        local parts = {}
+        for _,g in ipairs(d.skills or {}) do
+            parts[#parts+1] = g.name .. ":" .. table.concat(g.skills, ",")
+        end
+        local sig = table.concat(parts, "|")
+        if sig ~= shownSkills then
+            shownSkills = sig
+            local units = {}
+            for _,g in ipairs(d.skills or {}) do
+                --a group and its skills stay together; the row wraps between groups
+                units[#units+1] = gui.Panel{
+                    width = "auto",
+                    height = "auto",
+                    rmargin = 18,
+                    flow = "horizontal",
+                    Text(g.name, { "eotwsSkillGroup" }, { valign = "center" }),
+                    Text(table.concat(g.skills, ", "), { "eotwsWords" }, { lmargin = 5 }),
+                }
+            end
+            if #units == 0 then
+                units[1] = Text("None", { "eotwsNone" })
+            end
+            skills.children = units
+        end
+
+        for i,items in ipairs({ d.languages, d.immunities, d.weaknesses }) do
+            local none = items == nil or #items == 0
+            lists[i]:SetClass("eotwsNone", none)
+            lists[i]:SetClass("eotwsWords", not none)
+            lists[i].text = cond(none, "None", table.concat(items or {}, ", "))
+        end
+    end
+
+    return { children = children, count = count, Update = Update }
 end
 
 ---@param ctx table
 ---@return Panel
 local function StatsRegion(ctx)
+    --the band once a Hero has been shown; the next Hero repaints it in place
+    local band = nil
     local function Fill(element)
-        if ctx.state == "ready" and ctx.data ~= nil then
-            element.children = StatsContent(ctx.data)
-            local held = ctx.HeldPreview()
-            if held ~= nil then
-                element:FireEventTree("eotwsPreview", held)
-            end
+        if ctx.state ~= "ready" or ctx.data == nil then
+            return
+        end
+        local count = #(ctx.data.characteristics or {})
+        if band == nil or band.count ~= count then
+            band = StatsBand(count)
+            element.children = band.children
+        end
+        band.Update(ctx.data)
+        local held = ctx.HeldPreview()
+        if held ~= nil then
+            element:FireEventTree("eotwsPreview", held)
         end
     end
     local skeleton = {}
@@ -3856,9 +4064,10 @@ local function StatsRegion(ctx)
     return Block(ctx, {
         width = "100%",
         height = "auto",
+        minHeight = FS(STATS_MIN_HEIGHT - 2 * PLATE_VPAD),
         tmargin = MAIN_GAP,
         hpad = 18,
-        vpad = 12,
+        vpad = PLATE_VPAD,
         flow = "vertical",
         children = skeleton,
         eotwsState = Fill,
@@ -3976,12 +4185,14 @@ local function AbilityCardContent(item, tok)
 end
 
 --One ability row (A4): name, keywords, then the action and cost tags. Hover
---shows the codex card; a click keeps it open.
+--shows the codex card; a click keeps it open. The card is built from the
+--row's data.item and the Hero on show at that moment, so a row kept for the
+--next Hero (see AbilitiesContent) shows that Hero's numbers.
 ---@param item table
----@param tok CharacterToken|nil
+---@param getTok fun(): CharacterToken|nil the Hero on show
 ---@param compact boolean free strikes and standard actions: two to a row, no keywords
 ---@return Panel
-local function AbilityRow(item, tok, compact)
+local function AbilityRow(item, getTok, compact)
     local children = { Text(item.name, { "eotwsAbilityName", cond(compact, "compact", "full") }, { valign = "center" }) }
     if not compact and item.ability ~= nil then
         children[#children+1] = Text(KeywordText(item.ability), { "eotwsAbilityKeywords" }, { valign = "center", lmargin = 10 })
@@ -4001,67 +4212,131 @@ local function AbilityRow(item, tok, compact)
     return gui.Panel{
         classes = { "eotwsFocusable", "eotwsAbilityRow", cond(compact, "compact", "full"), cond(m_fontScale >= LARGE_TEXT_SCALE, "single", "pair") },
         canFocus = true,
-        data = {},
+        data = { item = item },
         --a triggered action's card has no background of its own, so it is framed
         hover = function(element)
             HoverCard(element, function()
-                local card = AbilityCardContent(item, tok)
-                return card ~= nil and CardFrame(card, item.ability == nil) or nil
+                local it = element.data.item
+                local card = AbilityCardContent(it, getTok())
+                return card ~= nil and CardFrame(card, it.ability == nil) or nil
             end)
         end,
         dehover = LeaveCard,
         click = function(element)
             LeaveCard(element)
-            local card = AbilityCardContent(item, tok)
+            local it = element.data.item
+            local card = AbilityCardContent(it, getTok())
             if card ~= nil then
-                PinPanel(element, CardFrame(card, item.ability == nil))
+                PinPanel(element, CardFrame(card, it.ability == nil))
             end
         end,
         children = children,
     }
 end
 
+--What an ability group shows, so the next Hero (or a refill) keeps a group
+--that would look the same: every Hero's Standard actions, usually their free
+--strikes.
+---@param g table a d.abilities group
+---@return string
+local function AbilityGroupSignature(g)
+    local parts = { tostring(g.id), tostring(g.name), tostring(m_fontScale) }
+    for _,item in ipairs(g.items) do
+        local keywords = ""
+        if item.ability ~= nil then
+            keywords = KeywordText(item.ability)
+        end
+        parts[#parts+1] = string.format("%s|%s|%s|%s|%s", tostring(item.name), keywords,
+            tostring(item.actionTag), tostring(item.costTag), tostring(item.ability ~= nil))
+    end
+    return table.concat(parts, "\n")
+end
+
 --The Abilities column's content: one group per kind of action (A2), the
---Standard actions noted as every Hero's (A3).
+--Standard actions noted as every Hero's (A3). A group already on show that
+--would look the same is kept, its rows pointed at this Hero's items; only the
+--groups that differ are built.
 ---@param d table EotwHeroSheet.Data
----@param tok CharacterToken|nil
+---@param getTok fun(): CharacterToken|nil the Hero on show
+---@param shown table<string, table> the groups on show by id ({ sig, panel, rows }); updated to the new set
 ---@return Panel[]
-local function AbilitiesContent(d, tok)
+local function AbilitiesContent(d, getTok, shown)
     local groups = {}
+    local keep = {}
     for _,g in ipairs(d.abilities or {}) do
-        local compact = g.id == "freestrike" or g.id == "standard"
-        local rows = {}
-        if compact then
-            --two to a row (one at large Font Sizes)
-            local perRow = cond(m_fontScale >= LARGE_TEXT_SCALE, 1, 2)
-            for i = 1, #g.items, perRow do
-                local pair = { AbilityRow(g.items[i], tok, true) }
-                if perRow == 2 and g.items[i + 1] ~= nil then
-                    pair[2] = AbilityRow(g.items[i + 1], tok, true)
-                end
-                rows[#rows+1] = gui.Panel{
-                    width = "100%",
-                    height = "auto",
-                    tmargin = 6,
-                    flow = "horizontal",
-                    children = pair,
-                }
+        local sig = AbilityGroupSignature(g)
+        local entry = shown[g.id]
+        if entry ~= nil and entry.sig == sig and entry.panel.valid then
+            for i,row in ipairs(entry.rows) do
+                row.data.item = g.items[i]
+                --a card built for the last Hero must not show on the next hover
+                row.tooltip = nil
             end
         else
-            for _,item in ipairs(g.items) do
-                rows[#rows+1] = AbilityRow(item, tok, false)
+            local compact = g.id == "freestrike" or g.id == "standard"
+            local rows, rowPanels = {}, {}
+            local function Row(item)
+                local row = AbilityRow(item, getTok, compact)
+                rowPanels[#rowPanels+1] = row
+                return row
             end
+            if compact then
+                --two to a row (one at large Font Sizes)
+                local perRow = cond(m_fontScale >= LARGE_TEXT_SCALE, 1, 2)
+                for i = 1, #g.items, perRow do
+                    local pair = { Row(g.items[i]) }
+                    if perRow == 2 and g.items[i + 1] ~= nil then
+                        pair[2] = Row(g.items[i + 1])
+                    end
+                    rows[#rows+1] = gui.Panel{
+                        width = "100%",
+                        height = "auto",
+                        tmargin = 6,
+                        flow = "horizontal",
+                        children = pair,
+                    }
+                end
+            else
+                for _,item in ipairs(g.items) do
+                    rows[#rows+1] = Row(item)
+                end
+            end
+            local body = gui.Panel{
+                width = "100%",
+                height = "auto",
+                flow = "vertical",
+                children = rows,
+            }
+            entry = {
+                sig = sig,
+                panel = Group("ab:" .. g.id, g.name, #g.items, cond(g.id == "standard", "Every Hero can do these", nil), body),
+                rows = rowPanels,
+            }
         end
-        local body = gui.Panel{
-            width = "100%",
-            height = "auto",
-            flow = "vertical",
-            children = rows,
-        }
-        groups[#groups+1] = Group("ab:" .. g.id, g.name, #g.items,
-            cond(g.id == "standard", "Every Hero can do these", nil), body)
+        keep[g.id] = entry
+        groups[#groups+1] = entry.panel
+    end
+    for id in pairs(shown) do
+        shown[id] = nil
+    end
+    for id,entry in pairs(keep) do
+        shown[id] = entry
     end
     return groups
+end
+
+--What a features section shows (after the filters), so a refill keeps a
+--section that would look the same.
+---@param s table a d.features section
+---@param items table[] its items that pass the filters
+---@return string
+local function FeatureSectionSignature(s, items)
+    local parts = { tostring(s.id), tostring(s.name) }
+    for _,item in ipairs(items) do
+        parts[#parts+1] = string.format("%s|%s|%s|%s", tostring(item.name), tostring(item.chosenFor),
+            table.concat(item.pillars or {}, ","), tostring(item.text))
+    end
+    return table.concat(parts, "\n")
 end
 
 --One feature card (F5, F6): name and pillar tags, "Chosen for {choice}", the
@@ -4178,19 +4453,26 @@ local function ListsRegion(ctx)
     local filters = { pillars = {}, text = "" }
     local featureCount = Text("", { "eotwsListCount" }, { valign = "center", lmargin = 8 })
 
+    --the ability groups live in one list that stays put for the sheet's life,
+    --so groups kept for the next Hero never change parent
+    local abilityList = gui.Panel{
+        width = "100%-10",
+        height = "auto",
+        flow = "vertical",
+        children = abilitySkeleton,
+    }
     local abilityBody = gui.Panel{
         width = "100%",
         height = "100% available",
         tmargin = 2,
         flow = "vertical",
         vscroll = true,
-        gui.Panel{
-            width = "100%-10",
-            height = "auto",
-            flow = "vertical",
-            children = abilitySkeleton,
-        },
+        abilityList,
     }
+    --the ability groups and feature sections on show, by id (see
+    --AbilitiesContent and FillFeatures)
+    local shownGroups = {}
+    local shownSections = {}
     local featureList = gui.Panel{
         width = "100%-10",
         height = "auto",
@@ -4215,8 +4497,9 @@ local function ListsRegion(ctx)
         local anyPillar = next(filters.pillars) ~= nil
         local shown = 0
         local sections = {}
+        local keep = {}
         for _,s in ipairs(d.features.sections) do
-            local cards = {}
+            local items = {}
             for _,item in ipairs(s.items) do
                 local ok = true
                 if anyPillar then
@@ -4232,19 +4515,34 @@ local function ListsRegion(ctx)
                     ok = string.find(hay, query, 1, true) ~= nil
                 end
                 if ok then
-                    cards[#cards+1] = FeatureCard(item)
+                    items[#items+1] = item
                 end
             end
-            if #cards > 0 then
-                shown = shown + #cards
-                sections[#sections+1] = Group("ft:" .. s.id, s.name, #cards, nil, gui.Panel{
-                    width = "100%",
-                    height = "auto",
-                    flow = "vertical",
-                    children = cards,
-                })
+            if #items > 0 then
+                shown = shown + #items
+                --a section that would look the same stays; only changed ones are built
+                local sig = FeatureSectionSignature(s, items)
+                local entry = shownSections[s.id]
+                if entry == nil or entry.sig ~= sig or not entry.panel.valid then
+                    local cards = {}
+                    for _,item in ipairs(items) do
+                        cards[#cards+1] = FeatureCard(item)
+                    end
+                    entry = {
+                        sig = sig,
+                        panel = Group("ft:" .. s.id, s.name, #cards, nil, gui.Panel{
+                            width = "100%",
+                            height = "auto",
+                            flow = "vertical",
+                            children = cards,
+                        }),
+                    }
+                end
+                keep[s.id] = entry
+                sections[#sections+1] = entry.panel
             end
         end
+        shownSections = keep
         if #sections == 0 then
             sections[1] = Text("No features match. Clear the filters to see them all.", { "eotwsEmpty" })
         end
@@ -4275,7 +4573,11 @@ local function ListsRegion(ctx)
             Text(pillar, { "eotwsChipText" }, { valign = "center" }),
         }
     end
-    chips[#chips+1] = gui.Input{
+    local pillarChips = {}
+    for i,chip in ipairs(chips) do
+        pillarChips[i] = chip
+    end
+    local filterInput = gui.Input{
         classes = { "eotwsFilter" },
         placeholderText = "Filter features",
         text = "",
@@ -4289,6 +4591,7 @@ local function ListsRegion(ctx)
             FillFeatures()
         end,
     }
+    chips[#chips+1] = filterInput
 
     local featureHead = { Text("Features", { "eotwsHeader" }, { valign = "center" }), featureCount }
     local filterLine
@@ -4314,14 +4617,7 @@ local function ListsRegion(ctx)
         if ctx.state ~= "ready" or ctx.data == nil then
             return
         end
-        abilityBody.children = {
-            gui.Panel{
-                width = "100%-10",
-                height = "auto",
-                flow = "vertical",
-                children = AbilitiesContent(ctx.data, ctx.Token()),
-            },
-        }
+        abilityList.children = AbilitiesContent(ctx.data, ctx.Token, shownGroups)
         FillFeatures()
     end
 
@@ -4334,6 +4630,18 @@ local function ListsRegion(ctx)
         flow = "horizontal",
         eotwsState = Fill,
         eotwsData = Fill,
+        --another Hero starts with no filters, at the top of both lists
+        eotwsSwitch = function(element)
+            filters.pillars = {}
+            filters.text = ""
+            for _,chip in ipairs(pillarChips) do
+                chip:SetClass("on", false)
+                chip:SetClass("off", true)
+            end
+            filterInput.text = ""
+            abilityBody.vscrollPosition = 1
+            featureBody.vscrollPosition = 1
+        end,
         gui.Panel{
             width = "48%",
             height = "100%",
@@ -4754,6 +5062,39 @@ function EotwHeroSheet.Show(args)
     function ctx.Close()
         if root ~= nil and root.valid then
             root:DestroySelf()
+        end
+    end
+
+    --Show another Hero in this sheet (the switcher). The frame and plates stay;
+    --each region resets what it kept for the last Hero (eotwsSwitch: scroll
+    --and filters start over) and repaints from the new Hero's data. A Hero
+    --that has not loaded yet gets a fresh sheet instead, with its placeholders.
+    function ctx.SwitchTo(newCharid)
+        if newCharid == ctx.charid or root == nil or not root.valid then
+            return
+        end
+        --a settings rebuild (Transparent UI, Font Size) reopens this Hero
+        args.charid = newCharid
+        args.token = nil
+        args.name = nil
+        args.switching = true
+        if dmhub.GetCharacterById(newCharid) == nil then
+            EotwHeroSheet.Show(args)
+            return
+        end
+        ClosePin()
+        ctx.charid = newCharid
+        m_sheetCharid = newCharid
+        ctx.data = nil
+        ctx.rereadPending = false
+        previewHeldUntil = 0
+        previewHeld = nil
+        root:FireEventTree("eotwsSwitch")
+        if IsLoaded() then
+            SetState("ready")
+        else
+            ctx.loadStarted = dmhub.Time()
+            SetState("loading")
         end
     end
 

@@ -642,6 +642,14 @@ local function CreateStaminaBar(charid, opts)
             element:FireEvent("refreshCard")
         end,
 
+        --point the bar at another character (the hero sheet's switcher). The
+        --next refresh snaps to them, with no hurt or heal flash.
+        setCharid = function(element, newCharid)
+            charid = newCharid
+            m_shownPct, m_seenTotal, m_seenCur, m_slideTime = nil, nil, nil, nil
+            element.thinkTime = nil
+        end,
+
         refreshCard = function(element)
             local tok = dmhub.GetCharacterById(charid)
             if tok == nil or not tok.valid or tok.properties == nil then
