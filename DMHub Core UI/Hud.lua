@@ -905,6 +905,11 @@ end
 --                                       --own view instead (the full sheet
 --                                       --then closes itself); nil/false
 --                                       --opens the normal sheet
+--      ownsSheet = function(token) end, --true when openSheet will show your
+--                                       --own view for token, so the full
+--                                       --sheet skips refreshing itself
+--                                       --first. No side effects: asked
+--                                       --before openSheet on every open
 --      playersPopout = function() end,  --content for the popout under the
 --                                       --title bar's players row (replaces
 --                                       --the Heroes panel there); nil=normal
@@ -1063,6 +1068,18 @@ GameHud.CustomInterfaceOpenSheet = function(token, tabid)
 	end
 	local ok, handled = pcall(provider.openSheet, token, tabid)
 	return ok and handled == true
+end
+
+--Whether the active interface will show its own view of this token's sheet
+--(see openSheet). Asked before the full sheet refreshes, so that work can be
+--skipped; false when there is no interface, no hook, or the hook fails.
+GameHud.CustomInterfaceOwnsSheet = function(token)
+	local provider = GameHud.CustomInterface()
+	if provider == nil or type(provider.ownsSheet) ~= "function" then
+		return false
+	end
+	local ok, owns = pcall(provider.ownsSheet, token)
+	return ok and owns == true
 end
 
 --Offer the active interface a say in the user leaving the game ("leave")

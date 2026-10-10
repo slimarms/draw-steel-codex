@@ -1875,43 +1875,47 @@ local function CardRegion(ctx)
         Text("Try again", nil, { fontSize = 13, bold = true, valign = "center" }),
     }
 
-    local skeleton = gui.Panel{
-        width = "100%",
-        height = "auto",
-        flow = "vertical",
-        --subtitle, then the level row and its numbers
-        Skel(190, 16, { tmargin = 6 }),
-        gui.Panel{
+    ---@type Panel|nil
+    local skeleton = nil
+    if ctx.skeleton then
+        skeleton = gui.Panel{
             width = "100%",
-            height = 14,
-            tmargin = 12,
-            flow = "horizontal",
-            Skel(8, 14),
-            Skel("100%-36", 10, { hmargin = 10, valign = "center" }),
-            Skel(8, 14),
-        },
-        --stamina bar and its Winded / Dead line
-        Skel("100%", 20, { tmargin = 12 }),
-        gui.Panel{
-            width = "100%",
-            height = 12,
-            tmargin = 8,
-            flow = "horizontal",
-            Skel(80, 12),
-            Skel(70, 12, { halign = "right" }),
-        },
-        Hairline(),
-        --vitals: Recoveries ring and label, Victories, heroic resource
-        gui.Panel{
-            width = "100%",
-            height = 38,
-            flow = "horizontal",
-            Skel(42, 38),
-            Skel(172, 32, { lmargin = 10, valign = "center" }),
-            Skel(80, 24, { lmargin = 10, valign = "center" }),
-            Skel(12, 24, { halign = "right", valign = "center" }),
-        },
-    }
+            height = "auto",
+            flow = "vertical",
+            --subtitle, then the level row and its numbers
+            Skel(190, 16, { tmargin = 6 }),
+            gui.Panel{
+                width = "100%",
+                height = 14,
+                tmargin = 12,
+                flow = "horizontal",
+                Skel(8, 14),
+                Skel("100%-36", 10, { hmargin = 10, valign = "center" }),
+                Skel(8, 14),
+            },
+            --stamina bar and its Winded / Dead line
+            Skel("100%", 20, { tmargin = 12 }),
+            gui.Panel{
+                width = "100%",
+                height = 12,
+                tmargin = 8,
+                flow = "horizontal",
+                Skel(80, 12),
+                Skel(70, 12, { halign = "right" }),
+            },
+            Hairline(),
+            --vitals: Recoveries ring and label, Victories, heroic resource
+            gui.Panel{
+                width = "100%",
+                height = 38,
+                flow = "horizontal",
+                Skel(42, 38),
+                Skel(172, 32, { lmargin = 10, valign = "center" }),
+                Skel(80, 24, { lmargin = 10, valign = "center" }),
+                Skel(12, 24, { halign = "right", valign = "center" }),
+            },
+        }
+    end
 
     --the live plate, filled from the Hero's data once loaded. Each part below
     --is rebuilt only when what it shows changes (see Paint).
@@ -2305,6 +2309,12 @@ local function CardRegion(ctx)
         end
     end
 
+    local plateChildren = { surges, nameLabel, retryButton }
+    if skeleton ~= nil then
+        plateChildren[#plateChildren+1] = skeleton
+    end
+    plateChildren[#plateChildren+1] = live
+
     local plate = gui.Panel{
         classes = { "eotwsPlate" },
         floating = true,
@@ -2317,12 +2327,7 @@ local function CardRegion(ctx)
         vpad = 12,
         borderBox = true,
         flow = "vertical",
-
-        surges,
-        nameLabel,
-        retryButton,
-        skeleton,
-        live,
+        children = plateChildren,
     }
 
     card = gui.Panel{
@@ -2342,7 +2347,9 @@ local function CardRegion(ctx)
             end
             retryButton:SetClass("collapsed", state ~= "failed")
             local ready = state == "ready" and ctx.data ~= nil
-            skeleton:SetClass("collapsed", ready)
+            if skeleton ~= nil then
+                skeleton:SetClass("collapsed", ready)
+            end
             live:SetClass("collapsed", not ready)
             if ready then
                 local tok = ctx.Token()
@@ -2597,28 +2604,31 @@ end
 ---@param ctx table
 ---@return Panel
 local function KitRegion(ctx)
-    local skeleton = {
-        Text("Kit", { "eotwsHeader" }),
-        gui.Panel{
-            width = "100%",
-            height = 16,
-            tmargin = 8,
-            flow = "horizontal",
-            Skel(64, 16),
-            Skel(144, 14, { lmargin = 10, valign = "center" }),
-        },
-        gui.Panel{
-            width = "100%",
-            height = 14,
-            tmargin = 6,
-            bmargin = 6,
-            flow = "horizontal",
-            Skel(130, 12),
-            Skel(16, 12, { lmargin = 12 }),
-            Skel(128, 12, { lmargin = 12 }),
-            Skel(56, 12, { halign = "right" }),
-        },
-    }
+    local skeleton = {}
+    if ctx.skeleton then
+        skeleton = {
+            Text("Kit", { "eotwsHeader" }),
+            gui.Panel{
+                width = "100%",
+                height = 16,
+                tmargin = 8,
+                flow = "horizontal",
+                Skel(64, 16),
+                Skel(144, 14, { lmargin = 10, valign = "center" }),
+            },
+            gui.Panel{
+                width = "100%",
+                height = 14,
+                tmargin = 6,
+                bmargin = 6,
+                flow = "horizontal",
+                Skel(130, 12),
+                Skel(16, 12, { lmargin = 12 }),
+                Skel(128, 12, { lmargin = 12 }),
+                Skel(56, 12, { halign = "right" }),
+            },
+        }
+    end
     local function Fill(element)
         if ctx.state == "ready" and ctx.data ~= nil then
             element.children = KitContent(ctx.data)
@@ -2707,14 +2717,21 @@ local function TreasuresRegion(ctx)
         }
     end
 
+    local skeleton = {}
+    if ctx.skeleton then
+        skeleton = {
+            Section("Leveled treasures", 1),
+            Section("Trinkets", 2),
+            Section("Consumables", 1),
+        }
+    end
+
     --narrower than the list by the scrollbar's width, so nothing sits under it
     local content = gui.Panel{
         width = "100%-10",
         height = "auto",
         flow = "vertical",
-        Section("Leveled treasures", 1),
-        Section("Trinkets", 2),
-        Section("Consumables", 1),
+        children = skeleton,
     }
 
     local body = gui.Panel{
@@ -3444,9 +3461,24 @@ end
 ---@param ctx table
 ---@return Panel
 local function TopBarRegion(ctx)
-    local thumbs = {}
-    for i = 1, 6 do
-        thumbs[#thumbs+1] = Skel(40, 56, { lmargin = cond(i == 1, 10, 8), cornerRadius = 6, valign = "center" })
+    --the bar while the Hero loads; once ready, Rebuild replaces all of it
+    local loading = {}
+    if ctx.skeleton then
+        local thumbs = {}
+        for i = 1, 6 do
+            thumbs[#thumbs+1] = Skel(40, 56, { lmargin = cond(i == 1, 10, 8), cornerRadius = 6, valign = "center" })
+        end
+        loading = {
+            Text(cond(ctx.inGame, "This encounter", "Your roster"), { "eotwsSwitchLabel" }, { valign = "center" }),
+            gui.Panel{
+                width = "auto",
+                height = "100%",
+                flow = "horizontal",
+                valign = "center",
+                children = thumbs,
+            },
+            CloseButton(ctx),
+        }
     end
 
     --what the bar shows now, so it is rebuilt only when that changes
@@ -3482,15 +3514,7 @@ local function TopBarRegion(ctx)
         hpad = 12,
         borderBox = true,
         flow = "horizontal",
-        Text(cond(ctx.inGame, "This encounter", "Your roster"), { "eotwsSwitchLabel" }, { valign = "center" }),
-        gui.Panel{
-            width = "auto",
-            height = "100%",
-            flow = "horizontal",
-            valign = "center",
-            children = thumbs,
-        },
-        CloseButton(ctx),
+        children = loading,
 
         eotwsState = function(element, state)
             if state == "ready" then
@@ -3825,6 +3849,10 @@ local function StatsRegion(ctx)
             end
         end
     end
+    local skeleton = {}
+    if ctx.skeleton then
+        skeleton = StatsSkeleton()
+    end
     return Block(ctx, {
         width = "100%",
         height = "auto",
@@ -3832,7 +3860,7 @@ local function StatsRegion(ctx)
         hpad = 18,
         vpad = 12,
         flow = "vertical",
-        children = StatsSkeleton(),
+        children = skeleton,
         eotwsState = Fill,
         eotwsData = Fill,
     })
@@ -4112,36 +4140,38 @@ local function ListsRegion(ctx)
     end
 
     local abilitySkeleton = {}
-    for _,rows in ipairs({ 3, 2, 4 }) do
-        abilitySkeleton[#abilitySkeleton+1] = Skel(116, 12, { tmargin = 14 })
-        for r = 1, rows do
-            abilitySkeleton[#abilitySkeleton+1] = gui.Panel{
+    local featureSkeleton = {}
+    if ctx.skeleton then
+        for _,rows in ipairs({ 3, 2, 4 }) do
+            abilitySkeleton[#abilitySkeleton+1] = Skel(116, 12, { tmargin = 14 })
+            for r = 1, rows do
+                abilitySkeleton[#abilitySkeleton+1] = gui.Panel{
+                    classes = { "eotwsRow" },
+                    width = "100%-6",
+                    height = 36,
+                    tmargin = 6,
+                    hpad = 12,
+                    borderBox = true,
+                    Skel(({ 186, 128, 214, 157 })[r], 18, { valign = "center" }),
+                }
+            end
+        end
+
+        for _ = 1, 3 do
+            featureSkeleton[#featureSkeleton+1] = gui.Panel{
                 classes = { "eotwsRow" },
                 width = "100%-6",
-                height = 36,
-                tmargin = 6,
-                hpad = 12,
+                height = 86,
+                tmargin = 8,
+                hpad = 14,
+                vpad = 10,
                 borderBox = true,
-                Skel(({ 186, 128, 214, 157 })[r], 18, { valign = "center" }),
+                flow = "vertical",
+                Skel(126, 18),
+                Skel("100%", 12, { tmargin = 10 }),
+                Skel("70%", 12, { tmargin = 8 }),
             }
         end
-    end
-
-    local featureSkeleton = {}
-    for _ = 1, 3 do
-        featureSkeleton[#featureSkeleton+1] = gui.Panel{
-            classes = { "eotwsRow" },
-            width = "100%-6",
-            height = 86,
-            tmargin = 8,
-            hpad = 14,
-            vpad = 10,
-            borderBox = true,
-            flow = "vertical",
-            Skel(126, 18),
-            Skel("100%", 12, { tmargin = 10 }),
-            Skel("70%", 12, { tmargin = 8 }),
-        }
     end
 
     --the features' filters: pillar chips (any one matches) and the text box
@@ -4539,6 +4569,10 @@ function EotwHeroSheet.Show(args)
         stageHeight = 1080,
         --"loading", "ready" or "failed"
         state = "loading",
+        --whether the regions build their loading placeholders. Off when the
+        --Hero has already loaded (the usual case), as they would be replaced
+        --before they were ever drawn.
+        skeleton = true,
         loadStarted = dmhub.Time(),
         shimmerLit = false,
         --the Transparent UI setting; off means solid plates and backdrop
@@ -4733,6 +4767,9 @@ function EotwHeroSheet.Show(args)
         printf("EotW hero sheet: nowhere to mount (%s)", context)
         return nil
     end
+
+    --a loaded Hero is read and shown below, in this same frame
+    ctx.skeleton = not IsLoaded()
 
     local leftColumn = gui.Panel{
         width = LEFT_WIDTH,
