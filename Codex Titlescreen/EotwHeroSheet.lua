@@ -1055,13 +1055,6 @@ local RULES = {
         color = C.CREAM,
         fontSize = 14,
     },
-    {
-        selectors = { "eotwsSkillGroup" },
-        color = C.TAN,
-        fontSize = 11.5,
-        bold = true,
-        uppercase = true,
-    },
     --kit card
     {
         selectors = { "eotwsKitName" },
@@ -4010,15 +4003,13 @@ local function StatsBand(count)
             shownSkills = sig
             local units = {}
             for _,g in ipairs(d.skills or {}) do
-                --a group and its skills stay together; the row wraps between groups
-                units[#units+1] = gui.Panel{
-                    width = "auto",
-                    height = "auto",
-                    rmargin = 18,
-                    flow = "horizontal",
-                    Text(g.name, { "eotwsSkillGroup" }, { valign = "center" }),
-                    Text(table.concat(g.skills, ", "), { "eotwsWords" }, { lmargin = 5 }),
-                }
+                --one label per group, as wide as its text but never wider than
+                --the column: the row breaks between groups, and a group too long
+                --for the column (large Font Sizes) wraps within itself. The
+                --group name is styled inline: tan, smaller, bold, upper case.
+                units[#units+1] = Text(string.format("<color=%s><size=82%%><b>%s</b></size></color> %s",
+                    C.TAN, string.upper(g.name), table.concat(g.skills, ", ")),
+                    { "eotwsWords" }, { maxWidth = "100%", rmargin = 18 })
             end
             if #units == 0 then
                 units[1] = Text("None", { "eotwsNone" })
