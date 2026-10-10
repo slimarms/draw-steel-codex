@@ -28,6 +28,7 @@ local C = {
     --so the map's detail does not fight the text.
     BLOCK_TOWN = "#11100ea8",
     BLOCK_GAME = "#0e0d0bdb",
+    BLOCK_OPAQUE = "#14130fff",
     BLOCK_EDGE = "#ffffff1a",
     TOPBAR = "#0a0a09b8",
     HAIRLINE = "#ffffff14",
@@ -52,6 +53,37 @@ local STATS_HEIGHT = 218
 local LOAD_TIMEOUT = 15
 --One half-cycle of the skeleton's shimmer.
 local SHIMMER_SECONDS = 0.7
+
+--Frost blur radii in pixels (engine panel `frost`): the plates over the Guild,
+--and the in-game backdrop, which blurs the map and HUD harder so nothing reads.
+local FROST_RADIUS = 12
+local FROST_RADIUS_BACKDROP = 18
+
+--Whether this engine has the panel `frost` option (nil until first checked).
+---@type boolean|nil
+local m_frostSupported = nil
+
+--The panel's `frost` field, untyped: Definitions/Panel.lua gains it when the
+--stubs are regenerated from an engine build that has it.
+---@param panel Panel
+---@return any
+local function FrostField(panel)
+    return panel --[[@as any]]
+end
+
+--Reading `frost` gives a number on engines that have it and nil on older ones
+--(setting it there only logs an error), so check once on a throwaway panel.
+---@return boolean
+local function FrostSupported()
+    if m_frostSupported == nil then
+        local probe = gui.Panel{ width = 1, height = 1 }
+        local value = nil
+        pcall(function() value = FrostField(probe).frost end)
+        probe:DestroySelf()
+        m_frostSupported = type(value) == "number"
+    end
+    return m_frostSupported == true
+end
 
 local CHARACTERISTICS = { "Might", "Agility", "Reason", "Intuition", "Presence" }
 local PILLARS = { "Combat", "Exploration", "Montage", "Negotiation", "Respite" }
@@ -103,6 +135,11 @@ local RULES = {
     {
         selectors = { "eotwsBlock", "ingame" },
         bgcolor = C.BLOCK_GAME,
+    },
+    --the Transparent UI setting is off: solid plates, nothing shows through
+    {
+        selectors = { "eotwsBlock", "opaque" },
+        bgcolor = C.BLOCK_OPAQUE,
     },
     {
         selectors = { "eotwsSkel" },
@@ -196,19 +233,26 @@ local function Skel(width, height, args)
     return gui.Panel(fields)
 end
 
---A frosted plate holding one region of the sheet.
+--A plate holding one region of the sheet. In town it frosts the Guild art
+--behind it (engine `frost`); in a game the frosted backdrop already blurs what
+--is behind, so the plates stay plain. Solid while Transparent UI is off.
 ---@param ctx table the sheet's context (see EotwHeroSheet.Show)
 ---@param args table panel fields
 ---@return Panel
 local function Block(ctx, args)
-    args.classes = { "eotwsBlock", cond(ctx.inGame, "ingame", "town") }
-    args.blurBackground = true
+    args.classes = { "eotwsBlock", cond(ctx.inGame, "ingame", "town"), cond(ctx.transparent, "see", "opaque") }
+    --an engine without frost: the map blur under the plate, as before
+    args.blurBackground = ctx.transparent and not ctx.frost
     if args.pad == nil and args.hpad == nil then
         args.hpad = 16
         args.vpad = 12
     end
     args.borderBox = true
-    return gui.Panel(args)
+    local panel = gui.Panel(args)
+    if ctx.frost and not ctx.inGame then
+        FrostField(panel).frost = FROST_RADIUS
+    end
+    return panel
 end
 
 ---@param height? number
@@ -736,15 +780,28 @@ local function Backdrop(ctx)
     }
 
     if ctx.inGame then
-        return gui.Panel{
+        --frosted: everything behind (map and HUD) blurred, lightly darkened.
+        --Without frost: the engine's map blur at 60%, the HUD faintly showing.
+        --Transparent UI off: near-solid, as the setting asks.
+        local color = "#00000099"
+        if not ctx.transparent then
+            color = "#0b0b0af2"
+        elseif ctx.frost then
+            color = "#00000059"
+        end
+        local backdrop = gui.Panel{
             floating = true,
             width = "100%",
             height = "100%",
             bgimage = "panels/square.png",
-            bgcolor = "#00000099",
-            blurBackground = true,
+            bgcolor = color,
+            blurBackground = ctx.transparent and not ctx.frost,
             shade,
         }
+        if ctx.frost then
+            FrostField(backdrop).frost = FROST_RADIUS_BACKDROP
+        end
+        return backdrop
     end
 
     --no credit badge: the sheet covers the corner it would sit in, and the
@@ -827,6 +884,11 @@ function EotwHeroSheet.Show(args)
         state = "loading",
         loadStarted = dmhub.Time(),
         shimmerLit = false,
+        --the Transparent UI setting; off means solid plates and backdrop
+        transparent = dmhub.GetSettingValue("graphics:uiblur") ~= false,
+        frost = false,
+        --set once a Transparent UI flip has scheduled the rebuild
+        rebuilding = false,
     }
 
     function ctx.Token()
@@ -887,6 +949,8 @@ function EotwHeroSheet.Show(args)
         end
     end
 
+    ctx.frost = ctx.transparent and FrostSupported()
+
     local host = FindHost(ctx)
     if host == nil then
         printf("EotW hero sheet: nowhere to mount (%s)", context)
@@ -936,11 +1000,22 @@ function EotwHeroSheet.Show(args)
         end,
 
         --while loading: watch for the Hero, shimmer the placeholders, and
-        --give up after LOAD_TIMEOUT.
+        --give up after LOAD_TIMEOUT. Always: rebuild when Transparent UI flips,
+        --since the plates and backdrop are built see-through or solid.
         thinkTime = SHIMMER_SECONDS,
         think = function(element)
             if mod.unloaded then
                 element:DestroySelf()
+                return
+            end
+            if (dmhub.GetSettingValue("graphics:uiblur") ~= false) ~= ctx.transparent and not ctx.rebuilding then
+                ctx.rebuilding = true
+                dmhub.Schedule(0.01, function()
+                    if mod.unloaded or m_sheet ~= element or not element.valid then
+                        return
+                    end
+                    EotwHeroSheet.Show(args)
+                end)
                 return
             end
             if ctx.state ~= "loading" then
