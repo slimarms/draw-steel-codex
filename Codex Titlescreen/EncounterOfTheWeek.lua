@@ -136,6 +136,8 @@ local GUILD_ART = "db897e57-df62-48f0-a241-87add567824c" --Viking Longhouse, Ori
 local GATE_ART = "db5bcf88-00fc-4e0b-89c9-5ddb98d1a772" --Market Streets, Original Day
 CreatorCredit.RegisterArt(GUILD_ART, "czepeku")
 CreatorCredit.RegisterArt(GATE_ART, "czepeku")
+--the hero sheet opens over the Guild's art in town (EotwHeroSheet.lua).
+EncounterOfTheWeek.GUILD_ART = GUILD_ART
 
 --The Danger Rooms' art: the front cover of Draw Steel: Monsters, rendered
 --from the cover PSD with its title text, spine and text shadow hidden, and
@@ -1605,6 +1607,17 @@ end
 --True while the screen is up (not closed, and not hidden for a game load).
 function EncounterOfTheWeek.IsScreenOpen()
     return m_screen ~= nil and m_screen.valid and not m_screen:HasClass("hidden")
+end
+
+--The town screen, for panels that mount over the whole town (the EotW hero
+--sheet), or nil while it is not up. Its data carries stageWidth and
+--stageHeight, its logical size.
+---@return Panel|nil
+function EncounterOfTheWeek.TownScreen()
+    if EncounterOfTheWeek.IsScreenOpen() then
+        return m_screen
+    end
+    return nil
 end
 
 --Extra rows for the titlescreen's Codex menu (CodexTitleBar appends them).
@@ -6443,6 +6456,10 @@ CreateScreen = function(args)
         --here when they left, and replaces it with a live one on return.
         data = {
             loadingUp = false,
+            --the screen's logical size, for panels mounted over it that
+            --need numbers (the EotW hero sheet's Guild backdrop).
+            stageWidth = panelWidth,
+            stageHeight = panelHeight,
         },
 
         beginLoading = function(element)
