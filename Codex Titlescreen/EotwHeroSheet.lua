@@ -89,6 +89,9 @@ local WASH_MIN_GAP = 1
 local FEATURE_FOLD_CHARS = 300
 --About 75 characters a line at the description's font size (locked design).
 local FEATURE_TEXT_MAX_WIDTH = 600
+--From this Font Size up, rows laid out two-up (free strikes, standard
+--actions) go one per row and the features' filters take a line of their own.
+local LARGE_TEXT_SCALE = 1.15
 
 --Frost blur radii in pixels (engine panel `frost`): the plates over the Guild,
 --and the in-game backdrop, which blurs the map and HUD harder so nothing reads.
@@ -433,6 +436,20 @@ local RULES = {
         bgimage = "game-icons/surge.png",
         bgcolor = C.GOLD,
     },
+    --keyboard focus (Tab, the arrow keys): a cream ring
+    {
+        selectors = { "eotwsFocusable", "focus" },
+        borderWidth = 2,
+        borderColor = C.CREAM_LIGHT,
+    },
+    {
+        selectors = { "eotwsShowMore", "focus" },
+        color = C.CREAM_LIGHT,
+    },
+    {
+        selectors = { "eotwsItemName", "focus" },
+        color = C.CREAM_LIGHT,
+    },
     --motion: the cover the sheet opens behind, and the layout's rise
     {
         selectors = { "eotwsOpener" },
@@ -612,6 +629,11 @@ local RULES = {
         hpad = 10,
         vpad = 6,
         rmargin = 6,
+    },
+    {
+        selectors = { "eotwsAbilityRow", "compact", "single" },
+        width = "100%",
+        rmargin = 0,
     },
     {
         selectors = { "eotwsAbilityRow", "hover" },
@@ -1213,13 +1235,60 @@ local RULES = {
     },
 }
 
---The sheet's rules after the hero card's, whose stamina bar the card reuses.
---Built once so the theme's merge cache (keyed by table) is hit every open.
-local SHEET_RULES = {}
-for _,list in ipairs({ EotwHeroCard.rules, RULES }) do
-    for _,rule in ipairs(list) do
-        SHEET_RULES[#SHEET_RULES+1] = rule
+--Font Size (120-140%: grow and wrap). With the icon-rail UI the engine no
+--longer enlarges fonts (it zooms rail windows instead), so the full-screen
+--sheet scales its own text; without it the engine already does, so 1.
+---@return number
+local function FontScale()
+    if dmhub.GetSettingValue("iconrail") ~= true then
+        return 1
     end
+    local scale = ThemeEngine.GetAccessibility().scale or 1
+    if type(scale) ~= "number" or scale <= 0 then
+        return 1
+    end
+    return scale
+end
+
+--The font scale the open sheet was built at (see Text and ScaledRules).
+local m_fontScale = 1
+
+---@param n number
+---@return number
+local function FS(n)
+    return n * m_fontScale
+end
+
+--The sheet's rules after the hero card's, whose stamina bar the card reuses.
+--Built once per font scale so the theme's merge cache (keyed by table) is hit
+--every open: each rule's fontSize is scaled, everything else shared.
+local SHEET_RULES_BY_SCALE = {}
+
+---@param scale number
+---@return table[]
+local function ScaledRules(scale)
+    local key = math.floor(scale * 100 + 0.5)
+    local rules = SHEET_RULES_BY_SCALE[key]
+    if rules ~= nil then
+        return rules
+    end
+    rules = {}
+    for _,list in ipairs({ EotwHeroCard.rules, RULES }) do
+        for _,rule in ipairs(list) do
+            if type(rule.fontSize) == "number" and scale ~= 1 then
+                local copy = {}
+                for k,v in pairs(rule) do
+                    copy[k] = v
+                end
+                copy.fontSize = rule.fontSize * scale
+                rules[#rules+1] = copy
+            else
+                rules[#rules+1] = rule
+            end
+        end
+    end
+    SHEET_RULES_BY_SCALE[key] = rules
+    return rules
 end
 
 --The sheet that is open, if any. Only one at a time: opening another Hero
@@ -1241,6 +1310,10 @@ local function Text(text, classes, args)
     local fields = { classes = all, text = text }
     for k,v in pairs(args or {}) do
         fields[k] = v
+    end
+    --a size set on the label itself grows with Font Size like the rules do
+    if type(fields.fontSize) == "number" then
+        fields.fontSize = FS(fields.fontSize)
     end
     return gui.Label(fields)
 end
@@ -1285,6 +1358,9 @@ local function Block(ctx, args)
     local panel = gui.Panel(args)
     if ctx.frost and not ctx.inGame then
         FrostField(panel).frost = FROST_RADIUS
+        --the plates sit side by side on the bottom layer, so they can share one
+        --blurred copy of the screen (the engine's cheaper frost path)
+        FrostField(panel).frostShared = true
     end
     return panel
 end
@@ -1746,7 +1822,7 @@ local function CardRegion(ctx)
         x = 6,
         interactable = false,
     }
-    local bar = EotwHeroCard.CreateStaminaBar(ctx.charid, { height = 22, fontSize = 13 })
+    local bar = EotwHeroCard.CreateStaminaBar(ctx.charid, { height = 22, fontSize = FS(13) })
     --hovering the bar shows max Stamina's base and sources
     local staminaHover = gui.Panel{
         width = "100%",
@@ -2216,7 +2292,8 @@ end
 local function KitGrid(entries)
     local one = false
     for _,b in ipairs(entries) do
-        if #b.label > KIT_LABEL_TWO_UP_MAX then
+        --bigger text wraps sooner, so the limit shrinks with Font Size
+        if #b.label > math.floor(KIT_LABEL_TWO_UP_MAX / m_fontScale) then
             one = true
         end
     end
@@ -2492,7 +2569,8 @@ local function TreasuresRegion(ctx)
     --"{n} to equip": scrolls the list to the first treasure to equip
     local ctaLabel = Text("", { "eotwsCtaText" })
     local cta = gui.Panel{
-        classes = { "eotwsCta", "collapsed" },
+        classes = { "eotwsFocusable", "eotwsCta", "collapsed" },
+        canFocus = true,
         halign = "right",
         valign = "center",
         data = { tip = "" },
@@ -2568,7 +2646,8 @@ local function TreasuresRegion(ctx)
                     end
                 end
                 right[#right+1] = gui.Panel{
-                    classes = { "eotwsSmallButton", cond(todo, "primary", "plain"), cond(offTip ~= nil, "off", "on") },
+                    classes = { "eotwsFocusable", "eotwsSmallButton", cond(todo, "primary", "plain"), cond(offTip ~= nil, "off", "on") },
+                    canFocus = true,
                     valign = "center",
                     lmargin = 6,
                     hover = function(element)
@@ -2638,7 +2717,8 @@ local function TreasuresRegion(ctx)
                 flow = "horizontal",
                 --the item card hangs off the name, so the buttons and the
                 --No benefit chip keep their own tooltips
-                Text(nameText, { "eotwsItemName", "row" }, {
+                Text(nameText, { "eotwsItemName", "row", "eotwsFocusable" }, {
+                    canFocus = true,
                     hover = function(element)
                         element.tooltip = CardFrame(ItemCard(it, tok), false)
                     end,
@@ -2934,7 +3014,8 @@ end
 local function CloseButton(ctx, onGold)
     local gold = cond(onGold, "onGold", "plain")
     return gui.Panel{
-        classes = { "eotwsButton", "eotwsClose", gold },
+        classes = { "eotwsFocusable", "eotwsButton", "eotwsClose", gold },
+        canFocus = true,
         lmargin = 10,
         width = "auto",
         height = 38,
@@ -2983,7 +3064,8 @@ local function Thumb(ctx, charid, mineEdge, own)
         end
     end
     local thumb = gui.Panel{
-        classes = { "eotwsThumb", cond(mineEdge, "mine", "theirs"), cond(charid == ctx.charid, "current", "other") },
+        classes = { "eotwsFocusable", "eotwsThumb", cond(mineEdge, "mine", "theirs"), cond(charid == ctx.charid, "current", "other") },
+        canFocus = true,
         data = { tip = tip },
         hover = HoverTip,
         click = function()
@@ -3012,7 +3094,8 @@ local function OwnerButton(label, tip, offTip, action)
     end
     children[#children+1] = Text(label, { "eotwsButtonText" }, { valign = "center" })
     return gui.Panel{
-        classes = { "eotwsButton", cond(offTip ~= nil, "off", "on") },
+        classes = { "eotwsFocusable", "eotwsButton", cond(offTip ~= nil, "off", "on") },
+        canFocus = true,
         width = "auto",
         height = 38,
         hpad = 14,
@@ -3595,7 +3678,8 @@ local function Group(key, label, count, note, body)
     body:SetClass("collapsed", collapsed)
     local caret = gui.Panel{ classes = { "eotwsCaret", cond(collapsed, "closed", "open") } }
     local header = gui.Panel{
-        classes = { "eotwsGroupHead" },
+        classes = { "eotwsFocusable", "eotwsGroupHead" },
+        canFocus = true,
         click = function(element)
             audio.FireSoundEvent("Mouse.Click")
             collapsed = not collapsed
@@ -3676,7 +3760,8 @@ local function AbilityRow(item, tok, compact)
         children = tags,
     }
     return gui.Panel{
-        classes = { "eotwsAbilityRow", cond(compact, "compact", "full") },
+        classes = { "eotwsFocusable", "eotwsAbilityRow", cond(compact, "compact", "full"), cond(m_fontScale >= LARGE_TEXT_SCALE, "single", "pair") },
+        canFocus = true,
         hover = function(element)
             local card = AbilityCardContent(item, tok)
             if card ~= nil then
@@ -3704,10 +3789,11 @@ local function AbilitiesContent(d, tok)
         local compact = g.id == "freestrike" or g.id == "standard"
         local rows = {}
         if compact then
-            --two to a row
-            for i = 1, #g.items, 2 do
+            --two to a row (one at large Font Sizes)
+            local perRow = cond(m_fontScale >= LARGE_TEXT_SCALE, 1, 2)
+            for i = 1, #g.items, perRow do
                 local pair = { AbilityRow(g.items[i], tok, true) }
-                if g.items[i + 1] ~= nil then
+                if perRow == 2 and g.items[i + 1] ~= nil then
                     pair[2] = AbilityRow(g.items[i + 1], tok, true)
                 end
                 rows[#rows+1] = gui.Panel{
@@ -3782,7 +3868,8 @@ local function FeatureCard(item)
         children[#children+1] = desc
         if long then
             local toggle
-            toggle = Text("Show more", { "eotwsShowMore" }, {
+            toggle = Text("Show more", { "eotwsShowMore", "eotwsFocusable" }, {
+                canFocus = true,
                 click = function()
                     audio.FireSoundEvent("Mouse.Click")
                     folded = not folded
@@ -3922,13 +4009,14 @@ local function ListsRegion(ctx)
     end
 
     local chips = {}
-    for _,pillar in ipairs(PILLARS) do
+    for i,pillar in ipairs(PILLARS) do
         chips[#chips+1] = gui.Panel{
-            classes = { "eotwsChip", "off" },
+            classes = { "eotwsFocusable", "eotwsChip", "off" },
+            canFocus = true,
             width = "auto",
-            height = 28,
+            height = FS(28),
             hpad = 10,
-            lmargin = 8,
+            lmargin = cond(i == 1 and m_fontScale >= LARGE_TEXT_SCALE, 0, 8),
             borderBox = true,
             valign = "center",
             click = function(element)
@@ -3958,8 +4046,23 @@ local function ListsRegion(ctx)
     }
 
     local featureHead = { Text("Features", { "eotwsHeader" }, { valign = "center" }), featureCount }
-    for _,chip in ipairs(chips) do
-        featureHead[#featureHead+1] = chip
+    local filterLine
+    if m_fontScale >= LARGE_TEXT_SCALE then
+        --large text: the chips and filter box move to their own line
+        filterLine = gui.Panel{
+            width = "100%",
+            height = "auto",
+            vpad = 6,
+            borderBox = true,
+            flow = "horizontal",
+            children = chips,
+        }
+    else
+        for _,chip in ipairs(chips) do
+            featureHead[#featureHead+1] = chip
+        end
+        --an empty stand-in, so the column's children list has no hole
+        filterLine = gui.Panel{ classes = { "collapsed" } }
     end
 
     local function Fill()
@@ -3999,6 +4102,7 @@ local function ListsRegion(ctx)
             lmargin = 20,
             flow = "vertical",
             Underlined(featureHead),
+            filterLine,
             featureBody,
         },
     })
@@ -4051,6 +4155,8 @@ local function Backdrop(ctx)
         }
         if ctx.frost then
             FrostField(backdrop).frost = FROST_RADIUS_BACKDROP
+            --the backdrop is the bottom layer, so it can use the shared blur
+            FrostField(backdrop).frostShared = true
         end
         return backdrop
     end
@@ -4093,6 +4199,71 @@ local function FindHost(ctx)
         ctx.stageHeight = host.data.stageHeight or 1080
     end
     return host
+end
+
+--How often the sheet checks the arrow keys while one of its controls has
+--keyboard focus.
+local ARROW_POLL_SECONDS = 0.05
+local ARROW_KEYS = { UpArrow = -1, LeftArrow = -1, DownArrow = 1, RightArrow = 1 }
+
+--Arrow-key focus: while a sheet control holds keyboard focus (Tab gets there;
+--Enter clicks it), the arrow keys move it to the previous or next control in
+--reading order. A zero-size child of the sheet that polls the keys.
+---@param getRoot fun(): Panel|nil
+---@return Panel
+local function ArrowNavigator(getRoot)
+    local down = {}
+    return gui.Panel{
+        floating = true,
+        width = 1,
+        height = 1,
+        interactable = false,
+        thinkTime = ARROW_POLL_SECONDS,
+        think = function(element)
+            local step = 0
+            for key,dir in pairs(ARROW_KEYS) do
+                local pressed = dmhub.KeyPressed(key) == true
+                if pressed and not down[key] then
+                    step = dir
+                end
+                down[key] = pressed
+            end
+            if step == 0 then
+                return
+            end
+            local root = getRoot()
+            if root == nil or not root.valid then
+                return
+            end
+            local list = root:GetChildrenWithClassRecursive("eotwsFocusable")
+            local current = nil
+            for i,p in ipairs(list) do
+                if p.hasFocus then
+                    current = i
+                end
+            end
+            if current == nil then
+                return
+            end
+            --skip anything folded away (in a collapsed group or section)
+            local function Hidden(p)
+                while p ~= nil and p ~= root do
+                    if p:HasClass("collapsed") then
+                        return true
+                    end
+                    p = p.parent
+                end
+                return false
+            end
+            local i = current + step
+            while list[i] ~= nil and Hidden(list[i]) do
+                i = i + step
+            end
+            if list[i] ~= nil then
+                list[i].hasFocus = true
+            end
+        end,
+    }
 end
 
 --Whether the sheet draws see-through: Transparent UI is on and the colour
@@ -4150,6 +4321,8 @@ function EotwHeroSheet.Show(args)
         shimmerLit = false,
         --the Transparent UI setting; off means solid plates and backdrop
         transparent = SeeThrough(),
+        --the Font Size scale the sheet is built at; a change rebuilds it
+        fontScale = FontScale(),
         frost = false,
         --set once a Transparent UI flip has scheduled the rebuild
         rebuilding = false,
@@ -4297,6 +4470,7 @@ function EotwHeroSheet.Show(args)
     end
 
     ctx.frost = ctx.transparent and FrostSupported()
+    m_fontScale = ctx.fontScale
 
     local host = FindHost(ctx)
     --the builder opens on the same host when the sheet hands over to it
@@ -4362,7 +4536,7 @@ function EotwHeroSheet.Show(args)
         --reacts while it is open.
         bgimage = "panels/square.png",
         bgcolor = "#00000000",
-        styles = ThemeEngine.MergeStyles(SHEET_RULES),
+        styles = ThemeEngine.MergeStyles(ScaledRules(ctx.fontScale)),
 
         captureEscape = true,
         --EXIT_DIALOG: roll dialogs, modals, popups and dropdowns above it
@@ -4387,12 +4561,13 @@ function EotwHeroSheet.Show(args)
                 element:DestroySelf()
                 return
             end
-            if SeeThrough() ~= ctx.transparent and not ctx.rebuilding then
+            if (SeeThrough() ~= ctx.transparent or FontScale() ~= ctx.fontScale) and not ctx.rebuilding then
                 ctx.rebuilding = true
                 dmhub.Schedule(0.01, function()
                     if mod.unloaded or m_sheet ~= element or not element.valid then
                         return
                     end
+                    args.switching = true
                     EotwHeroSheet.Show(args)
                 end)
                 return
@@ -4426,6 +4601,7 @@ function EotwHeroSheet.Show(args)
     if opener ~= nil then
         root:AddChild(opener)
     end
+    root:AddChild(ArrowNavigator(function() return root end))
 
     host:AddChild(root)
     m_sheet = root
