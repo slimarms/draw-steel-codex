@@ -11,6 +11,7 @@ local mod = dmhub.GetModLoading()
 --class: both hide the AI's "Waiting for..." banner, which EotW players rely on.
 
 ---@class EotwHeroSheet
+---@field debugNeededLine string|nil test switch: shows this line on the gold you're-needed bar in a game
 EotwHeroSheet = {}
 
 --The fixed dark skin (EotW does not follow colour schemes yet): the
@@ -58,7 +59,6 @@ local LEFT_GAP = 14
 local CARD_HEIGHT = 520
 local MAIN_GAP = 16
 local TOPBAR_HEIGHT = 60
-local STATS_HEIGHT = 218
 
 --The plate's inner width: the plate is 10px in from the card on each side and
 --pads 14px inside. The XP bar's hatch and notch are placed in pixels from it.
@@ -79,6 +79,8 @@ local MAX_TITLES = 5
 local LOAD_TIMEOUT = 15
 --One half-cycle of the skeleton's shimmer.
 local SHIMMER_SECONDS = 0.7
+--How long a stat equipping just changed stays gold before it settles.
+local PREVIEW_HOLD_SECONDS = 1.5
 
 --Frost blur radii in pixels (engine panel `frost`): the plates over the Guild,
 --and the in-game backdrop, which blurs the map and HUD harder so nothing reads.
@@ -423,6 +425,285 @@ local RULES = {
         bgimage = "game-icons/surge.png",
         bgcolor = C.GOLD,
     },
+    --top bar
+    {
+        selectors = { "eotwsTopBar" },
+        bgimage = "panels/square.png",
+        bgcolor = C.TOPBAR,
+        cornerRadius = 10,
+    },
+    --you're needed: the bar itself turns gold, so nothing below it moves
+    {
+        selectors = { "eotwsTopBar", "needed" },
+        bgcolor = "#ffd66bf2",
+    },
+    {
+        selectors = { "eotwsNeededText" },
+        color = C.INK,
+        fontSize = 17,
+        bold = true,
+    },
+    {
+        selectors = { "eotwsSwitchLabel" },
+        color = C.MUTED,
+        fontSize = 11,
+        bold = true,
+        uppercase = true,
+    },
+    {
+        selectors = { "eotwsSwitchSep" },
+        width = 1,
+        height = 44,
+        hmargin = 6,
+        valign = "center",
+        bgimage = "panels/square.png",
+        bgcolor = C.BORDER,
+    },
+    {
+        selectors = { "eotwsThumb" },
+        width = 40,
+        height = 56,
+        lmargin = 8,
+        valign = "center",
+        bgimage = "panels/square.png",
+        bgcolor = "#151515ff",
+        borderWidth = 1,
+        borderColor = "#000000ff",
+        cornerRadius = 6,
+    },
+    {
+        selectors = { "eotwsThumb", "mine" },
+        borderWidth = 2,
+        borderColor = "#6fa8ffcc",
+    },
+    {
+        selectors = { "eotwsThumb", "current" },
+        borderWidth = 2,
+        borderColor = C.CREAM_LIGHT,
+    },
+    {
+        selectors = { "eotwsThumb", "hover" },
+        brightness = 1.15,
+    },
+    {
+        selectors = { "eotwsButtonText" },
+        color = C.CREAM,
+        fontSize = 14,
+    },
+    {
+        selectors = { "eotwsButton", "off" },
+        opacity = 0.45,
+    },
+    {
+        selectors = { "eotwsLock" },
+        width = 10,
+        height = 12,
+        rmargin = 7,
+        valign = "center",
+        bgimage = "phosphor/lock-fill.png",
+        bgcolor = C.CREAM,
+    },
+    {
+        selectors = { "eotwsCloseText" },
+        color = C.CREAM,
+        fontSize = 14,
+    },
+    {
+        selectors = { "eotwsCloseText", "onGold" },
+        color = C.GOLD,
+    },
+    {
+        selectors = { "eotwsClose", "onGold" },
+        bgcolor = C.INK,
+        borderColor = C.INK,
+    },
+    {
+        selectors = { "eotwsKbd" },
+        width = "auto",
+        height = "auto",
+        lmargin = 8,
+        hpad = 5,
+        borderBox = true,
+        valign = "center",
+        bgimage = "panels/square.png",
+        bgcolor = "#00000000",
+        borderWidth = 1,
+        borderColor = C.BORDER,
+        cornerRadius = 4,
+    },
+    {
+        selectors = { "eotwsKbd", "onGold" },
+        borderColor = "#ffd66b66",
+    },
+    {
+        selectors = { "eotwsKbdText" },
+        color = C.MUTED,
+        fontSize = 11,
+    },
+    {
+        selectors = { "eotwsKbdText", "onGold" },
+        color = C.GOLD,
+    },
+    {
+        selectors = { "eotwsStateChip" },
+        width = "auto",
+        height = "auto",
+        lmargin = 10,
+        hpad = 14,
+        vpad = 5,
+        borderBox = true,
+        valign = "center",
+        bgimage = "panels/square.png",
+        bgcolor = "#bc9b7b24",
+        borderWidth = 1,
+        borderColor = "#bc9b7b99",
+        cornerRadius = 12,
+    },
+    {
+        selectors = { "eotwsStateChipText" },
+        color = C.CREAM_LIGHT,
+        fontSize = 14,
+    },
+    {
+        selectors = { "eotwsStateChipSmall" },
+        color = C.MUTED,
+        fontSize = 11.5,
+    },
+    {
+        selectors = { "eotwsOwnerChip" },
+        width = "auto",
+        height = "auto",
+        lmargin = 10,
+        hpad = 10,
+        vpad = 4,
+        borderBox = true,
+        valign = "center",
+        bgimage = "panels/square.png",
+        bgcolor = "#00000000",
+        borderWidth = 1,
+        borderColor = "#ffffff24",
+        cornerRadius = 6,
+    },
+    {
+        selectors = { "eotwsOwnerChipText" },
+        color = C.CREAM,
+        fontSize = 13.5,
+    },
+    --stats band
+    {
+        selectors = { "eotwsTile" },
+        width = "20%-6",
+        height = "auto",
+        vpad = 6,
+        borderBox = true,
+        flow = "vertical",
+        bgimage = "panels/square.png",
+        bgcolor = "#00000038",
+        borderWidth = 1,
+        borderColor = C.BORDER,
+        cornerRadius = 8,
+    },
+    {
+        selectors = { "eotwsTileLabel" },
+        color = C.TAN,
+        fontSize = 11.5,
+        bold = true,
+        uppercase = true,
+        halign = "center",
+    },
+    {
+        selectors = { "eotwsTileValue" },
+        color = C.CREAM_LIGHT,
+        fontSize = 30,
+        bold = true,
+        halign = "center",
+    },
+    {
+        selectors = { "eotwsLines" },
+        width = "45%-26",
+        height = "auto",
+        lmargin = 26,
+        lpad = 24,
+        borderBox = true,
+        valign = "center",
+        flow = "vertical",
+        borderColor = "#ffffff14",
+        border = { x1 = 1, x2 = 0, y1 = 0, y2 = 0 },
+    },
+    {
+        selectors = { "eotwsStatLabel" },
+        color = C.TAN,
+        fontSize = 11.5,
+        bold = true,
+        uppercase = true,
+    },
+    {
+        selectors = { "eotwsStatValue" },
+        color = C.CREAM_LIGHT,
+        fontSize = 21,
+        bold = true,
+        lmargin = 8,
+        valign = "center",
+    },
+    {
+        selectors = { "eotwsStatValue", "small" },
+        fontSize = 18,
+    },
+    --a stat an Equip / Unequip hover (or a change just made) is about to move
+    {
+        selectors = { "eotwsStatValue", "preview" },
+        color = C.GOLD,
+    },
+    {
+        selectors = { "eotwsTileValue", "preview" },
+        color = C.GOLD,
+    },
+    {
+        selectors = { "eotwsTierLabel" },
+        color = C.MUTED,
+        fontSize = 14,
+    },
+    {
+        selectors = { "eotwsMovement" },
+        color = C.CREAM,
+        fontSize = 14,
+    },
+    {
+        selectors = { "eotwsPotency" },
+        hpad = 14,
+        vpad = 3,
+        borderBox = true,
+        bgimage = "panels/square.png",
+        bgcolor = "#00000000",
+        borderWidth = 1,
+        borderColor = "#bc9b7b59",
+        cornerRadius = 18,
+    },
+    {
+        selectors = { "eotwsWordsCol" },
+        height = "auto",
+        flow = "vertical",
+    },
+    {
+        selectors = { "eotwsWordsCol", "rest" },
+        lpad = 16,
+        lmargin = 2,
+        borderBox = true,
+        borderColor = "#ffffff14",
+        border = { x1 = 1, x2 = 0, y1 = 0, y2 = 0 },
+    },
+    {
+        selectors = { "eotwsWords" },
+        color = C.CREAM,
+        fontSize = 14,
+    },
+    {
+        selectors = { "eotwsSkillGroup" },
+        color = C.TAN,
+        fontSize = 11.5,
+        bold = true,
+        uppercase = true,
+    },
     --kit card
     {
         selectors = { "eotwsKitName" },
@@ -724,6 +1005,34 @@ local function Hairline(height)
         bgcolor = C.HAIRLINE,
         vmargin = 9,
     }
+end
+
+--The hover on a stat: its base, then one line per source (signed 2026-10-10:
+--"Base 5" / "Panther kit +1"). Nothing when the stat has neither.
+---@param s table|nil a Sources table { base, sources = { {name, value} } }
+---@return string
+local function SourcesTip(s)
+    if s == nil then
+        return ""
+    end
+    local lines = {}
+    if s.base ~= nil then
+        lines[#lines+1] = string.format("Base %s", tostring(s.base))
+    end
+    for _,src in ipairs(s.sources or {}) do
+        lines[#lines+1] = string.format("%s %s", src.name or "", src.value or "")
+    end
+    return table.concat(lines, "\n")
+end
+
+---@param n number|nil
+---@return string
+local function SignedText(n)
+    n = tonumber(n) or 0
+    if n >= 0 then
+        return string.format("+%d", n)
+    end
+    return string.format("%d", n)
 end
 
 --- the card (left column, top) -------------------------------------------------
@@ -1048,6 +1357,19 @@ local function CardRegion(ctx)
         interactable = false,
     }
     local bar = EotwHeroCard.CreateStaminaBar(ctx.charid, { height = 22, fontSize = 13 })
+    --hovering the bar shows max Stamina's base and sources
+    local staminaHover = gui.Panel{
+        width = "100%",
+        height = "auto",
+        flow = "none",
+        --a clear background so the mouse finds it (the bar itself ignores it)
+        bgimage = "panels/square.png",
+        bgcolor = "#00000000",
+        data = { tip = "" },
+        hover = HoverTip,
+        bar,
+        statusIcon,
+    }
     local noteLeft = Text("", { "eotwsPlateText", "eotwsNote" })
     local noteRight = Text("", { "eotwsPlateText", "eotwsNote" }, { halign = "right" })
     local staminaBlock = gui.Panel{
@@ -1055,13 +1377,7 @@ local function CardRegion(ctx)
         height = "auto",
         tmargin = 9,
         flow = "vertical",
-        gui.Panel{
-            width = "100%",
-            height = "auto",
-            flow = "none",
-            bar,
-            statusIcon,
-        },
+        staminaHover,
         gui.Panel{
             width = "100%",
             height = "auto",
@@ -1272,13 +1588,24 @@ local function CardRegion(ctx)
             statusIcon.bgimage = STATUS_ICONS[s.state] or STATUS_ICONS.healthy
         end
 
+        --the stat hovers (base + sources) come from the full read, which the
+        --live refresh does not repeat
+        local stats = (ctx.data ~= nil and ctx.data.stats) or {}
+        staminaHover.data.tip = SourcesTip(stats.maxStamina)
         local r = d.recoveries
         if r ~= nil then
             ringLabel.text = tostring(r.current)
             ring:SetClass("empty", r.current <= 0)
             local tip = string.format("Each Recovery regains %d Stamina.", r.value)
-            ring.data.tip = tip
-            recoveriesCell.data.tip = tip
+            local function WithSources(s)
+                local more = SourcesTip(s)
+                if more == "" then
+                    return tip
+                end
+                return tip .. "\n\n" .. more
+            end
+            ring.data.tip = WithSources(stats.recoveries)
+            recoveriesCell.data.tip = WithSources(stats.recoveryValue)
             recoveriesSub.text = string.format("of %d %s +%d each", r.max, MIDDOT, r.value)
         end
 
@@ -1385,6 +1712,10 @@ local function CardRegion(ctx)
             end
             local d = EotwHeroSheet.Data(ctx.Token(), LIVE_SECTIONS)
             if d ~= nil then
+                --whose Hero it is was settled by the full read (see ReadData)
+                if ctx.data ~= nil then
+                    d.mine = ctx.data.mine
+                end
                 Paint(d)
             end
         end,
@@ -1759,7 +2090,9 @@ local function TreasuresRegion(ctx)
         local t = d.treasures
         local tok = ctx.Token()
         local dead = d.stamina ~= nil and d.stamina.state == "dead"
-        local ownerActs = d.mine and not dead and ctx.fallen == nil
+        --equipping happens in town only (James 2026-10-10): a change in a game
+        --would land on the game's copy of the Hero, not the roster's
+        local ownerActs = d.mine and not dead and ctx.fallen == nil and not ctx.inGame
         local away = ctx.AwayParty()
         local awayTip = "Not while away with a party."
         todoRow = nil
@@ -1804,20 +2137,30 @@ local function TreasuresRegion(ctx)
                         if tok == nil then
                             return
                         end
+                        local changes = EotwHeroSheet.EquipPreview(tok, it.itemid, cond(it.equipped, it.slot, nil))
+                        element.data.changes = changes
                         local lines = {}
-                        for _,c in ipairs(EotwHeroSheet.EquipPreview(tok, it.itemid, cond(it.equipped, it.slot, nil))) do
+                        for _,c in ipairs(changes) do
                             lines[#lines+1] = string.format("%s changes %s %d -> %d.",
                                 cond(it.equipped, "Unequipping", "Equipping"), c.label, c.from, c.to)
                         end
                         if #lines > 0 then
                             gui.Tooltip(table.concat(lines, "\n"))(element)
                         end
+                        --the stats band shows the new values in gold meanwhile
+                        ctx.Preview(changes)
                     end,
+                    dehover = function(element)
+                        ctx.Preview(nil)
+                    end,
+                    data = { changes = nil },
                     click = function(element)
                         if offTip ~= nil or tok == nil then
                             audio.FireSoundEvent("UI.Error_Generic")
                             return
                         end
+                        --the changed values stay gold a moment after they land
+                        ctx.HoldPreview(element.data.changes)
                         if it.equipped then
                             audio.FireSoundEvent("UI.Inv_Grab")
                             EotwHeroSheet.Unequip(tok, it.slot)
@@ -1984,16 +2327,166 @@ end
 
 --- top bar (main column) ---------------------------------------------------------
 
----@param ctx table
----@return Panel
-local function TopBarRegion(ctx)
-    local thumbs = {}
-    for i = 1, 6 do
-        thumbs[#thumbs+1] = Skel(40, 56, { lmargin = cond(i == 1, 10, 8), cornerRadius = 6 })
-    end
+--How often the top bar re-asks whether the player is needed (in a game).
+--Triggers expire by time without any write, so this is a poll.
+local SIGNAL_POLL_SECONDS = 0.5
 
-    local closeButton = gui.Panel{
-        classes = { "eotwsButton" },
+--Has this Hero a trigger waiting to be used (non-hostile, not dismissed)?
+--The hero card's test, plus the dismissed check GetAvailableTriggers can skip.
+---@param p creature
+---@return boolean
+local function HasTrigger(p)
+    for _,t in pairs(p:GetAvailableTriggers(true) or {}) do
+        if not t.hostile and not t.dismissed and not t.triggered then
+            return true
+        end
+    end
+    return false
+end
+
+--Has this Hero an end-of-turn saving throw waiting (the card is up, or it was
+--accepted and is still rolling)?
+---@param p creature
+---@return boolean
+local function HasSave(p)
+    for _,t in pairs(p:GetAvailableTriggers(true) or {}) do
+        local inv = t.invocation
+        if not t.dismissed and inv ~= nil and inv ~= false and inv:try_get("standardAbility") == "End Turn Saving Throw" then
+            return true
+        end
+    end
+    for _,e in pairs(p:try_get("pendingAIActivityReactions", {})) do
+        if type(e) == "table" and e.activityId == "end-turn-save" and e.state ~= "completed" then
+            return true
+        end
+    end
+    return false
+end
+
+--Is the game waiting on this Hero for a roll: a roll request not yet done,
+--or the montage stage's test in this Hero's hands?
+---@param charid string
+---@return boolean
+local function HasRoll(charid)
+    for _,req in pairs(dmhub.GetPlayerActionRequests() or {}) do
+        local info = req.info
+        if info ~= nil and info.typeName == "RollRequest" and info.tokens ~= nil then
+            local entry = info.tokens[charid]
+            if entry ~= nil and entry.status ~= "complete" then
+                return true
+            end
+        end
+    end
+    local montage = rawget(_G, "EncounterMontage")
+    if montage ~= nil then
+        local turn = nil
+        pcall(function() turn = montage.GetState().turn end)
+        if type(turn) == "table" then
+            if turn.status == "rolling" and turn.heroid == charid then
+                return true
+            elseif turn.status == "assisting" and turn.assist ~= nil and turn.assist.heroid == charid then
+                return true
+            elseif turn.status == "pardon" and turn.pardon ~= nil and turn.pardon.heroid == charid then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+--Where the encounter's story is (beat, montage round, narrative section): a
+--change while the sheet is open means the story moved on.
+---@return string
+local function StorySignature()
+    local sig = ""
+    pcall(function()
+        local doc = EncounterMontage.GetDoc().data
+        local m = EncounterMontage.GetState()
+        local n = rawget(_G, "EncounterNarrative") ~= nil and EncounterNarrative.GetState() or nil
+        sig = string.format("%s|%s:%s|%s:%s", tostring(doc.beat),
+            tostring(m and m.beatIndex), tostring(m and m.round),
+            tostring(n and n.beatIndex), tostring(n and n.sectionIndex))
+    end)
+    return sig
+end
+
+--Can the Heroes' side claim the next turn, with one of this player's Heroes
+--able to take it?
+---@param charid string
+---@return boolean
+local function CanAct(charid)
+    local result = false
+    pcall(function()
+        local q = dmhub.initiativeQueue
+        if q == nil or q.hidden or not q:ChoosingTurn() or not q:IsPlayersTurn() then
+            return
+        end
+        local tok = dmhub.GetCharacterById(charid)
+        local id = tok ~= nil and InitiativeQueue.GetInitiativeId(tok) or nil
+        result = id ~= nil and InitiativeQueue.CanClaimTurn(id, { canControlInitiative = false })
+    end)
+    return result
+end
+
+--Why the player is needed right now, as the top bar's line (T9-T12, N7), or
+--nil. Checked across this player's Heroes in the encounter, the shown Hero
+--first; the story only counts once it moved since the sheet opened.
+---@param ctx table
+---@return string|nil
+local function NeededLine(ctx)
+    if not ctx.inGame or ctx.fallen ~= nil then
+        return nil
+    end
+    --for testing the bar's look: set EotwHeroSheet.debugNeededLine to a line
+    if type(EotwHeroSheet.debugNeededLine) == "string" then
+        return EotwHeroSheet.debugNeededLine
+    end
+    local mine = {}
+    for _,entry in ipairs(EotwHeroCard.CollectHeroes()) do
+        if entry.mine then
+            if entry.charid == ctx.charid then
+                table.insert(mine, 1, entry)
+            else
+                mine[#mine+1] = entry
+            end
+        end
+    end
+    for _,entry in ipairs(mine) do
+        local tok = dmhub.GetCharacterById(entry.charid)
+        local p = tok ~= nil and tok.properties or nil
+        if p ~= nil then
+            local trigger, save = false, false
+            pcall(function() trigger = HasTrigger(p) end)
+            pcall(function() save = HasSave(p) end)
+            if trigger then
+                return string.format("%s has a trigger waiting", entry.name)
+            elseif save then
+                return string.format("%s has a save to make", entry.name)
+            elseif HasRoll(entry.charid) then
+                return string.format("%s has a roll to make", entry.name)
+            end
+        end
+    end
+    if ctx.storySignature ~= nil and StorySignature() ~= ctx.storySignature then
+        return "The story continues"
+    end
+    for _,entry in ipairs(mine) do
+        if CanAct(entry.charid) then
+            return "The Heroes can act"
+        end
+    end
+    return nil
+end
+
+--The Close button: Close [Esc]; ink on gold on the you're-needed bar.
+---@param ctx table
+---@param onGold? boolean
+---@return Panel
+local function CloseButton(ctx, onGold)
+    local gold = cond(onGold, "onGold", "plain")
+    return gui.Panel{
+        classes = { "eotwsButton", "eotwsClose", gold },
+        lmargin = 10,
         width = "auto",
         height = 38,
         hpad = 14,
@@ -2002,40 +2495,262 @@ local function TopBarRegion(ctx)
         valign = "center",
         flow = "horizontal",
         click = function()
+            audio.FireSoundEvent("UI.WindowClose")
             ctx.Close()
         end,
-        Text("Close", nil, { valign = "center" }),
+        Text("Close", { "eotwsCloseText", gold }, { valign = "center" }),
         gui.Panel{
-            width = "auto",
-            height = "auto",
-            lmargin = 8,
-            hpad = 5,
-            borderBox = true,
-            valign = "center",
-            borderWidth = 1,
-            borderColor = C.BORDER,
-            cornerRadius = 4,
-            Text("Esc", { "muted" }, { fontSize = 11 }),
+            classes = { "eotwsKbd", gold },
+            Text("Esc", { "eotwsKbdText", gold }),
         },
     }
+end
+
+--One Hero's thumbnail in the switcher: their art, blue edge for your own in
+--a shared list, cream outline for the Hero on show; click to switch.
+---@param ctx table
+---@param charid string
+---@param mineEdge boolean
+---@param own boolean the player's own Hero (tooltip "{Hero}, Level {n}")
+---@return Panel|nil
+local function Thumb(ctx, charid, mineEdge, own)
+    local tok = dmhub.GetCharacterById(charid)
+    if tok == nil then
+        return nil
+    end
+    local name = EotwHeroCard.HeroDisplayName(tok)
+    local tip = name
+    local owner = nil
+    pcall(function() owner = tok.ownerId end)
+    if own then
+        local level = nil
+        pcall(function() level = tok.properties:CharacterLevel() end)
+        tip = string.format("%s, Level %s", name, tostring(level or 1))
+    elseif owner ~= nil and owner ~= "" then
+        local player = nil
+        pcall(function() player = dmhub.GetDisplayName(owner) end)
+        if player ~= nil and player ~= "" then
+            tip = string.format("%s, %s's Hero", name, player)
+        end
+    end
+    local thumb = gui.Panel{
+        classes = { "eotwsThumb", cond(mineEdge, "mine", "theirs"), cond(charid == ctx.charid, "current", "other") },
+        data = { tip = tip },
+        hover = HoverTip,
+        click = function()
+            if charid == ctx.charid then
+                return
+            end
+            audio.FireSoundEvent("Mouse.Click")
+            EotwHeroSheet.Show{ charid = charid, context = ctx.context }
+        end,
+    }
+    EotwHeroCard.ApplyPortrait(thumb, tok, 40 / 56)
+    return thumb
+end
+
+--A button in the owner controls; off (with a lock and the reason) while the
+--Hero is away with a party.
+---@param label string
+---@param tip string|nil
+---@param offTip string|nil
+---@param action function
+---@return Panel
+local function OwnerButton(label, tip, offTip, action)
+    local children = {}
+    if offTip ~= nil then
+        children[1] = gui.Panel{ classes = { "eotwsLock" } }
+    end
+    children[#children+1] = Text(label, { "eotwsButtonText" }, { valign = "center" })
+    return gui.Panel{
+        classes = { "eotwsButton", cond(offTip ~= nil, "off", "on") },
+        width = "auto",
+        height = 38,
+        hpad = 14,
+        lmargin = 10,
+        borderBox = true,
+        valign = "center",
+        flow = "horizontal",
+        data = { tip = offTip or tip },
+        hover = HoverTip,
+        click = function()
+            if offTip ~= nil then
+                audio.FireSoundEvent("UI.Error_Generic")
+                return
+            end
+            audio.FireSoundEvent("Mouse.Click")
+            action()
+        end,
+        children = children,
+    }
+end
+
+--The top bar's normal content: the switcher, state chips, owner controls or
+--the owner chip, and Close. A fallen Hero gets only "The Graveyard" + Close.
+---@param ctx table
+---@return Panel[]
+local function TopBarContent(ctx)
+    if ctx.fallen ~= nil then
+        return {
+            Text("The Graveyard", { "eotwsSwitchLabel" }, { valign = "center" }),
+            CloseButton(ctx),
+        }
+    end
+
+    local d = ctx.data or {}
+    local mine = d.mine == true
+    local children = {}
+
+    --the switcher: your roster in town, this encounter's Heroes in a game
+    --(yours first); a teammate's Hero in town shows "Your party"
+    local label
+    local ours, theirs = {}, {}
+    if ctx.inGame then
+        label = "This encounter"
+        for _,entry in ipairs(EotwHeroCard.CollectHeroes()) do
+            if entry.mine then
+                ours[#ours+1] = Thumb(ctx, entry.charid, true, true)
+            else
+                theirs[#theirs+1] = Thumb(ctx, entry.charid, false, false)
+            end
+        end
+    elseif mine and rawget(_G, "EotwRoster") ~= nil then
+        label = "Your roster"
+        for _,hero in ipairs(EotwRoster.GetHeroes() or {}) do
+            ours[#ours+1] = Thumb(ctx, hero.heroid, false, true)
+        end
+    else
+        label = "Your party"
+        theirs[1] = Thumb(ctx, ctx.charid, false, false)
+    end
+    children[#children+1] = Text(label, { "eotwsSwitchLabel" }, { valign = "center", rmargin = 4 })
+    for _,t in ipairs(ours) do
+        children[#children+1] = t
+    end
+    if #ours > 0 and #theirs > 0 then
+        children[#children+1] = gui.Panel{ classes = { "eotwsSwitchSep" } }
+    end
+    for _,t in ipairs(theirs) do
+        children[#children+1] = t
+    end
+
+    --right-hand side, packed against Close
+    local right = {}
+    local away = ctx.AwayParty()
+    if away ~= nil then
+        right[#right+1] = gui.Panel{
+            classes = { "eotwsStateChip" },
+            flow = "vertical",
+            Text(string.format("Away: %s", away), { "eotwsStateChipText" }),
+            Text("Changes are off until the party ends.", { "eotwsStateChipSmall" }),
+        }
+    end
+    local practice = false
+    if ctx.inGame and rawget(_G, "EncounterOfTheWeekGame") ~= nil then
+        pcall(function() practice = EncounterOfTheWeekGame.IsPracticeGame() end)
+    end
+    if practice then
+        right[#right+1] = gui.Panel{
+            classes = { "eotwsStateChip" },
+            Text("Danger Rooms: practice only", { "eotwsStateChipText" }),
+        }
+    end
+
+    local dead = d.stamina ~= nil and d.stamina.state == "dead"
+    if mine and not dead and not ctx.inGame and ctx.state == "ready" then
+        --the town is where the Hero changes: appearance always, the full
+        --builder only until the Hero's first encounter is won
+        local offTip = cond(away ~= nil, "Not while away with a party.", nil)
+        local heroid = ctx.charid
+        right[#right+1] = OwnerButton("Change Appearance", nil, offTip, function()
+            local host = ctx.host
+            local tok = ctx.Token()
+            ctx.Close()
+            if tok ~= nil and host ~= nil and host.valid then
+                local function Save()
+                    if rawget(_G, "EotwRoster") ~= nil then
+                        EotwRoster.PushHero(heroid)
+                    end
+                end
+                EotwBuilder.Open{
+                    host = host,
+                    token = tok,
+                    title = "Change Appearance",
+                    step = "appearance",
+                    only = "appearance",
+                    onFinish = Save,
+                    onClose = Save,
+                }
+            end
+        end)
+        local hero = rawget(_G, "EotwRoster") ~= nil and EotwRoster.FindHero(heroid) or nil
+        if hero ~= nil and #(hero.completed or {}) == 0 then
+            right[#right+1] = OwnerButton("Edit in Builder", "Change any choice until this Hero wins an encounter.", offTip, function()
+                local host = ctx.host
+                ctx.Close()
+                EotwRoster.EditHero(heroid, host)
+            end)
+        end
+    elseif not mine and ctx.state == "ready" and d.ownerName ~= nil then
+        right[#right+1] = gui.Panel{
+            classes = { "eotwsOwnerChip" },
+            Text(string.format("%s's Hero", d.ownerName), { "eotwsOwnerChipText" }),
+        }
+    end
+    right[#right+1] = CloseButton(ctx)
+
+    children[#children+1] = gui.Panel{
+        width = "auto",
+        height = "100%",
+        halign = "right",
+        flow = "horizontal",
+        children = right,
+    }
+    return children
+end
+
+---@param ctx table
+---@return Panel
+local function TopBarRegion(ctx)
+    local thumbs = {}
+    for i = 1, 6 do
+        thumbs[#thumbs+1] = Skel(40, 56, { lmargin = cond(i == 1, 10, 8), cornerRadius = 6, valign = "center" })
+    end
+
+    --what the bar shows now, so it is rebuilt only when that changes
+    local shownSignature = nil
+
+    local function Rebuild(element)
+        if ctx.state ~= "ready" then
+            return
+        end
+        local needed = NeededLine(ctx)
+        local away = ctx.AwayParty()
+        local sig = string.format("%s|%s|%s", tostring(needed), tostring(away), tostring(ctx.data ~= nil and ctx.data.mine))
+        if sig == shownSignature then
+            return
+        end
+        shownSignature = sig
+        element:SetClass("needed", needed ~= nil)
+        if needed ~= nil then
+            --the bar turns gold in place: nothing below it moves
+            element.children = {
+                Text(needed, { "eotwsNeededText" }, { valign = "center", width = "100% available" }),
+                CloseButton(ctx, true),
+            }
+        else
+            element.children = TopBarContent(ctx)
+        end
+    end
 
     return gui.Panel{
+        classes = { "eotwsTopBar" },
         width = "100%",
         height = TOPBAR_HEIGHT,
         hpad = 12,
         borderBox = true,
         flow = "horizontal",
-        bgimage = "panels/square.png",
-        bgcolor = C.TOPBAR,
-        cornerRadius = 10,
-        --the switcher's label names whose Heroes it cycles: the player's
-        --roster in town, the Heroes in this encounter in a game.
-        Text(cond(ctx.inGame, "This encounter", "Your roster"), { "muted" }, {
-            fontSize = 11,
-            bold = true,
-            uppercase = true,
-            valign = "center",
-        }),
+        Text(cond(ctx.inGame, "This encounter", "Your roster"), { "eotwsSwitchLabel" }, { valign = "center" }),
         gui.Panel{
             width = "auto",
             height = "100%",
@@ -2043,51 +2758,189 @@ local function TopBarRegion(ctx)
             valign = "center",
             children = thumbs,
         },
-        closeButton,
+        CloseButton(ctx),
+
+        eotwsState = function(element, state)
+            if state == "ready" then
+                --the story as it stands when the sheet opens; a change after
+                --this is "The story continues"
+                if ctx.inGame and ctx.storySignature == nil then
+                    ctx.storySignature = StorySignature()
+                end
+                shownSignature = nil
+                Rebuild(element)
+            end
+        end,
+        eotwsData = function(element)
+            shownSignature = nil
+            Rebuild(element)
+        end,
+        thinkTime = SIGNAL_POLL_SECONDS,
+        think = function(element)
+            Rebuild(element)
+        end,
     }
 end
 
 --- stats band (main column) ------------------------------------------------------
 
----@param ctx table
+--A stat's number, which turns gold while hovering an Equip / Unequip button
+--previews a new value for it (`key` matches EquipPreview's labels), and holds
+--gold for a moment after the change lands.
+---@param key string
+---@param text string
+---@param classes string[]
+---@param format? fun(n: number): string how a previewed number reads
 ---@return Panel
-local function StatsRegion(ctx)
+local function StatValue(key, text, classes, format)
+    return Text(text, classes, {
+        data = { key = key, text = text },
+        eotwsPreview = function(element, changes)
+            for _,c in ipairs(changes or {}) do
+                if c.label == element.data.key then
+                    element.text = (format or tostring)(c.to)
+                    element:SetClass("preview", true)
+                    return
+                end
+            end
+            element.text = element.data.text
+            element:SetClass("preview", false)
+        end,
+    })
+end
+
+--The skeleton the band shows while the Hero loads.
+---@return Panel[]
+local function StatsSkeleton()
     local tiles = {}
     for i,name in ipairs(CHARACTERISTICS) do
         tiles[#tiles+1] = gui.Panel{
-            width = 145,
-            height = 58,
-            lmargin = cond(i == 1, 0, 8),
-            vpad = 6,
-            borderBox = true,
-            flow = "vertical",
-            bgimage = "panels/square.png",
-            bgcolor = "#00000038",
-            borderWidth = 1,
-            borderColor = C.BORDER,
-            cornerRadius = 8,
-            Text(name, { "eotwsLabel" }, { halign = "center" }),
-            Skel(136, 30, { halign = "center", tmargin = 4 }),
+            classes = { "eotwsTile" },
+            lmargin = cond(i == 1, 0, 7),
+            Text(name, { "eotwsTileLabel" }),
+            Skel(100, 30, { halign = "center", tmargin = 4 }),
         }
     end
-
-    --one "Label [value]" pair on a centred line.
-    local Pair = function(label, first)
+    local function Pair(label, first)
         return gui.Panel{
             width = "auto",
             height = 24,
-            lmargin = cond(first, 0, 24),
+            lmargin = cond(first, 0, 26),
             flow = "horizontal",
-            Text(label, { "eotwsLabel" }, { valign = "center", fontSize = 12 }),
+            Text(label, { "eotwsStatLabel" }, { valign = "center" }),
             Skel(14, 22, { lmargin = 8, valign = "center" }),
         }
     end
-    local Line = function(children, args)
+    local function Line(children, tmargin)
+        return gui.Panel{
+            width = "auto",
+            height = "auto",
+            halign = "center",
+            tmargin = tmargin,
+            flow = "horizontal",
+            children = children,
+        }
+    end
+    local function Words(label, width, bars, first)
+        local row = {}
+        for _,w in ipairs(bars) do
+            row[#row+1] = Skel(w, 20, { rmargin = 18, bmargin = 4 })
+        end
+        return gui.Panel{
+            classes = { "eotwsWordsCol", cond(first, "first", "rest") },
+            width = width,
+            Text(label, { "eotwsHeader" }),
+            gui.Panel{
+                width = "100%",
+                height = "auto",
+                tmargin = 6,
+                flow = "horizontal",
+                wrap = true,
+                children = row,
+            },
+        }
+    end
+    return {
+        gui.Panel{
+            width = "100%",
+            height = "auto",
+            flow = "horizontal",
+            gui.Panel{
+                width = "55%",
+                height = "auto",
+                flow = "vertical",
+                Text("Characteristics", { "eotwsHeader" }),
+                gui.Panel{
+                    width = "100%",
+                    height = "auto",
+                    tmargin = 8,
+                    flow = "horizontal",
+                    children = tiles,
+                },
+            },
+            gui.Panel{
+                classes = { "eotwsLines" },
+                Line({ Pair("Size", true), Pair("Speed"), Pair("Disengage"), Pair("Stability") }, 0),
+                Line({ Pair("Potency", true), Pair("Weak"), Pair("Average"), Pair("Strong") }, 7),
+                Line({ Pair("Wealth", true), Pair("Renown") }, 7),
+            },
+        },
+        Hairline(),
+        gui.Panel{
+            width = "100%",
+            height = "auto",
+            flow = "horizontal",
+            Words("Skills", "46%", { 160, 200, 140, 170, 84 }, true),
+            Words("Languages", "17%", { 120 }),
+            Words("Immunities", "21%", { 36 }),
+            Words("Weaknesses", "16%", { 36 }),
+        },
+    }
+end
+
+--The band filled from the Hero's data: characteristic tiles; centred lines
+--for Size, Speed (with movement types, "Speed 6 (fly)"), Disengage,
+--Stability, the Potency pill, Wealth and Renown; then the words row.
+---@param d table EotwHeroSheet.Data
+---@return Panel[]
+local function StatsContent(d)
+    local tiles = {}
+    for i,c in ipairs(d.characteristics or {}) do
+        tiles[#tiles+1] = gui.Panel{
+            classes = { "eotwsTile" },
+            lmargin = cond(i == 1, 0, 7),
+            data = { tip = SourcesTip(c) },
+            hover = HoverTip,
+            Text(c.name, { "eotwsTileLabel" }),
+            StatValue(c.name, SignedText(c.value), { "eotwsTileValue" }, SignedText),
+        }
+    end
+
+    local stats = d.stats or {}
+    --one "LABEL value" pair on a centred line; hover shows its sources
+    local function Pair(label, key, value, sources, first, extra)
+        local children = {
+            Text(label, { "eotwsStatLabel" }, { valign = "center" }),
+            StatValue(key, tostring(value), { "eotwsStatValue" }),
+        }
+        if extra ~= nil then
+            children[#children+1] = extra
+        end
+        return gui.Panel{
+            width = "auto",
+            height = "auto",
+            lmargin = cond(first, 0, 26),
+            flow = "horizontal",
+            data = { tip = SourcesTip(sources) },
+            hover = HoverTip,
+            children = children,
+        }
+    end
+    local function Line(children, args)
         local fields = {
             width = "auto",
             height = "auto",
             halign = "center",
-            tmargin = 12,
             flow = "horizontal",
             children = children,
         }
@@ -2097,64 +2950,98 @@ local function StatsRegion(ctx)
         return gui.Panel(fields)
     end
 
-    local potency = Line({
-        Text("Potency", { "eotwsLabel" }, { valign = "center", fontSize = 12 }),
-        Text("Weak", { "muted" }, { valign = "center", lmargin = 20 }),
-        Skel(10, 22, { lmargin = 6, valign = "center" }),
-        Text("Average", { "muted" }, { valign = "center", lmargin = 20 }),
-        Skel(10, 22, { lmargin = 6, valign = "center" }),
-        Text("Strong", { "muted" }, { valign = "center", lmargin = 20 }),
-        Skel(10, 22, { lmargin = 6, valign = "center" }),
-    }, {
-        hpad = 14,
-        vpad = 5,
-        borderBox = true,
-        borderWidth = 1,
-        borderColor = C.BORDER,
-        cornerRadius = 18,
+    local speedExtra = nil
+    if #(d.movement or {}) > 0 then
+        speedExtra = Text(string.format("(%s)", table.concat(d.movement, ", ")), { "eotwsMovement" }, { valign = "center", lmargin = 5 })
+    end
+    local function Value(s)
+        return s ~= nil and s.value or ""
+    end
+    local body = Line({
+        Pair("Size", "Size", Value(stats.size), stats.size, true),
+        Pair("Speed", "Speed", Value(stats.speed), stats.speed, false, speedExtra),
+        Pair("Disengage", "Disengage", Value(stats.disengage), stats.disengage),
+        Pair("Stability", "Stability", Value(stats.stability), stats.stability),
     })
 
-    --a words column: Skills, Languages, Immunities or Weaknesses.
-    local Words = function(label, width, bars, first)
-        local children = { Text(label, { "eotwsHeader" }) }
-        local row = {}
-        for _,w in ipairs(bars) do
-            row[#row+1] = Skel(w, 20, { rmargin = 18, bmargin = 4 })
+    local potency = d.potency or {}
+    local function Tier(label, value)
+        return gui.Panel{
+            width = "auto",
+            height = "auto",
+            lmargin = 20,
+            flow = "horizontal",
+            Text(label, { "eotwsTierLabel" }, { valign = "center" }),
+            Text(tostring(value or ""), { "eotwsStatValue" }, { lmargin = 8 }),
+        }
+    end
+    local potencyLine = Line({
+        Text("Potency", { "eotwsStatLabel" }, { valign = "center" }),
+        Tier("Weak", potency.weak),
+        Tier("Average", potency.average),
+        Tier("Strong", potency.strong),
+    }, { classes = { "eotwsPotency" }, tmargin = 7 })
+
+    --Wealth and Renown: labels only, no tooltip (round 13)
+    local standing = Line({
+        Text("Wealth", { "eotwsStatLabel" }, { valign = "center" }),
+        Text(tostring(d.wealth or 0), { "eotwsStatValue", "small" }, { lmargin = 8 }),
+        Text("Renown", { "eotwsStatLabel" }, { valign = "center", lmargin = 26 }),
+        Text(tostring(d.renown or 0), { "eotwsStatValue", "small" }, { lmargin = 8 }),
+    }, { tmargin = 7 })
+
+    --the words row: skills by group, then plain lists ("None" when empty)
+    local function List(items)
+        if items == nil or #items == 0 then
+            return Text("None", { "eotwsNone" })
         end
-        children[#children+1] = gui.Panel{
+        return Text(table.concat(items, ", "), { "eotwsWords" }, { width = "100%" })
+    end
+    local skillUnits = {}
+    for _,g in ipairs(d.skills or {}) do
+        --a group and its skills stay together; the row wraps between groups
+        skillUnits[#skillUnits+1] = gui.Panel{
+            width = "auto",
+            height = "auto",
+            rmargin = 18,
+            flow = "horizontal",
+            Text(g.name, { "eotwsSkillGroup" }, { valign = "center" }),
+            Text(table.concat(g.skills, ", "), { "eotwsWords" }, { lmargin = 5 }),
+        }
+    end
+    local skills
+    if #skillUnits == 0 then
+        skills = Text("None", { "eotwsNone" })
+    else
+        skills = gui.Panel{
             width = "100%",
             height = "auto",
-            tmargin = 6,
             flow = "horizontal",
             wrap = true,
-            children = row,
+            children = skillUnits,
         }
+    end
+    local function Words(label, width, content, first)
         return gui.Panel{
+            classes = { "eotwsWordsCol", cond(first, "first", "rest") },
             width = width,
-            height = "100%",
-            flow = "vertical",
-            lpad = cond(first, 0, 16),
-            borderBox = true,
-            children = children,
+            Text(label, { "eotwsHeader" }, { bmargin = 5 }),
+            content,
         }
     end
 
-    return Block(ctx, {
-        width = "100%",
-        height = STATS_HEIGHT,
-        tmargin = MAIN_GAP,
-        flow = "vertical",
+    return {
         gui.Panel{
             width = "100%",
-            height = 96,
+            height = "auto",
             flow = "horizontal",
             gui.Panel{
-                width = "auto",
-                height = "100%",
+                width = "55%",
+                height = "auto",
                 flow = "vertical",
                 Text("Characteristics", { "eotwsHeader" }),
                 gui.Panel{
-                    width = "auto",
+                    width = "100%",
                     height = "auto",
                     tmargin = 8,
                     flow = "horizontal",
@@ -2162,24 +3049,47 @@ local function StatsRegion(ctx)
                 },
             },
             gui.Panel{
-                width = "100%-790",
-                height = "100%",
-                flow = "vertical",
-                Line({ Pair("Size", true), Pair("Speed"), Pair("Disengage"), Pair("Stability") }, { tmargin = 2 }),
-                potency,
-                Line({ Pair("Wealth", true), Pair("Renown") }, { tmargin = 8 }),
+                classes = { "eotwsLines" },
+                body,
+                potencyLine,
+                standing,
             },
         },
         Hairline(),
         gui.Panel{
             width = "100%",
-            height = "100%-116",
+            height = "auto",
             flow = "horizontal",
-            Words("Skills", "48%", { 160, 200, 140, 170, 84 }, true),
-            Words("Languages", "18%", { 160 }),
-            Words("Immunities", "18%", { 36 }),
-            Words("Weaknesses", "16%", { 36 }),
+            Words("Skills", "46%", skills, true),
+            Words("Languages", "17%", List(d.languages)),
+            Words("Immunities", "21%", List(d.immunities)),
+            Words("Weaknesses", "16%", List(d.weaknesses)),
         },
+    }
+end
+
+---@param ctx table
+---@return Panel
+local function StatsRegion(ctx)
+    local function Fill(element)
+        if ctx.state == "ready" and ctx.data ~= nil then
+            element.children = StatsContent(ctx.data)
+            local held = ctx.HeldPreview()
+            if held ~= nil then
+                element:FireEventTree("eotwsPreview", held)
+            end
+        end
+    end
+    return Block(ctx, {
+        width = "100%",
+        height = "auto",
+        tmargin = MAIN_GAP,
+        hpad = 18,
+        vpad = 12,
+        flow = "vertical",
+        children = StatsSkeleton(),
+        eotwsState = Fill,
+        eotwsData = Fill,
     })
 end
 
@@ -2268,7 +3178,7 @@ local function ListsRegion(ctx)
 
     return Block(ctx, {
         width = "100%",
-        height = string.format("100%%-%d", TOPBAR_HEIGHT + STATS_HEIGHT + 2 * MAIN_GAP),
+        height = "100% available",
         tmargin = MAIN_GAP,
         hpad = 14,
         vpad = 12,
@@ -2428,6 +3338,7 @@ function EotwHeroSheet.Show(args)
 
     local ctx = {
         charid = charid,
+        context = context,
         inGame = context == "game",
         stageWidth = 1920,
         stageHeight = 1080,
@@ -2487,7 +3398,7 @@ function EotwHeroSheet.Show(args)
         ctx.state = state
         --read the Hero once on arrival; the regions render from this table
         if state == "ready" then
-            ctx.data = EotwHeroSheet.Data(ctx.Token())
+            ctx.data = ctx.ReadData()
         end
         if root ~= nil and root.valid then
             if state ~= "loading" then
@@ -2495,6 +3406,18 @@ function EotwHeroSheet.Show(args)
             end
             root:FireEventTree("eotwsState", state)
         end
+    end
+
+    --Read the Hero. In town a lobby character's ownerId is not the player's
+    --account, so a Hero on the player's own roster counts as theirs.
+    function ctx.ReadData()
+        local d = EotwHeroSheet.Data(ctx.Token())
+        if d ~= nil and not ctx.inGame and not d.mine and rawget(_G, "EotwRoster") ~= nil then
+            local onRoster = false
+            pcall(function() onRoster = EotwRoster.FindHero(ctx.charid) ~= nil end)
+            d.mine = onRoster
+        end
+        return d
     end
 
     --The party this Hero is away with (town only), or nil. Owner controls
@@ -2515,11 +3438,49 @@ function EotwHeroSheet.Show(args)
             if mod.unloaded or root == nil or not root.valid or ctx.state ~= "ready" then
                 return
             end
-            ctx.data = EotwHeroSheet.Data(ctx.Token())
+            ctx.data = ctx.ReadData()
             if ctx.data ~= nil then
                 root:FireEventTree("eotwsData")
             end
         end)
+    end
+
+    --Gold previews in the stats band (C4): what hovering Equip / Unequip
+    --would change. HoldPreview keeps them gold for a moment after the change.
+    local previewHeldUntil = 0
+    local previewHeld = nil
+    function ctx.Preview(changes)
+        if root == nil or not root.valid then
+            return
+        end
+        if changes == nil and dmhub.Time() < previewHeldUntil then
+            return
+        end
+        root:FireEventTree("eotwsPreview", changes)
+    end
+
+    function ctx.HoldPreview(changes)
+        if changes == nil or #changes == 0 then
+            return
+        end
+        previewHeldUntil = dmhub.Time() + PREVIEW_HOLD_SECONDS
+        previewHeld = changes
+        dmhub.Schedule(PREVIEW_HOLD_SECONDS + 0.05, function()
+            if mod.unloaded or root == nil or not root.valid then
+                return
+            end
+            previewHeld = nil
+            root:FireEventTree("eotwsPreview", nil)
+        end)
+    end
+
+    --The changes being held gold right now, so a region rebuilt meanwhile
+    --(the stats band after an equip) can put the gold back.
+    function ctx.HeldPreview()
+        if dmhub.Time() < previewHeldUntil then
+            return previewHeld
+        end
+        return nil
     end
 
     function ctx.Retry()
@@ -2536,6 +3497,8 @@ function EotwHeroSheet.Show(args)
     ctx.frost = ctx.transparent and FrostSupported()
 
     local host = FindHost(ctx)
+    --the builder opens on the same host when the sheet hands over to it
+    ctx.host = host
     if host == nil then
         printf("EotW hero sheet: nowhere to mount (%s)", context)
         return nil
