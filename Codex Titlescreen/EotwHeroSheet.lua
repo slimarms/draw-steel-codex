@@ -85,6 +85,9 @@ local PREVIEW_HOLD_SECONDS = 1.5
 --for a hit or a heal fires at most once a second.
 local OPEN_SECONDS = 0.2
 local WASH_MIN_GAP = 1
+--A kit-equivalent's text longer than this (at 100% Font Size; shorter when
+--larger) is cut short on the kit card, the whole text on hover.
+local KIT_TEXT_FOLD_CHARS = 150
 --A feature description longer than this starts folded behind Show more (F6).
 local FEATURE_FOLD_CHARS = 300
 --About 75 characters a line at the description's font size (locked design).
@@ -162,6 +165,11 @@ local RULES = {
         fontSize = 28,
         bold = true,
         width = "100%",
+        --one line: a long name shrinks to fit the plate rather than wrapping
+        --(which would push the plate up over the art), "..." past the floor
+        textWrap = false,
+        minFontSize = 16,
+        textOverflow = "ellipsis",
     },
     {
         selectors = { "eotwsBlock" },
@@ -786,6 +794,24 @@ local RULES = {
         borderWidth = 1,
         borderColor = "#000000ff",
         cornerRadius = 6,
+    },
+    {
+        selectors = { "eotwsThumb", "small" },
+        width = 32,
+        height = 45,
+        lmargin = 6,
+    },
+    {
+        selectors = { "eotwsThumb", "tiny" },
+        width = 26,
+        height = 36,
+        lmargin = 5,
+    },
+    {
+        selectors = { "eotwsStateChipText", "clamped" },
+        maxWidth = 300,
+        textWrap = false,
+        textOverflow = "ellipsis",
     },
     {
         selectors = { "eotwsThumb", "mine" },
@@ -1608,6 +1634,8 @@ local function LevelRow(d, fallen)
             height = "auto",
             tmargin = 9,
             flow = "horizontal",
+            --at large Font Sizes the banked part drops to a line of its own
+            wrap = true,
             children = cells,
         }
         return rows
@@ -2389,7 +2417,20 @@ local function KitContent(d)
         if e.name ~= nil then
             body[#body+1] = Text(e.name, { "eotwsKitName" }, { tmargin = 6, width = "100%" })
             if e.text ~= nil and e.text ~= "" then
-                body[#body+1] = Text(e.text, { "eotwsKitDesc" }, { tmargin = 3, width = "100%" })
+                --two long texts side by side would squeeze the treasures card,
+                --so a long one is cut short; the whole text is on hover
+                local limit = math.floor(KIT_TEXT_FOLD_CHARS / m_fontScale)
+                local shown = e.text
+                if #shown > limit then
+                    shown = (string.match(string.sub(shown, 1, limit), "^(.*)%s") or string.sub(shown, 1, limit)) .. "..."
+                end
+                body[#body+1] = Text(shown, { "eotwsKitDesc" }, {
+                    tmargin = 3,
+                    width = "100%",
+                    data = { tip = cond(shown ~= e.text, e.text, "") },
+                    hover = HoverTip,
+                    click = PinTip,
+                })
             end
         else
             body[#body+1] = Text("None chosen", { "eotwsNone" }, { tmargin = 6 })
@@ -3155,16 +3196,34 @@ local function TopBarContent(ctx)
         label = "Your party"
         theirs[1] = Thumb(ctx, ctx.charid, false, false)
     end
-    children[#children+1] = Text(label, { "eotwsSwitchLabel" }, { valign = "center", rmargin = 4 })
+    --a big roster (up to twelve) gets smaller thumbnails so it fits
+    local count = #ours + #theirs
+    local size = cond(count > 9, "tiny", cond(count > 6, "small", "full"))
+    local switcher = { Text(label, { "eotwsSwitchLabel" }, { valign = "center", rmargin = 4 }) }
     for _,t in ipairs(ours) do
-        children[#children+1] = t
+        t:SetClass(size, true)
+        switcher[#switcher+1] = t
     end
     if #ours > 0 and #theirs > 0 then
-        children[#children+1] = gui.Panel{ classes = { "eotwsSwitchSep" } }
+        switcher[#switcher+1] = gui.Panel{ classes = { "eotwsSwitchSep" } }
     end
     for _,t in ipairs(theirs) do
-        children[#children+1] = t
+        t:SetClass(size, true)
+        switcher[#switcher+1] = t
     end
+    --the switcher takes the width the right-hand controls leave, and clips
+    --rather than pushing them off the bar
+    children[#children+1] = gui.Panel{
+        width = "100% available",
+        height = "100%",
+        flow = "horizontal",
+        --the clip mask is the background's alpha: opaque, but not drawn
+        clip = true,
+        clipHidden = true,
+        bgimage = "panels/square.png",
+        bgcolor = "white",
+        children = switcher,
+    }
 
     --right-hand side, packed against Close
     local right = {}
@@ -3173,7 +3232,7 @@ local function TopBarContent(ctx)
         right[#right+1] = gui.Panel{
             classes = { "eotwsStateChip" },
             flow = "vertical",
-            Text(string.format("Away: %s", away), { "eotwsStateChipText" }),
+            Text(string.format("Away: %s", away), { "eotwsStateChipText", "clamped" }),
             Text("Changes are off until the party ends.", { "eotwsStateChipSmall" }),
         }
     end
