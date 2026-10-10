@@ -1039,6 +1039,8 @@ local function AbilityTags(ability, resourceName)
     end)
     if costTag == nil and cat == "Signature Ability" then
         costTag = "Signature"
+    elseif costTag == nil and cat == "Basic Attack" then
+        costTag = "Free strike"
     end
     return actionTag, costTag
 end

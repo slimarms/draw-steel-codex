@@ -81,6 +81,10 @@ local LOAD_TIMEOUT = 15
 local SHIMMER_SECONDS = 0.7
 --How long a stat equipping just changed stays gold before it settles.
 local PREVIEW_HOLD_SECONDS = 1.5
+--A feature description longer than this starts folded behind Show more (F6).
+local FEATURE_FOLD_CHARS = 300
+--About 75 characters a line at the description's font size (locked design).
+local FEATURE_TEXT_MAX_WIDTH = 600
 
 --Frost blur radii in pixels (engine panel `frost`): the plates over the Guild,
 --and the in-game backdrop, which blurs the map and HUD harder so nothing reads.
@@ -424,6 +428,225 @@ local RULES = {
         rmargin = 1,
         bgimage = "game-icons/surge.png",
         bgcolor = C.GOLD,
+    },
+    --abilities and features
+    {
+        selectors = { "eotwsListHead" },
+        width = "100%",
+        height = 44,
+        flow = "horizontal",
+        borderColor = "#bc9b7b66",
+        border = { x1 = 0, x2 = 0, y1 = 1, y2 = 0 },
+    },
+    {
+        selectors = { "eotwsListCount" },
+        color = C.MUTED,
+        fontSize = 13,
+    },
+    {
+        selectors = { "eotwsChip", "on" },
+        bgcolor = C.CREAM,
+        borderColor = C.CREAM,
+    },
+    {
+        selectors = { "eotwsChip", "hover" },
+        borderColor = C.TAN,
+    },
+    {
+        selectors = { "eotwsChipText" },
+        color = C.CREAM,
+        fontSize = 12.5,
+    },
+    {
+        selectors = { "eotwsChipText", "parent:on" },
+        color = C.INK,
+        bold = true,
+    },
+    {
+        selectors = { "eotwsFilter" },
+        width = "100% available",
+        height = 28,
+        lmargin = 10,
+        hpad = 10,
+        borderBox = true,
+        valign = "center",
+        fontSize = 13,
+        color = C.CREAM,
+        bgimage = "panels/square.png",
+        bgcolor = "#00000040",
+        borderWidth = 1,
+        borderColor = C.BORDER,
+        cornerRadius = 6,
+    },
+    {
+        selectors = { "eotwsGroupHead" },
+        width = "100%",
+        height = "auto",
+        vpad = 3,
+        borderBox = true,
+        flow = "horizontal",
+        bgimage = "panels/square.png",
+        bgcolor = "#00000000",
+    },
+    {
+        selectors = { "eotwsCaret" },
+        width = 10,
+        height = 10,
+        rmargin = 6,
+        valign = "center",
+        bgimage = "phosphor/caret-down-fill.png",
+        bgcolor = C.MUTED,
+    },
+    {
+        selectors = { "eotwsCaret", "closed" },
+        rotate = -90,
+    },
+    {
+        selectors = { "eotwsGroupLabel" },
+        color = C.TAN,
+        fontSize = 12,
+        bold = true,
+        uppercase = true,
+    },
+    {
+        selectors = { "eotwsGroupCount" },
+        color = C.MUTED,
+        fontSize = 13,
+    },
+    {
+        selectors = { "eotwsGroupNote" },
+        color = C.MUTED,
+        fontSize = 12,
+        italics = true,
+    },
+    {
+        selectors = { "eotwsAbilityRow" },
+        width = "100%",
+        height = "auto",
+        tmargin = 6,
+        hpad = 12,
+        vpad = 8,
+        borderBox = true,
+        flow = "horizontal",
+        bgimage = "panels/square.png",
+        bgcolor = "#1a1b18d9",
+        borderWidth = 1,
+        borderColor = C.BORDER,
+        cornerRadius = 8,
+    },
+    {
+        selectors = { "eotwsAbilityRow", "compact" },
+        width = "50%-3",
+        tmargin = 0,
+        hpad = 10,
+        vpad = 6,
+        rmargin = 6,
+    },
+    {
+        selectors = { "eotwsAbilityRow", "hover" },
+        bgcolor = "#262722e6",
+        borderColor = "#6a6459ff",
+    },
+    {
+        selectors = { "eotwsAbilityName" },
+        color = C.CREAM_LIGHT,
+        fontSize = 16,
+        bold = true,
+    },
+    {
+        selectors = { "eotwsAbilityName", "compact" },
+        fontSize = 14.5,
+    },
+    {
+        selectors = { "eotwsAbilityKeywords" },
+        color = C.MUTED,
+        fontSize = 12,
+        width = "100% available",
+        textWrap = false,
+        textOverflow = "ellipsis",
+    },
+    {
+        selectors = { "eotwsAbilityTag" },
+        color = C.MUTED,
+        fontSize = 12.5,
+    },
+    {
+        selectors = { "eotwsAbilityTag", "cost" },
+        color = C.TAN,
+        bold = true,
+    },
+    {
+        selectors = { "eotwsFeatureCard" },
+        width = "100%",
+        height = "auto",
+        tmargin = 7,
+        hpad = 14,
+        vpad = 10,
+        borderBox = true,
+        flow = "vertical",
+        bgimage = "panels/square.png",
+        bgcolor = "#1a1b18d9",
+        borderWidth = 1,
+        borderColor = C.BORDER,
+        cornerRadius = 8,
+    },
+    {
+        selectors = { "eotwsFeatureName" },
+        color = C.CREAM_LIGHT,
+        fontSize = 16,
+        bold = true,
+    },
+    {
+        selectors = { "eotwsPillTag" },
+        width = "auto",
+        height = "auto",
+        lmargin = 5,
+        hpad = 7,
+        borderBox = true,
+        bgimage = "panels/square.png",
+        bgcolor = "#00000000",
+        borderWidth = 1,
+        borderColor = C.BORDER,
+        cornerRadius = 9,
+    },
+    {
+        selectors = { "eotwsPillTagText" },
+        color = C.MUTED,
+        fontSize = 12,
+    },
+    {
+        selectors = { "eotwsFeatureChosen" },
+        color = C.MUTED,
+        fontSize = 13,
+        italics = true,
+        tmargin = 1,
+    },
+    {
+        selectors = { "eotwsFeatureText" },
+        color = C.CREAM,
+        fontSize = 14,
+        tmargin = 6,
+        width = "100%",
+        maxWidth = FEATURE_TEXT_MAX_WIDTH,
+    },
+    {
+        selectors = { "eotwsShowMore" },
+        color = C.TAN,
+        fontSize = 13,
+        tmargin = 4,
+        underline = true,
+    },
+    {
+        selectors = { "eotwsShowMore", "hover" },
+        color = C.CREAM_LIGHT,
+    },
+    {
+        selectors = { "eotwsEmpty" },
+        color = C.MUTED,
+        fontSize = 14,
+        italics = true,
+        tmargin = 20,
+        width = "100%",
     },
     --top bar
     {
@@ -1062,6 +1285,79 @@ local function HoverTip(element)
     end
 end
 
+--- pinned cards (every tooltip pins) ---------------------------------------------
+
+--The element whose card is pinned open (its popup), if any. Escape closes a
+--pinned card before it closes the sheet.
+---@type Panel|nil
+local m_pinned = nil
+
+--A hover card or a pinned one: the content plus the hint underneath (A5).
+--Set directly, not by class: tooltips and popups draw outside the sheet.
+---@param content Panel
+---@param pinned boolean
+---@return Panel
+local function CardFrame(content, pinned)
+    return gui.TooltipFrame(gui.Panel{
+        width = "auto",
+        height = "auto",
+        flow = "vertical",
+        content,
+        gui.Label{
+            text = cond(pinned, "Click elsewhere or press Esc to close.", "Click to keep it open."),
+            width = "auto",
+            height = "auto",
+            tmargin = 8,
+            fontSize = 12,
+            italics = true,
+            color = C.MUTED,
+        },
+    }, { halign = "right", valign = "center" })
+end
+
+--Pins `popup` open beside `element` until the player clicks elsewhere or
+--presses Escape.
+---@param element Panel
+---@param popup Panel
+local function PinPanel(element, popup)
+    audio.FireSoundEvent("Mouse.Click")
+    element.tooltip = nil
+    element.popupPositioning = "panel"
+    element.popup = popup
+    m_pinned = element
+end
+
+--Click handler for a text tooltip (data.tip): keep it open.
+---@param element Panel
+local function PinTip(element)
+    local tip = element.data.tip
+    if tip == nil or tip == "" then
+        return
+    end
+    PinPanel(element, gui.TooltipFrame(gui.Label{
+        text = tip,
+        width = "auto",
+        height = "auto",
+        maxWidth = 460,
+        textWrap = true,
+        fontSize = 15,
+        color = "white",
+    }, { halign = "right", valign = "center" }))
+end
+
+--Closes a pinned card; true if there was one.
+---@return boolean
+local function ClosePin()
+    local pinned = m_pinned
+    m_pinned = nil
+    if pinned ~= nil and pinned.valid and pinned.popup ~= nil then
+        pinned.popup = nil
+        return true
+    end
+    return false
+end
+
+
 --A thin vertical rule between the vitals cells.
 ---@return Panel
 local function VRule()
@@ -1151,6 +1447,7 @@ local function LevelRow(d, fallen)
                 data = { tip = string.format("%d %s %d XP and %d %s at the next respite.",
                     victories, cond(victories == 1, "Victory becomes", "Victories become"), victories, victories, epic.name) },
                 hover = HoverTip,
+                click = PinTip,
                 Hatch(18, 7, { valign = "center", cornerRadius = 3 }),
                 Text(string.format("+%d at the next respite", victories), { "eotwsPlateText" }, { lmargin = 6, valign = "center" }),
             }
@@ -1226,6 +1523,7 @@ local function LevelRow(d, fallen)
             clip = true,
             data = { tip = tip },
             hover = HoverTip,
+            click = PinTip,
             children = barChildren,
         },
         Text(tostring(p.nextLevel), { "eotwsLevelNumber", "next", cond(ready, "ready", cond(reach, "reach", "normal")) }),
@@ -1367,6 +1665,7 @@ local function CardRegion(ctx)
         bgcolor = "#00000000",
         data = { tip = "" },
         hover = HoverTip,
+        click = PinTip,
         bar,
         statusIcon,
     }
@@ -1394,6 +1693,7 @@ local function CardRegion(ctx)
         classes = { "eotwsRing" },
         data = { tip = "" },
         hover = HoverTip,
+        click = PinTip,
         ringLabel,
     }
     local recoveriesSub = Text("", { "eotwsPlateText" })
@@ -1405,6 +1705,7 @@ local function CardRegion(ctx)
         flow = "vertical",
         data = { tip = "" },
         hover = HoverTip,
+        click = PinTip,
         Text("Recoveries", { "eotwsPlateStrong" }),
         recoveriesSub,
     }
@@ -1417,6 +1718,7 @@ local function CardRegion(ctx)
         flow = "horizontal",
         data = { tip = "" },
         hover = HoverTip,
+        click = PinTip,
         victoriesNumber,
         victoriesWord,
     }
@@ -1433,6 +1735,7 @@ local function CardRegion(ctx)
         flow = "horizontal",
         data = { tip = "" },
         hover = HoverTip,
+        click = PinTip,
         resourceIcon,
         resourceNumber,
     }
@@ -1482,6 +1785,7 @@ local function CardRegion(ctx)
         y = -(15 + 10 + 8),
         data = { tip = "", count = nil },
         hover = HoverTip,
+        click = PinTip,
     }
 
     local live = gui.Panel{
@@ -1550,6 +1854,7 @@ local function CardRegion(ctx)
                         Text(t.name, { "eotwsTitle" }, {
                             data = { tip = table.concat(lines, "\n\n") },
                             hover = HoverTip,
+                            click = PinTip,
                         }),
                         Text(cond(i < #names, ",", ""), { "eotwsTitle", "sep" }),
                     }
@@ -1785,6 +2090,7 @@ local function KitGrid(entries)
             flow = "horizontal",
             data = { tip = b.tip },
             hover = HoverTip,
+            click = PinTip,
             Text(b.label, { "eotwsKvLabel" }),
             Text(b.value, { "eotwsKvValue" }, { halign = "right" }),
         }
@@ -1959,7 +2265,7 @@ end
 --weapon or armor treasure the kit cannot use.
 ---@param it table a d.treasures entry
 ---@param tok CharacterToken|nil
----@return Panel
+---@return Panel content for CardFrame
 local function ItemCard(it, tok)
     local options = { noninteractive = true, maxHeight = "50%", vscroll = true }
     local children = { it.item:Render(options, tok) }
@@ -1975,16 +2281,13 @@ local function ItemCard(it, tok)
             textWrap = true,
         }
     end
-    local panel = gui.Panel{
+    return gui.Panel{
         width = 400,
         height = "auto",
         flow = "vertical",
         textWrap = true,
         children = children,
     }
-    local frame = gui.TooltipFrame(panel, { halign = "right", valign = "center" })
-    frame:MakeNonInteractiveRecursive()
-    return frame
 end
 
 ---@param ctx table
@@ -2105,6 +2408,7 @@ local function TreasuresRegion(ctx)
                     valign = "center",
                     data = { tip = NoBenefitText(it.noBenefit, d.kitGear) },
                     hover = HoverTip,
+                    click = PinTip,
                     Text("No benefit", { "eotwsWarnText" }),
                 }
             end
@@ -2178,6 +2482,7 @@ local function TreasuresRegion(ctx)
                     valign = "center",
                     data = { tip = cond(it.kind == "other", "Part of the Hero's ancestry.", "") },
                     hover = HoverTip,
+                    click = PinTip,
                 })
             end
 
@@ -2197,7 +2502,10 @@ local function TreasuresRegion(ctx)
                 --No benefit chip keep their own tooltips
                 Text(nameText, { "eotwsItemName", "row" }, {
                     hover = function(element)
-                        element.tooltip = ItemCard(it, tok)
+                        element.tooltip = CardFrame(ItemCard(it, tok), false)
+                    end,
+                    click = function(element)
+                        PinPanel(element, CardFrame(ItemCard(it, tok), true))
                     end,
                 }),
                 gui.Panel{
@@ -2259,7 +2567,10 @@ local function TreasuresRegion(ctx)
                 tmargin = 5,
                 flow = "horizontal",
                 hover = function(element)
-                    element.tooltip = ItemCard(it, tok)
+                    element.tooltip = CardFrame(ItemCard(it, tok), false)
+                end,
+                click = function(element)
+                    PinPanel(element, CardFrame(ItemCard(it, tok), true))
                 end,
                 children = parts,
             }
@@ -2911,6 +3222,7 @@ local function StatsContent(d)
             lmargin = cond(i == 1, 0, 7),
             data = { tip = SourcesTip(c) },
             hover = HoverTip,
+            click = PinTip,
             Text(c.name, { "eotwsTileLabel" }),
             StatValue(c.name, SignedText(c.value), { "eotwsTileValue" }, SignedText),
         }
@@ -2933,6 +3245,7 @@ local function StatsContent(d)
             flow = "horizontal",
             data = { tip = SourcesTip(sources) },
             hover = HoverTip,
+            click = PinTip,
             children = children,
         }
     end
@@ -3095,25 +3408,274 @@ end
 
 --- abilities and features (main column) ------------------------------------------
 
+--Which groups and sections the player has folded, remembered on this machine
+--for every sheet ("ab:standard" = the Standard actions group, folded to start).
+local g_collapsedSetting = setting{
+    id = "eotwsheet.collapsed",
+    description = "EotW hero sheet folded groups",
+    storage = "preference",
+    default = "ab:standard",
+}
+
+---@param key string
+---@return boolean
+local function IsCollapsed(key)
+    local value = g_collapsedSetting:Get() or ""
+    for part in string.gmatch(value, "[^,]+") do
+        if part == key then
+            return true
+        end
+    end
+    return false
+end
+
+---@param key string
+---@param collapsed boolean
+local function SetCollapsed(key, collapsed)
+    local parts = {}
+    for part in string.gmatch(g_collapsedSetting:Get() or "", "[^,]+") do
+        if part ~= key then
+            parts[#parts+1] = part
+        end
+    end
+    if collapsed then
+        parts[#parts+1] = key
+    end
+    g_collapsedSetting:Set(table.concat(parts, ","))
+end
+
+--A collapsible group: a header row (caret, name, count, optional note) over
+--a body. The header click folds it and remembers that.
+---@param key string the remembered id ("ab:main", "ft:class")
+---@param label string
+---@param count number
+---@param note string|nil
+---@param body Panel
+---@return Panel
+local function Group(key, label, count, note, body)
+    local collapsed = IsCollapsed(key)
+    body:SetClass("collapsed", collapsed)
+    local caret = gui.Panel{ classes = { "eotwsCaret", cond(collapsed, "closed", "open") } }
+    local header = gui.Panel{
+        classes = { "eotwsGroupHead" },
+        click = function(element)
+            audio.FireSoundEvent("Mouse.Click")
+            collapsed = not collapsed
+            SetCollapsed(key, collapsed)
+            body:SetClass("collapsed", collapsed)
+            caret:SetClass("closed", collapsed)
+            caret:SetClass("open", not collapsed)
+        end,
+        caret,
+        Text(label, { "eotwsGroupLabel" }, { valign = "center" }),
+        Text(tostring(count), { "eotwsGroupCount" }, { valign = "center", lmargin = 8 }),
+    }
+    if note ~= nil then
+        header:AddChild(Text(note, { "eotwsGroupNote" }, { valign = "center", halign = "right" }))
+    end
+    return gui.Panel{
+        width = "100%",
+        height = "auto",
+        tmargin = 10,
+        flow = "vertical",
+        header,
+        body,
+    }
+end
+
+--An ability's keywords as a comma list (the row's grey middle).
+---@param ability any
+---@return string
+local function KeywordText(ability)
+    local list = {}
+    pcall(function()
+        for kw,on in pairs(ability:try_get("keywords", {})) do
+            if on then
+                list[#list+1] = kw
+            end
+        end
+    end)
+    table.sort(list)
+    return table.concat(list, ", ")
+end
+
+--The codex's own card for an ability row: the ability card, or the trigger
+--drawer's card for a triggered action.
+---@param item table a d.abilities item
+---@param tok CharacterToken|nil
+---@return Panel|nil
+local function AbilityCardContent(item, tok)
+    local card = nil
+    if item.ability ~= nil then
+        pcall(function() card = CreateAbilityTooltip(item.ability, { token = tok, width = 480 }) end)
+    elseif item.trigger ~= nil then
+        pcall(function() card = item.trigger:Render{ token = tok } end)
+    end
+    return card
+end
+
+--One ability row (A4): name, keywords, then the action and cost tags. Hover
+--shows the codex card; a click keeps it open.
+---@param item table
+---@param tok CharacterToken|nil
+---@param compact boolean free strikes and standard actions: two to a row, no keywords
+---@return Panel
+local function AbilityRow(item, tok, compact)
+    local children = { Text(item.name, { "eotwsAbilityName", cond(compact, "compact", "full") }, { valign = "center" }) }
+    if not compact and item.ability ~= nil then
+        children[#children+1] = Text(KeywordText(item.ability), { "eotwsAbilityKeywords" }, { valign = "center", lmargin = 10 })
+    end
+    local tags = { Text(item.actionTag or "", { "eotwsAbilityTag" }, { valign = "center" }) }
+    if item.costTag ~= nil then
+        tags[#tags+1] = Text(string.format("%s %s", MIDDOT, item.costTag), { "eotwsAbilityTag", "cost" }, { valign = "center", lmargin = 6 })
+    end
+    children[#children+1] = gui.Panel{
+        width = "auto",
+        height = "auto",
+        halign = "right",
+        valign = "center",
+        flow = "horizontal",
+        children = tags,
+    }
+    return gui.Panel{
+        classes = { "eotwsAbilityRow", cond(compact, "compact", "full") },
+        hover = function(element)
+            local card = AbilityCardContent(item, tok)
+            if card ~= nil then
+                element.tooltip = CardFrame(card, false)
+            end
+        end,
+        click = function(element)
+            local card = AbilityCardContent(item, tok)
+            if card ~= nil then
+                PinPanel(element, CardFrame(card, true))
+            end
+        end,
+        children = children,
+    }
+end
+
+--The Abilities column's content: one group per kind of action (A2), the
+--Standard actions noted as every Hero's (A3).
+---@param d table EotwHeroSheet.Data
+---@param tok CharacterToken|nil
+---@return Panel[]
+local function AbilitiesContent(d, tok)
+    local groups = {}
+    for _,g in ipairs(d.abilities or {}) do
+        local compact = g.id == "freestrike" or g.id == "standard"
+        local rows = {}
+        if compact then
+            --two to a row
+            for i = 1, #g.items, 2 do
+                local pair = { AbilityRow(g.items[i], tok, true) }
+                if g.items[i + 1] ~= nil then
+                    pair[2] = AbilityRow(g.items[i + 1], tok, true)
+                end
+                rows[#rows+1] = gui.Panel{
+                    width = "100%",
+                    height = "auto",
+                    tmargin = 6,
+                    flow = "horizontal",
+                    children = pair,
+                }
+            end
+        else
+            for _,item in ipairs(g.items) do
+                rows[#rows+1] = AbilityRow(item, tok, false)
+            end
+        end
+        local body = gui.Panel{
+            width = "100%",
+            height = "auto",
+            flow = "vertical",
+            children = rows,
+        }
+        groups[#groups+1] = Group("ab:" .. g.id, g.name, #g.items,
+            cond(g.id == "standard", "Every Hero can do these", nil), body)
+    end
+    return groups
+end
+
+--One feature card (F5, F6): name and pillar tags, "Chosen for {choice}", the
+--text folded behind Show more when long.
+---@param item table a d.features item
+---@return Panel
+local function FeatureCard(item)
+    local head = { Text(item.name or "", { "eotwsFeatureName" }, { valign = "center" }) }
+    local tagPanels = {}
+    for _,p in ipairs(item.pillars or {}) do
+        tagPanels[#tagPanels+1] = gui.Panel{
+            classes = { "eotwsPillTag" },
+            Text(p, { "eotwsPillTagText" }),
+        }
+    end
+    if #tagPanels > 0 then
+        head[#head+1] = gui.Panel{
+            width = "auto",
+            height = "auto",
+            halign = "right",
+            valign = "center",
+            flow = "horizontal",
+            children = tagPanels,
+        }
+    end
+    local children = {
+        gui.Panel{
+            width = "100%",
+            height = "auto",
+            flow = "horizontal",
+            children = head,
+        },
+    }
+    if item.chosenFor ~= nil then
+        children[#children+1] = Text(string.format("Chosen for %s", item.chosenFor), { "eotwsFeatureChosen" })
+    end
+    local text = item.text or ""
+    if text ~= "" then
+        local long = #text > FEATURE_FOLD_CHARS
+        local folded = long
+        local function Short()
+            local cut = string.sub(text, 1, FEATURE_FOLD_CHARS)
+            cut = string.match(cut, "^(.*)%s") or cut
+            return cut .. "..."
+        end
+        local desc = Text(cond(long, Short(), text), { "eotwsFeatureText" })
+        children[#children+1] = desc
+        if long then
+            local toggle
+            toggle = Text("Show more", { "eotwsShowMore" }, {
+                click = function()
+                    audio.FireSoundEvent("Mouse.Click")
+                    folded = not folded
+                    desc.text = cond(folded, Short(), text)
+                    toggle.text = cond(folded, "Show more", "Show less")
+                end,
+            })
+            children[#children+1] = toggle
+        end
+    end
+    return gui.Panel{
+        classes = { "eotwsFeatureCard" },
+        children = children,
+    }
+end
+
 ---@param ctx table
 ---@return Panel
 local function ListsRegion(ctx)
     local Underlined = function(children)
         return gui.Panel{
-            width = "100%",
-            height = 44,
-            flow = "horizontal",
-            borderColor = "#bc9b7b66",
-            border = { x1 = 0, x2 = 0, y1 = 1, y2 = 0 },
+            classes = { "eotwsListHead" },
             children = children,
         }
     end
 
-    local abilityGroups = {}
+    local abilitySkeleton = {}
     for _,rows in ipairs({ 3, 2, 4 }) do
-        abilityGroups[#abilityGroups+1] = Skel(116, 12, { tmargin = 14 })
+        abilitySkeleton[#abilitySkeleton+1] = Skel(116, 12, { tmargin = 14 })
         for r = 1, rows do
-            abilityGroups[#abilityGroups+1] = gui.Panel{
+            abilitySkeleton[#abilitySkeleton+1] = gui.Panel{
                 classes = { "eotwsRow" },
                 width = "100%-6",
                 height = 36,
@@ -3125,9 +3687,9 @@ local function ListsRegion(ctx)
         end
     end
 
-    local featureCards = {}
+    local featureSkeleton = {}
     for _ = 1, 3 do
-        featureCards[#featureCards+1] = gui.Panel{
+        featureSkeleton[#featureSkeleton+1] = gui.Panel{
             classes = { "eotwsRow" },
             width = "100%-6",
             height = 86,
@@ -3142,38 +3704,139 @@ local function ListsRegion(ctx)
         }
     end
 
+    --the features' filters: pillar chips (any one matches) and the text box
+    local filters = { pillars = {}, text = "" }
+    local featureCount = Text("", { "eotwsListCount" }, { valign = "center", lmargin = 8 })
+
+    local abilityBody = gui.Panel{
+        width = "100%",
+        height = "100% available",
+        tmargin = 2,
+        flow = "vertical",
+        vscroll = true,
+        gui.Panel{
+            width = "100%-10",
+            height = "auto",
+            flow = "vertical",
+            children = abilitySkeleton,
+        },
+    }
+    local featureList = gui.Panel{
+        width = "100%-10",
+        height = "auto",
+        flow = "vertical",
+        children = featureSkeleton,
+    }
+    local featureBody = gui.Panel{
+        width = "100%",
+        height = "100% available",
+        tmargin = 2,
+        flow = "vertical",
+        vscroll = true,
+        featureList,
+    }
+
+    local function FillFeatures()
+        local d = ctx.data
+        if ctx.state ~= "ready" or d == nil or d.features == nil then
+            return
+        end
+        local query = string.lower(filters.text or "")
+        local anyPillar = next(filters.pillars) ~= nil
+        local shown = 0
+        local sections = {}
+        for _,s in ipairs(d.features.sections) do
+            local cards = {}
+            for _,item in ipairs(s.items) do
+                local ok = true
+                if anyPillar then
+                    ok = false
+                    for _,p in ipairs(item.pillars or {}) do
+                        if filters.pillars[p] then
+                            ok = true
+                        end
+                    end
+                end
+                if ok and query ~= "" then
+                    local hay = string.lower((item.name or "") .. " " .. (item.text or ""))
+                    ok = string.find(hay, query, 1, true) ~= nil
+                end
+                if ok then
+                    cards[#cards+1] = FeatureCard(item)
+                end
+            end
+            if #cards > 0 then
+                shown = shown + #cards
+                sections[#sections+1] = Group("ft:" .. s.id, s.name, #cards, nil, gui.Panel{
+                    width = "100%",
+                    height = "auto",
+                    flow = "vertical",
+                    children = cards,
+                })
+            end
+        end
+        if #sections == 0 then
+            sections[1] = Text("No features match. Clear the filters to see them all.", { "eotwsEmpty" })
+        end
+        featureList.children = sections
+        local total = d.features.total or 0
+        featureCount.text = cond(shown == total, tostring(total), string.format("%d of %d", shown, total))
+    end
+
     local chips = {}
     for _,pillar in ipairs(PILLARS) do
         chips[#chips+1] = gui.Panel{
-            classes = { "eotwsChip" },
+            classes = { "eotwsChip", "off" },
             width = "auto",
             height = 28,
             hpad = 10,
-            lmargin = 10,
+            lmargin = 8,
             borderBox = true,
             valign = "center",
-            Text(pillar, nil, { fontSize = 12.5, valign = "center" }),
+            click = function(element)
+                audio.FireSoundEvent("Mouse.Click")
+                local on = not filters.pillars[pillar]
+                filters.pillars[pillar] = on or nil
+                element:SetClass("on", on)
+                element:SetClass("off", not on)
+                FillFeatures()
+            end,
+            Text(pillar, { "eotwsChipText" }, { valign = "center" }),
         }
     end
-    --the filter box; C5 makes it a real input.
-    chips[#chips+1] = gui.Panel{
-        width = "100%-560",
-        height = 28,
-        lmargin = 10,
-        hpad = 10,
-        borderBox = true,
-        valign = "center",
-        bgimage = "panels/square.png",
-        bgcolor = "#00000040",
-        borderWidth = 1,
-        borderColor = C.BORDER,
-        cornerRadius = 6,
-        Text("Filter features", { "muted" }, { fontSize = 13, valign = "center" }),
+    chips[#chips+1] = gui.Input{
+        classes = { "eotwsFilter" },
+        placeholderText = "Filter features",
+        text = "",
+        editlag = 0.2,
+        edit = function(element)
+            filters.text = element.text or ""
+            FillFeatures()
+        end,
+        change = function(element)
+            filters.text = element.text or ""
+            FillFeatures()
+        end,
     }
 
-    local featureHead = { Text("Features", { "eotwsHeader" }, { valign = "center" }) }
+    local featureHead = { Text("Features", { "eotwsHeader" }, { valign = "center" }), featureCount }
     for _,chip in ipairs(chips) do
         featureHead[#featureHead+1] = chip
+    end
+
+    local function Fill()
+        if ctx.state ~= "ready" or ctx.data == nil then
+            return
+        end
+        abilityBody.children = {
+            gui.Panel{
+                width = "100%-10",
+                height = "auto",
+                flow = "vertical",
+                children = AbilitiesContent(ctx.data, ctx.Token()),
+            },
+        }
+        FillFeatures()
     end
 
     return Block(ctx, {
@@ -3183,17 +3846,14 @@ local function ListsRegion(ctx)
         hpad = 14,
         vpad = 12,
         flow = "horizontal",
+        eotwsState = Fill,
+        eotwsData = Fill,
         gui.Panel{
             width = "48%",
             height = "100%",
             flow = "vertical",
             Underlined({ Text("Abilities", { "eotwsHeader" }, { valign = "center" }) }),
-            gui.Panel{
-                width = "100%",
-                height = "100%-44",
-                flow = "vertical",
-                children = abilityGroups,
-            },
+            abilityBody,
         },
         gui.Panel{
             width = "52%-20",
@@ -3201,12 +3861,7 @@ local function ListsRegion(ctx)
             lmargin = 20,
             flow = "vertical",
             Underlined(featureHead),
-            gui.Panel{
-                width = "100%",
-                height = "100%-44",
-                flow = "vertical",
-                children = featureCards,
-            },
+            featureBody,
         },
     })
 end
@@ -3543,6 +4198,10 @@ function EotwHeroSheet.Show(args)
         --targeting sit below it and wait until the sheet is closed.
         escapePriority = EscapePriority.EXIT_DIALOG,
         escape = function()
+            --a pinned card closes first; the next Escape closes the sheet
+            if ClosePin() then
+                return
+            end
             ctx.Close()
         end,
 
