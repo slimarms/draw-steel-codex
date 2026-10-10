@@ -1034,6 +1034,90 @@ end
 
 --- features -------------------------------------------------------------------
 
+--A walker over the features a Hero actually has (the sheet's own copy, so it
+--does not depend on the tac panel's curation). Collect(feature, bucket, accept,
+--out) explodes one feature into its LEAVES: a CharacterFeatureList opens into
+--its features, except a "<X> Domain" list for a domain the Hero does not own; a
+--CharacterFeatureChoice resolves to the options picked (choices within choices
+--included; an unmade choice yields nothing); every other feature is a leaf,
+--kept when accept(leaf, bucket) says so. IsDomainScaffolding(name) names the
+--domain bundles and markers that are structure, not features.
+---@param creature creature
+---@return table walker
+local function NewLeafWalker(creature)
+    local ownedDomains = {}
+    pcall(function()
+        for _,dom in ipairs(creature:GetDomains() or {}) do
+            local nm = (type(dom) == "table") and (dom.name or dom.id) or dom
+            if nm ~= nil then ownedDomains[tostring(nm)] = true end
+        end
+    end)
+    local hasDomains = next(ownedDomains) ~= nil
+    local levelChoices = creature:GetLevelChoices() or {}
+
+    local function IsUnownedDomainList(name)
+        if not hasDomains or type(name) ~= "string" then return false end
+        local dom = name:match("^(.-) Domains?$")
+        if dom == nil or dom == "" then return false end
+        return not ownedDomains[dom]
+    end
+
+    local walker = {}
+
+    function walker.IsDomainScaffolding(name)
+        if type(name) ~= "string" then return false end
+        if name:match("^.- Domains?$") then return true end
+        return ownedDomains[name] == true
+    end
+
+    local function Walk(feature, out, depth, bucketId, accept)
+        if feature == nil or depth > 6 then return end
+        local tn = nil
+        pcall(function() tn = feature.typeName end)
+        if tn == "CharacterFeatureList" then
+            local listName = nil
+            pcall(function() listName = feature:try_get("name") end)
+            if IsUnownedDomainList(listName) then return end
+            local kids = nil
+            pcall(function() kids = feature:try_get("features", {}) end)
+            for _,sub in ipairs(kids or {}) do
+                Walk(sub, out, depth + 1, bucketId, accept)
+            end
+        elseif tn == "CharacterFeatureChoice" then
+            local guid = nil
+            pcall(function() guid = feature.guid end)
+            local made = (guid ~= nil and levelChoices[guid]) or {}
+            if #made == 0 then return end
+            local options = nil
+            pcall(function() options = feature:GetOptions(levelChoices) end)
+            if type(options) ~= "table" then return end
+            local byGuid = {}
+            for _,o in ipairs(options) do
+                local g = nil
+                pcall(function() g = o.guid end)
+                if g ~= nil then byGuid[g] = o end
+            end
+            for _,id in ipairs(made) do
+                if byGuid[id] ~= nil then
+                    Walk(byGuid[id], out, depth + 1, bucketId, accept)
+                end
+            end
+        elseif accept(feature, bucketId) then
+            out[#out+1] = feature
+        end
+    end
+
+    ---@param feature any
+    ---@param bucketId string|nil
+    ---@param accept fun(leaf: any, bucketId: string|nil): boolean
+    ---@param out table
+    function walker.Collect(feature, bucketId, accept, out)
+        Walk(feature, out, 0, bucketId, accept)
+    end
+
+    return walker
+end
+
 --Whether a leaf feature shows in the Features list. The display-kind tags
 --decide first (Ability and Trigger features show as ability cards, Hidden ones
 --nowhere). Then what the sheet shows elsewhere stays out: the kit's own stats
@@ -1085,7 +1169,7 @@ local function ShowsAsFeature(feature)
 end
 
 --Features by section (F1-F7). Each index entry is walked down to the features
---the Hero really has (FeatureCategoriser.NewLeafWalker: lists opened, choices -
+--the Hero really has (NewLeafWalker above: lists opened, choices -
 --and choices within choices - resolved to the options picked, other domains
 --pruned); a pick shows as its own feature, "Chosen for {choice}".
 function Sections.features(d, tok, p, ctx)
@@ -1129,7 +1213,7 @@ function Sections.features(d, tok, p, ctx)
         total = total + 1
     end
 
-    local walker = FeatureCategoriser.NewLeafWalker(p)
+    local walker = NewLeafWalker(p)
     for _,e in ipairs(ctx.index.features) do
         if not FEATURE_SKIP_BUCKETS[e.bucket or "other"] then
             local choice = IsChoice(e)
