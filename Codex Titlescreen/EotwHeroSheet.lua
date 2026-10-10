@@ -39,6 +39,7 @@ local C = {
     --text on the card's dark plate, a cool grey that reads over any art
     PLATE_TEXT = "#c6d0daff",
     PLATE = "#000000c4",
+    WARN = "#e9b86fff",
     --the hatched stretch of the XP bar: cream stripes on a faint cream ground
     HATCH = "#dfcfc0e6",
     HATCH_GROUND = "#dfcfc040",
@@ -55,7 +56,6 @@ local COLUMN_GAP = 20
 local LEFT_WIDTH = 400
 local LEFT_GAP = 14
 local CARD_HEIGHT = 520
-local KIT_HEIGHT = 110
 local MAIN_GAP = 16
 local TOPBAR_HEIGHT = 60
 local STATS_HEIGHT = 218
@@ -422,6 +422,219 @@ local RULES = {
         rmargin = 1,
         bgimage = "game-icons/surge.png",
         bgcolor = C.GOLD,
+    },
+    --kit card
+    {
+        selectors = { "eotwsKitName" },
+        color = C.CREAM_LIGHT,
+        fontSize = 16.5,
+        bold = true,
+    },
+    {
+        selectors = { "eotwsKitGear" },
+        color = C.MUTED,
+        fontSize = 12.5,
+    },
+    {
+        selectors = { "eotwsKitDesc" },
+        color = C.CREAM,
+        fontSize = 13,
+    },
+    {
+        selectors = { "eotwsKvLabel" },
+        color = C.TAN,
+        fontSize = 11,
+        bold = true,
+        uppercase = true,
+        valign = "center",
+    },
+    {
+        selectors = { "eotwsKvValue" },
+        color = C.CREAM_LIGHT,
+        fontSize = 13.5,
+        bold = true,
+        valign = "center",
+    },
+    {
+        selectors = { "eotwsNone" },
+        color = C.MUTED,
+        fontSize = 13.5,
+    },
+    --treasures card
+    {
+        selectors = { "eotwsSub" },
+        color = C.TAN,
+        fontSize = 11.5,
+        bold = true,
+        uppercase = true,
+    },
+    {
+        selectors = { "eotwsSubCount" },
+        color = C.TAN,
+        fontSize = 11.5,
+    },
+    {
+        selectors = { "eotwsItem" },
+        bgimage = "panels/square.png",
+        bgcolor = "#00000033",
+        borderWidth = 1,
+        borderColor = C.BORDER,
+        cornerRadius = 6,
+        hpad = 10,
+        vpad = 5,
+        borderBox = true,
+        minHeight = 31,
+    },
+    {
+        selectors = { "eotwsItem", "hover" },
+        borderColor = "#6a6459ff",
+    },
+    {
+        selectors = { "eotwsItem", "todo" },
+        borderColor = C.GOLD,
+    },
+    {
+        selectors = { "eotwsItem", "chip" },
+        hpad = 9,
+        vpad = 4,
+        minHeight = 28,
+    },
+    {
+        selectors = { "eotwsItem", "glow" },
+        bgcolor = "#ffd66b55",
+        transitionTime = 1.1,
+    },
+    {
+        selectors = { "eotwsItemName" },
+        color = C.CREAM,
+        fontSize = 13.5,
+        valign = "center",
+    },
+    {
+        selectors = { "eotwsItemName", "row" },
+        width = "100% available",
+        textWrap = false,
+        textOverflow = "ellipsis",
+    },
+    {
+        selectors = { "eotwsItemSlot" },
+        color = C.MUTED,
+        fontSize = 13.5,
+        valign = "center",
+    },
+    {
+        selectors = { "eotwsQty" },
+        color = C.CREAM_LIGHT,
+        fontSize = 13,
+        bold = true,
+        valign = "center",
+    },
+    {
+        selectors = { "eotwsTag" },
+        color = C.MUTED,
+        fontSize = 12,
+        rmargin = 4,
+    },
+    {
+        selectors = { "eotwsWarnChip" },
+        width = "auto",
+        height = "auto",
+        hpad = 6,
+        vpad = 1,
+        borderBox = true,
+        bgimage = "panels/square.png",
+        bgcolor = "#00000000",
+        borderWidth = 1,
+        borderColor = "#e9b86f80",
+        cornerRadius = 9,
+    },
+    {
+        selectors = { "eotwsWarnText" },
+        color = C.WARN,
+        fontSize = 11,
+    },
+    {
+        selectors = { "eotwsSmallButton" },
+        width = "auto",
+        height = 24,
+        hpad = 9,
+        borderBox = true,
+        bgimage = "panels/square.png",
+        bgcolor = C.CARD,
+        borderWidth = 1,
+        borderColor = C.BORDER,
+        cornerRadius = 5,
+    },
+    {
+        selectors = { "eotwsSmallButton", "hover" },
+        bgcolor = C.CARD_HOVER,
+        borderColor = C.TAN,
+    },
+    {
+        selectors = { "eotwsSmallButton", "primary" },
+        bgcolor = C.GOLD,
+        borderColor = C.GOLD,
+    },
+    {
+        selectors = { "eotwsSmallButton", "primary", "hover" },
+        brightness = 1.1,
+    },
+    {
+        selectors = { "eotwsSmallButton", "off" },
+        opacity = 0.45,
+    },
+    {
+        selectors = { "eotwsSmallButtonText" },
+        color = C.CREAM_LIGHT,
+        fontSize = 12.5,
+        bold = true,
+        valign = "center",
+    },
+    {
+        selectors = { "eotwsSmallButtonText", "parent:primary" },
+        color = C.INK,
+    },
+    {
+        selectors = { "eotwsCta" },
+        width = "auto",
+        height = "auto",
+        hpad = 8,
+        vpad = 1,
+        borderBox = true,
+        bgimage = "panels/square.png",
+        bgcolor = C.GOLD,
+        borderWidth = 1,
+        borderColor = C.GOLD,
+        cornerRadius = 9,
+    },
+    {
+        selectors = { "eotwsCta", "off" },
+        bgcolor = "#00000000",
+        borderColor = C.BORDER,
+    },
+    {
+        selectors = { "eotwsCtaText" },
+        color = C.INK,
+        fontSize = 12,
+        bold = true,
+    },
+    {
+        selectors = { "eotwsCtaText", "parent:off" },
+        color = C.MUTED,
+    },
+    --the bottom of the treasures list fades out under the last rows
+    {
+        selectors = { "eotwsFade" },
+        bgimage = "panels/square.png",
+        bgcolor = "white",
+        gradient = gui.Gradient{
+            point_a = { x = 0, y = 1 },
+            point_b = { x = 0, y = 0 },
+            stops = {
+                { position = 0, color = "#0e0d0b00" },
+                { position = 1, color = "#0e0d0bcc" },
+            },
+        },
     },
 }
 
@@ -1099,8 +1312,8 @@ local function CardRegion(ctx)
                 surges.children = icons
             end
             surges:SetClass("collapsed", count == 0)
-            surges.data.tip = string.format("%d %s. Spend them for extra damage or potency.",
-                d.surges, cond(d.surges == 1, "surge", "surges"))
+            surges.data.tip = string.format("%d %s. Each adds %d damage, up to 3 per roll. 2 raise a potency by 1.",
+                d.surges, cond(d.surges == 1, "surge", "surges"), d.surgeDamage or 0)
         end
 
         vitals:SetClass("collapsed", fallen)
@@ -1183,14 +1396,181 @@ end
 
 --- kit and treasures (left column) ---------------------------------------------
 
+--A label longer than this would wrap in the two-up kit grid, so the grid
+--drops to one bonus per row (the locked design's rule).
+local KIT_LABEL_TWO_UP_MAX = 13
+
+--The kit's gear in the book's words (K2): "No armor, heavy weapon",
+--"Heavy armor, medium weapon, shield".
+---@param gear table|nil { armor = string[], weapons = string[] }
+---@return string
+local function GearLine(gear)
+    if gear == nil then
+        return ""
+    end
+    local function Unique(list)
+        local seen, out = {}, {}
+        for _,x in ipairs(list or {}) do
+            if not seen[x] then
+                seen[x] = true
+                out[#out+1] = x
+            end
+        end
+        return out
+    end
+    local armor = Unique(gear.armor)
+    local parts = {}
+    if #armor > 0 then
+        parts[1] = table.concat(armor, " or ") .. " armor"
+    else
+        parts[1] = "No armor"
+    end
+    for _,w in ipairs(Unique(gear.weapons)) do
+        if w == "Shield" then
+            parts[#parts+1] = "shield"
+        else
+            parts[#parts+1] = string.lower(w) .. " weapon"
+        end
+    end
+    return table.concat(parts, ", ")
+end
+
+--The kit's bonuses as label / value pairs, two to a row unless a label is
+--long enough to wrap. Each pair may carry a hover (the combined kit's source).
+---@param entries table[] { {label, value, tip} }
+---@return Panel
+local function KitGrid(entries)
+    local one = false
+    for _,b in ipairs(entries) do
+        if #b.label > KIT_LABEL_TWO_UP_MAX then
+            one = true
+        end
+    end
+    local function Cell(b, halign)
+        return gui.Panel{
+            width = cond(one, "100%", "50%-8"),
+            halign = halign,
+            height = "auto",
+            flow = "horizontal",
+            data = { tip = b.tip },
+            hover = HoverTip,
+            Text(b.label, { "eotwsKvLabel" }),
+            Text(b.value, { "eotwsKvValue" }, { halign = "right" }),
+        }
+    end
+    local rows = {}
+    local perRow = cond(one, 1, 2)
+    for i = 1, #entries, perRow do
+        local cells = { Cell(entries[i], "left") }
+        if perRow == 2 and entries[i + 1] ~= nil then
+            cells[2] = Cell(entries[i + 1], "right")
+        end
+        rows[#rows+1] = gui.Panel{
+            width = "100%",
+            height = "auto",
+            tmargin = 1,
+            flow = "horizontal",
+            children = cells,
+        }
+    end
+    return gui.Panel{
+        width = "100%",
+        height = "auto",
+        tmargin = 4,
+        flow = "vertical",
+        children = rows,
+    }
+end
+
+--The kit card's content (K1-K5): the kit, the Tactician's two kits read as
+--one, the class's kit-equivalents side by side, or "No kit".
+---@param d table EotwHeroSheet.Data
+---@return Panel[]
+local function KitContent(d)
+    local kit = d.kit
+    if kit == nil or kit.kind == "none" or #kit.entries == 0 then
+        return {
+            Text("Kit", { "eotwsHeader" }),
+            Text("No kit", { "eotwsNone" }, { tmargin = 6 }),
+        }
+    end
+
+    if kit.kind == "kit" then
+        local e = kit.entries[1]
+        local bonuses = {}
+        for _,b in ipairs(e.bonuses or {}) do
+            local tip = nil
+            if b.from ~= nil then
+                tip = string.format("From %s.", b.from)
+                if b.other ~= nil then
+                    tip = string.format("%s %s gives %s.", tip, b.otherFrom, b.other)
+                end
+            end
+            bonuses[#bonuses+1] = { label = b.label, value = b.value, tip = tip }
+        end
+        local children = { Text("Kit", { "eotwsHeader" }) }
+        if kit.combined then
+            children[#children+1] = Text(e.name, { "eotwsKitName" }, { tmargin = 6, width = "100%" })
+            children[#children+1] = Text(GearLine(e.gear), { "eotwsKitGear" }, { width = "100%" })
+        else
+            children[#children+1] = gui.Panel{
+                width = "100%",
+                height = "auto",
+                tmargin = 6,
+                flow = "horizontal",
+                wrap = true,
+                Text(e.name, { "eotwsKitName" }, { rmargin = 10 }),
+                Text(GearLine(e.gear), { "eotwsKitGear" }, { valign = "bottom", bmargin = 2 }),
+            }
+        end
+        children[#children+1] = KitGrid(bonuses)
+        if kit.meleeFrom ~= nil then
+            children[#children+1] = Text(string.format("Melee damage from %s. Change it during a respite.", kit.meleeFrom),
+                { "eotwsKitDesc" }, { tmargin = 3, width = "100%" })
+        end
+        return children
+    end
+
+    --kit-equivalents: one section per feature, two-up when there are two
+    local function Body(e)
+        local body = { Text(e.header, { "eotwsHeader" }) }
+        if e.name ~= nil then
+            body[#body+1] = Text(e.name, { "eotwsKitName" }, { tmargin = 6, width = "100%" })
+            if e.text ~= nil and e.text ~= "" then
+                body[#body+1] = Text(e.text, { "eotwsKitDesc" }, { tmargin = 3, width = "100%" })
+            end
+        else
+            body[#body+1] = Text("None chosen", { "eotwsNone" }, { tmargin = 6 })
+        end
+        return body
+    end
+    if #kit.entries == 1 then
+        return Body(kit.entries[1])
+    end
+    local sections = {}
+    for i,e in ipairs(kit.entries) do
+        sections[#sections+1] = gui.Panel{
+            width = string.format("%d%%-7", math.floor(100 / #kit.entries)),
+            height = "auto",
+            lmargin = cond(i > 1, 14, 0),
+            flow = "vertical",
+            children = Body(e),
+        }
+    end
+    return {
+        gui.Panel{
+            width = "100%",
+            height = "auto",
+            flow = "horizontal",
+            children = sections,
+        },
+    }
+end
+
 ---@param ctx table
 ---@return Panel
 local function KitRegion(ctx)
-    return Block(ctx, {
-        width = LEFT_WIDTH,
-        height = KIT_HEIGHT,
-        tmargin = LEFT_GAP,
-        flow = "vertical",
+    local skeleton = {
         Text("Kit", { "eotwsHeader" }),
         gui.Panel{
             width = "100%",
@@ -1204,13 +1584,76 @@ local function KitRegion(ctx)
             width = "100%",
             height = 14,
             tmargin = 6,
+            bmargin = 6,
             flow = "horizontal",
             Skel(130, 12),
             Skel(16, 12, { lmargin = 12 }),
             Skel(128, 12, { lmargin = 12 }),
             Skel(56, 12, { halign = "right" }),
         },
+    }
+    local function Fill(element)
+        if ctx.state == "ready" and ctx.data ~= nil then
+            element.children = KitContent(ctx.data)
+        end
+    end
+    return Block(ctx, {
+        width = LEFT_WIDTH,
+        height = "auto",
+        tmargin = LEFT_GAP,
+        flow = "vertical",
+        children = skeleton,
+        eotwsState = Fill,
+        eotwsData = Fill,
     })
+end
+
+--What a "No benefit" chip says (R5, N8): the kit cannot use this gear.
+---@param reason string "nokit", "armor" or "weapon"
+---@param gear table|nil the kit's gear
+---@return string
+local function NoBenefitText(reason, gear)
+    if reason == "nokit" or gear == nil then
+        return "Without a kit, this gives no benefit."
+    elseif reason == "weapon" then
+        return "The kit does not use this weapon, so this gives no benefit."
+    end
+    if #(gear.armor or {}) == 0 then
+        return "The kit uses no armor, so this gives no benefit."
+    end
+    return string.format("The kit uses %s armor, so this gives no benefit.", string.lower(table.concat(gear.armor, " or ")))
+end
+
+--The codex's own item card (CreateItemTooltip), plus the R6 warning on a
+--weapon or armor treasure the kit cannot use.
+---@param it table a d.treasures entry
+---@param tok CharacterToken|nil
+---@return Panel
+local function ItemCard(it, tok)
+    local options = { noninteractive = true, maxHeight = "50%", vscroll = true }
+    local children = { it.item:Render(options, tok) }
+    if it.noBenefit ~= nil then
+        --set directly: a tooltip draws outside the sheet, so its classes do not apply
+        children[#children+1] = gui.Label{
+            text = "Weapon and armor treasures only help when the kit uses that kind of gear.",
+            width = "100%",
+            height = "auto",
+            tmargin = 8,
+            fontSize = 14,
+            color = C.WARN,
+            textWrap = true,
+        }
+    end
+    local panel = gui.Panel{
+        width = 400,
+        height = "auto",
+        flow = "vertical",
+        textWrap = true,
+        children = children,
+    }
+    local frame = gui.TooltipFrame(panel, { halign = "right", valign = "center" })
+    frame:MakeNonInteractiveRecursive()
+    return frame
 end
 
 ---@param ctx table
@@ -1218,7 +1661,7 @@ end
 local function TreasuresRegion(ctx)
     local Section = function(label, rows)
         local children = {
-            Text(label, { "eotwsLabel" }, { tmargin = 8 }),
+            Text(label, { "eotwsSub" }, { tmargin = 8 }),
         }
         for _ = 1, rows do
             children[#children+1] = gui.Panel{
@@ -1240,15 +1683,302 @@ local function TreasuresRegion(ctx)
         }
     end
 
-    return Block(ctx, {
-        width = LEFT_WIDTH,
-        height = string.format("100%%-%d", CARD_HEIGHT + KIT_HEIGHT + 2 * LEFT_GAP),
-        tmargin = LEFT_GAP,
+    --narrower than the list by the scrollbar's width, so nothing sits under it
+    local content = gui.Panel{
+        width = "100%-10",
+        height = "auto",
         flow = "vertical",
-        Text("Treasures", { "eotwsHeader" }),
         Section("Leveled treasures", 1),
         Section("Trinkets", 2),
         Section("Consumables", 1),
+    }
+
+    local body = gui.Panel{
+        width = "100%",
+        height = "100% available",
+        tmargin = 4,
+        flow = "vertical",
+        vscroll = true,
+        content,
+    }
+
+    --the list scrolls inside the card; this fades its last rows into the
+    --plate so a cut-off row reads as "more below"
+    local fade = gui.Panel{
+        classes = { "eotwsFade", "collapsed" },
+        floating = true,
+        halign = "center",
+        valign = "bottom",
+        width = "100%",
+        height = 22,
+        interactable = false,
+    }
+
+    --the first row that wants equipping, for the call to action
+    local todoRow = nil
+
+    --"{n} to equip": scrolls the list to the first treasure to equip
+    local ctaLabel = Text("", { "eotwsCtaText" })
+    local cta = gui.Panel{
+        classes = { "eotwsCta", "collapsed" },
+        halign = "right",
+        valign = "center",
+        data = { tip = "" },
+        hover = HoverTip,
+        click = function(element)
+            if ctx.AwayParty() ~= nil then
+                audio.FireSoundEvent("UI.Error_Generic")
+                return
+            end
+            if todoRow == nil or not todoRow.valid then
+                return
+            end
+            audio.FireSoundEvent("Mouse.Click")
+            --scroll so the row sits near the top: vscrollPosition runs 1 (top) to 0
+            local offset = 0
+            for _,child in ipairs(content.children) do
+                if child == todoRow then
+                    break
+                end
+                offset = offset + child.renderedHeight + 4
+            end
+            local range = content.renderedHeight - body.renderedHeight
+            if range > 0 then
+                body.vscrollPosition = 1 - math.max(0, math.min(1, (offset - 30) / range))
+            end
+            todoRow:PulseClass("glow")
+        end,
+        ctaLabel,
+    }
+
+    local function Rebuild()
+        local d = ctx.data
+        if ctx.state ~= "ready" or d == nil or d.treasures == nil then
+            return
+        end
+        local t = d.treasures
+        local tok = ctx.Token()
+        local dead = d.stamina ~= nil and d.stamina.state == "dead"
+        local ownerActs = d.mine and not dead and ctx.fallen == nil
+        local away = ctx.AwayParty()
+        local awayTip = "Not while away with a party."
+        todoRow = nil
+
+        local function Row(it)
+            local right = {}
+            if it.noBenefit ~= nil then
+                right[#right+1] = gui.Panel{
+                    classes = { "eotwsWarnChip" },
+                    valign = "center",
+                    data = { tip = NoBenefitText(it.noBenefit, d.kitGear) },
+                    hover = HoverTip,
+                    Text("No benefit", { "eotwsWarnText" }),
+                }
+            end
+
+            local todo = false
+            if ownerActs and it.kind ~= "other" and it.equippable and it.kind ~= "consumable" then
+                todo = not it.equipped
+                --off while away, and Equip past the leveled cap: the button
+                --stays, says why, and does nothing (UI.Error_Generic)
+                local offTip = nil
+                if away ~= nil then
+                    offTip = awayTip
+                elseif not it.equipped and tok ~= nil then
+                    local _, reason = EotwHeroSheet.EquipSlot(tok, it.itemid)
+                    if reason == "cap" then
+                        offTip = string.format("%d leveled treasures are equipped. Unequip one first.", EotwHeroSheet.LEVELED_EQUIP_CAP)
+                    elseif reason == "full" then
+                        offTip = "No free slot for this treasure."
+                    end
+                end
+                right[#right+1] = gui.Panel{
+                    classes = { "eotwsSmallButton", cond(todo, "primary", "plain"), cond(offTip ~= nil, "off", "on") },
+                    valign = "center",
+                    lmargin = 6,
+                    hover = function(element)
+                        if offTip ~= nil then
+                            gui.Tooltip(offTip)(element)
+                            return
+                        end
+                        if tok == nil then
+                            return
+                        end
+                        local lines = {}
+                        for _,c in ipairs(EotwHeroSheet.EquipPreview(tok, it.itemid, cond(it.equipped, it.slot, nil))) do
+                            lines[#lines+1] = string.format("%s changes %s %d -> %d.",
+                                cond(it.equipped, "Unequipping", "Equipping"), c.label, c.from, c.to)
+                        end
+                        if #lines > 0 then
+                            gui.Tooltip(table.concat(lines, "\n"))(element)
+                        end
+                    end,
+                    click = function(element)
+                        if offTip ~= nil or tok == nil then
+                            audio.FireSoundEvent("UI.Error_Generic")
+                            return
+                        end
+                        if it.equipped then
+                            audio.FireSoundEvent("UI.Inv_Grab")
+                            EotwHeroSheet.Unequip(tok, it.slot)
+                        else
+                            audio.FireSoundEvent("UI.Inv_Place")
+                            EotwHeroSheet.Equip(tok, it.itemid)
+                        end
+                        ctx.Reread()
+                    end,
+                    Text(cond(it.equipped, "Unequip", "Equip"), { "eotwsSmallButtonText" }),
+                }
+            else
+                --ancestry items and anything the sheet cannot move: a plain tag
+                right[#right+1] = Text(cond(it.equipped, "Equipped", "Carried"), { "eotwsTag" }, {
+                    valign = "center",
+                    data = { tip = cond(it.kind == "other", "Part of the Hero's ancestry.", "") },
+                    hover = HoverTip,
+                })
+            end
+
+            --name and slot in one label, so a long name ends in "..." before
+            --it can push the buttons out of the row
+            local nameText = it.name
+            if it.body ~= nil then
+                nameText = string.format("%s  <color=%s>(%s)</color>", it.name, C.MUTED, it.body)
+            end
+            local row = gui.Panel{
+                classes = { "eotwsItem", cond(todo, "todo", "done") },
+                width = "100%",
+                height = "auto",
+                tmargin = 4,
+                flow = "horizontal",
+                --the item card hangs off the name, so the buttons and the
+                --No benefit chip keep their own tooltips
+                Text(nameText, { "eotwsItemName", "row" }, {
+                    hover = function(element)
+                        element.tooltip = ItemCard(it, tok)
+                    end,
+                }),
+                gui.Panel{
+                    width = "auto",
+                    height = "auto",
+                    halign = "right",
+                    valign = "center",
+                    flow = "horizontal",
+                    children = right,
+                },
+            }
+            if todo and todoRow == nil then
+                todoRow = row
+            end
+            return row
+        end
+
+        local function Sub(label, count)
+            return gui.Panel{
+                width = "100%",
+                height = "auto",
+                tmargin = 9,
+                flow = "horizontal",
+                Text(label, { "eotwsSub" }),
+                Text(count, { "eotwsSubCount" }, { halign = "right" }),
+            }
+        end
+
+        local children = {}
+        children[#children+1] = Sub("Leveled treasures", string.format("%d of 3 carried", t.leveledCarried))
+        for _,it in ipairs(t.leveled) do
+            children[#children+1] = Row(it)
+        end
+        if #t.leveled == 0 then
+            children[#children+1] = Text("None", { "eotwsNone" }, { tmargin = 4 })
+        end
+
+        children[#children+1] = Sub("Trinkets", tostring(#t.trinkets))
+        for _,it in ipairs(t.trinkets) do
+            children[#children+1] = Row(it)
+        end
+        if #t.trinkets == 0 then
+            children[#children+1] = Text("None", { "eotwsNone" }, { tmargin = 4 })
+        end
+
+        local total = 0
+        local chips = {}
+        for _,it in ipairs(t.consumables) do
+            total = total + (it.quantity or 1)
+            local parts = { Text(it.name, { "eotwsItemName" }) }
+            if (it.quantity or 1) > 1 then
+                parts[2] = Text(string.format("x%d", it.quantity), { "eotwsQty" }, { lmargin = 4 })
+            end
+            chips[#chips+1] = gui.Panel{
+                classes = { "eotwsItem", "chip" },
+                width = "auto",
+                height = "auto",
+                rmargin = 5,
+                tmargin = 5,
+                flow = "horizontal",
+                hover = function(element)
+                    element.tooltip = ItemCard(it, tok)
+                end,
+                children = parts,
+            }
+        end
+        children[#children+1] = Sub("Consumables", tostring(total))
+        if #chips > 0 then
+            children[#children+1] = gui.Panel{
+                width = "100%",
+                height = "auto",
+                flow = "horizontal",
+                wrap = true,
+                children = chips,
+            }
+        else
+            children[#children+1] = Text("None", { "eotwsNone" }, { tmargin = 4 })
+        end
+        --room under the last row so the fade does not cover it at the bottom
+        children[#children+1] = gui.Panel{ width = 1, height = 18 }
+        content.children = children
+
+        --"{n} to equip": your own Hero's unequipped treasure; jumps to it
+        local n = 0
+        if ownerActs then
+            n = t.toEquip or 0
+        end
+        cta:SetClass("collapsed", n == 0)
+        cta:SetClass("off", away ~= nil)
+        ctaLabel.text = string.format("%d to equip", n)
+        cta.data.tip = cond(away ~= nil, awayTip, "")
+
+        --the fade only belongs when the list runs past the bottom; check once
+        --the new rows have been laid out
+        fade:SetClass("collapsed", true)
+        dmhub.Schedule(0.05, function()
+            if mod.unloaded or not body.valid then
+                return
+            end
+            fade:SetClass("collapsed", content.renderedHeight <= body.renderedHeight + 1)
+        end)
+    end
+
+    return Block(ctx, {
+        width = LEFT_WIDTH,
+        height = "100% available",
+        tmargin = LEFT_GAP,
+        flow = "vertical",
+        eotwsState = Rebuild,
+        eotwsData = Rebuild,
+        gui.Panel{
+            width = "100%",
+            height = "auto",
+            flow = "horizontal",
+            Text("Treasures", { "eotwsHeader" }),
+            cta,
+        },
+        gui.Panel{
+            width = "100%",
+            height = "100% available",
+            flow = "none",
+            body,
+            fade,
+        },
     })
 end
 
@@ -1765,6 +2495,31 @@ function EotwHeroSheet.Show(args)
             end
             root:FireEventTree("eotwsState", state)
         end
+    end
+
+    --The party this Hero is away with (town only), or nil. Owner controls
+    --stay visible but off while away (T14).
+    function ctx.AwayParty()
+        if ctx.inGame or rawget(_G, "EotwRoster") == nil or ctx.charid == nil then
+            return nil
+        end
+        local away = nil
+        pcall(function() away = EotwRoster.AwayHeroes()[ctx.charid] end)
+        return away
+    end
+
+    --Read the Hero again after the sheet changed it (equip), a moment later
+    --so the change has landed, and let every region repaint from it.
+    function ctx.Reread()
+        dmhub.Schedule(0.1, function()
+            if mod.unloaded or root == nil or not root.valid or ctx.state ~= "ready" then
+                return
+            end
+            ctx.data = EotwHeroSheet.Data(ctx.Token())
+            if ctx.data ~= nil then
+                root:FireEventTree("eotwsData")
+            end
+        end)
     end
 
     function ctx.Retry()

@@ -356,6 +356,12 @@ function Sections.resource(d, tok, p)
         iconid = iconid,
     }
     d.surges = p:GetAvailableSurges() or 0
+    --each surge spent adds damage equal to the Hero's highest characteristic
+    local highest = 0
+    for _,attrid in ipairs(CHARACTERISTIC_IDS) do
+        pcall(function() highest = math.max(highest, p:GetAttribute(attrid):Modifier()) end)
+    end
+    d.surgeDamage = highest
 end
 
 --The five characteristics, each with its base and sources.
@@ -681,6 +687,8 @@ function Sections.kit(d, tok, p, ctx)
             ctx.kitGear = { armor = { "Light" }, weapons = { "Light" } }
         end
     end
+    --the gear the No benefit tooltips name (nil = no kit)
+    d.kitGear = ctx.kitGear
 end
 
 --Why a weapon or armor treasure gives no benefit, or nil when it does (R5, N8).
@@ -798,8 +806,9 @@ function Sections.treasures(d, tok, p, ctx)
         table.sort(list, function(a, b) return a.name < b.name end)
     end
 
+    --ancestry items ("other") are not the sheet's to move, so they never count
     local toEquip = 0
-    for _,list in pairs(groups) do
+    for _,list in ipairs({ groups.leveled, groups.trinket }) do
         for _,it in ipairs(list) do
             if it.equippable and not it.equipped and it.kind ~= "consumable" then
                 toEquip = toEquip + 1
@@ -814,15 +823,182 @@ function Sections.treasures(d, tok, p, ctx)
     end
     table.sort(groups.trinket, function(a, b) return a.name < b.name end)
 
+    local leveledEquipped = 0
+    for _,it in ipairs(groups.leveled) do
+        if it.equipped then
+            leveledEquipped = leveledEquipped + 1
+        end
+    end
+
     d.treasures = {
         leveled = groups.leveled,
         trinkets = groups.trinket,
         consumables = groups.consumable,
         leveledCarried = #groups.leveled,
+        leveledEquipped = leveledEquipped,
         --equippable treasure not yet worn; C3 narrows this to items won in
         --EotW once the City's provenance is wired in
         toEquip = toEquip,
     }
+end
+
+--- equipping treasure ------------------------------------------------------------
+
+--At most this many leveled treasures equipped at once (James 2026-10-10, an
+--interim stand-in for the book's carry-three rule; see the brief).
+EotwHeroSheet.LEVELED_EQUIP_CAP = 3
+
+--Draw Steel's equipment slots (creature.EquipmentSlots): leveled1-5 take
+--leveled treasures and artifacts, trinket1-10 take trinkets.
+local SLOT_COUNTS = { leveled = 5, trinket = 10 }
+
+---@param item any a tbl_Gear row
+---@return string|nil slotType "leveled", "trinket", or nil when the sheet cannot equip it
+local function SlotTypeFor(item)
+    if EquipmentCategory.IsLeveledTreasure(item) or EquipmentCategory.IsArtifact(item) then
+        return "leveled"
+    elseif EquipmentCategory.IsTrinket(item) then
+        return "trinket"
+    end
+    return nil
+end
+
+---@param p creature
+---@return number
+local function LeveledEquipped(p)
+    local gearTable = dmhub.GetTable("tbl_Gear") or {}
+    local count = 0
+    for slot,itemid in pairs(p:Equipment()) do
+        local item = gearTable[itemid]
+        if string.find(slot, "^leveled") and item ~= nil and EquipmentCategory.IsLeveledTreasure(item) then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+--- Where the sheet would equip an item, or why it cannot.
+--- @param tok CharacterToken
+--- @param itemid string
+--- @return string|nil slot the free equipment slot
+--- @return string|nil reason "cap" (LEVELED_EQUIP_CAP leveled treasures already equipped), "full" or "noslot"
+function EotwHeroSheet.EquipSlot(tok, itemid)
+    local p = tok.properties
+    local item = (dmhub.GetTable("tbl_Gear") or {})[itemid]
+    if p == nil or item == nil then
+        return nil, "noslot"
+    end
+    local slotType = SlotTypeFor(item)
+    if slotType == nil then
+        return nil, "noslot"
+    end
+    if EquipmentCategory.IsLeveledTreasure(item) and LeveledEquipped(p) >= EotwHeroSheet.LEVELED_EQUIP_CAP then
+        return nil, "cap"
+    end
+    local equip = p:Equipment()
+    for i = 1, SLOT_COUNTS[slotType] do
+        local slot = slotType .. i
+        if equip[slot] == nil then
+            return slot, nil
+        end
+    end
+    return nil, "full"
+end
+
+--- Equips one of an item from the Hero's inventory (uploaded, undoable).
+--- @param tok CharacterToken
+--- @param itemid string
+--- @return boolean ok
+--- @return string|nil reason see EquipSlot
+function EotwHeroSheet.Equip(tok, itemid)
+    local slot, reason = EotwHeroSheet.EquipSlot(tok, itemid)
+    if slot == nil then
+        return false, reason
+    end
+    tok:ModifyProperties{
+        description = "Equip treasure",
+        execute = function()
+            local p = tok.properties
+            p:SetItemQuantity(itemid, p:GetItemQuantity(itemid) - 1)
+            p:Equipment()[slot] = itemid
+        end,
+    }
+    return true, nil
+end
+
+--- Unequips the item in an equipment slot back into the inventory.
+--- @param tok CharacterToken
+--- @param slot string
+function EotwHeroSheet.Unequip(tok, slot)
+    tok:ModifyProperties{
+        description = "Unequip treasure",
+        execute = function()
+            tok.properties:Unequip(slot)
+        end,
+    }
+end
+
+--The stats an equip preview compares (N3), in the stats band's words.
+---@param p creature
+---@return table[] { {label, value} }
+local function PreviewSnapshot(p)
+    local result = {}
+    local function Put(label, fn)
+        local ok, v = pcall(fn)
+        if ok and type(v) == "number" then
+            result[#result+1] = { label = label, value = v }
+        end
+    end
+    Put("Stamina", function() return p:MaxHitpoints() end)
+    Put("Speed", function() return p:WalkingSpeed() end)
+    Put("Disengage", function()
+        local attr = CustomAttribute.attributeInfoByLookupSymbol["disengagespeed"]
+        return attr ~= nil and p:GetCustomAttribute(attr) or nil
+    end)
+    Put("Stability", function() return p:Stability() end)
+    for _,attrid in ipairs(CHARACTERISTIC_IDS) do
+        local info = creature.attributesInfo[attrid]
+        Put(info and info.description or attrid, function() return p:GetAttribute(attrid):Modifier() end)
+    end
+    return result
+end
+
+--- What equipping (or unequipping) an item would change, for its button's
+--- tooltip. The change is tried on the Hero in memory and undone in the same
+--- call; nothing is uploaded.
+--- @param tok CharacterToken
+--- @param itemid string
+--- @param slot string|nil the item's slot when equipped (to preview Unequip)
+--- @return table[] changes { {label, from, to} }
+function EotwHeroSheet.EquipPreview(tok, itemid, slot)
+    local p = tok.properties
+    local equip = p:Equipment()
+    local trySlot = slot
+    if trySlot == nil then
+        trySlot = EotwHeroSheet.EquipSlot(tok, itemid)
+    end
+    if trySlot == nil then
+        return {}
+    end
+    local before = PreviewSnapshot(p)
+    local old = equip[trySlot]
+    local after = {}
+    pcall(function()
+        equip[trySlot] = cond(slot == nil, itemid, nil)
+        p:Invalidate()
+        after = PreviewSnapshot(p)
+    end)
+    equip[trySlot] = old
+    pcall(function() p:Invalidate() end)
+
+    local changes = {}
+    for i,b in ipairs(before) do
+        local a = after[i]
+        if a ~= nil and a.label == b.label and a.value ~= b.value then
+            changes[#changes+1] = { label = b.label, from = b.value, to = a.value }
+        end
+    end
+    return changes
 end
 
 --- abilities ------------------------------------------------------------------
