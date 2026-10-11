@@ -1133,28 +1133,6 @@ local function CreateSkillsLine(charid)
     }
 end
 
---opts (all optional):
---  halign      the card's halign (default "right", the roster's edge)
---  draggable   non-nil = the drag callbacks below are passed through to
---              the panel (the montage stage); the value itself is the
---              card's starting draggable state, which the caller may flip
---              later (the stage makes only the local user's own heroes
---              draggable, and only while they can act)
---  canDragOnto, drag, beginDrag   drag callbacks (see Definitions/Panel.lua)
---  useClick    use the click event for the character-panel popout instead
---              of press (press also fires when a drag gesture ends)
---  click       replaces the character-panel popout with this handler
---              (element, OpenCharacterPanel) -- the second argument is the
---              default behavior, for handlers that fall back to it
---  subtitle    function(tok) -> the line under the name (default: who
---              controls the hero; the town shows class and level instead)
---  showStats   the montage stage's fuller card: the characteristics strip
---              down the right edge and the skills line under the name (the
---              roster's cards are too crowded for either)
---  showSkills  the skills line on its own (default: showStats). The town's
---              cards show the characteristics but not the skills.
---  showResources  the heroic resource row under the stamina bar (default
---              true). The town has no use for it outside an encounter.
 --Paints a hero's portrait as a panel's full-bleed background, cropped to the
 --panel's shape the way the hero card crops it. `aspect` is the panel's
 --width / height. Leaves the panel alone when the hero has no art, so its own
@@ -1179,6 +1157,28 @@ local function ApplyPortrait(element, tok, aspect)
     return true
 end
 
+--opts (all optional):
+--  halign      the card's halign (default "right", the roster's edge)
+--  draggable   non-nil = the drag callbacks below are passed through to
+--              the panel (the montage stage); the value itself is the
+--              card's starting draggable state, which the caller may flip
+--              later (the stage makes only the local user's own heroes
+--              draggable, and only while they can act)
+--  canDragOnto, drag, beginDrag   drag callbacks (see Definitions/Panel.lua)
+--  useClick    use the click event for the character-panel popout instead
+--              of press (press also fires when a drag gesture ends)
+--  click       replaces the character-panel popout with this handler
+--              (element, OpenCharacterPanel) -- the second argument is the
+--              default behavior, for handlers that fall back to it
+--  subtitle    function(tok) -> the line under the name (default: who
+--              controls the hero; the town shows class and level instead)
+--  showStats   the montage stage's fuller card: the characteristics strip
+--              down the right edge and the skills line under the name (the
+--              roster's cards are too crowded for either)
+--  showSkills  the skills line on its own (default: showStats). The town's
+--              cards show the characteristics but not the skills.
+--  showResources  the heroic resource row under the stamina bar (default
+--              true). The town has no use for it outside an encounter.
 local function CreateHeroCard(entry, opts)
     opts = opts or {}
     local showSkills = opts.showSkills

@@ -106,7 +106,7 @@ local FEATURE_TEXT_MAX_WIDTH = 600
 --actions) go one per row and the features' filters take a line of their own.
 local LARGE_TEXT_SCALE = 1.15
 
---Frost blur radii in pixels (engine panel `frost`): the plates over the Guild,
+--Frost blur radii in pixels (engine panel `frost`): the plates over the town,
 --and the in-game backdrop, which blurs the map and HUD harder so nothing reads.
 local FROST_RADIUS = 12
 local FROST_RADIUS_BACKDROP = 18
@@ -1373,7 +1373,7 @@ local function Skel(width, height, args)
     return gui.Panel(fields)
 end
 
---A plate holding one region of the sheet. In town it frosts the Guild art
+--A plate holding one region of the sheet. In town it frosts the town screen
 --behind it (engine `frost`); in a game the frosted backdrop already blurs what
 --is behind, so the plates stay plain. Solid while Transparent UI is off.
 ---@param ctx table the sheet's context (see EotwHeroSheet.Show)
@@ -2202,7 +2202,7 @@ local function CardRegion(ctx)
         local p = d.progress
         if p ~= nil then
             local sig = string.format("%d|%d|%d|%d|%s|%s|%s|%s", p.level, p.xpIntoLevel, p.victories,
-                cond(p.epic ~= nil, p.epic and p.epic.value or 0, 0), tostring(p.readyToLevel),
+                p.epic and p.epic.value or 0, tostring(p.readyToLevel),
                 tostring(p.respiteWouldLevel), tostring(d.mine), tostring(fallen))
             if sig ~= seen.level then
                 seen.level = sig
@@ -4721,10 +4721,10 @@ end
 
 --- the sheet -----------------------------------------------------------------------
 
---Where the sheet mounts and how big that space is, by context. In a game it
---is the HUD's main dialog layer -- the same layer the full character sheet
---uses, above trigger cards and roll dialogs but below modals, story screens
---and the "Waiting for..." banner. In town it is the town screen itself.
+--Where the sheet mounts, by context. In a game it is the HUD's main dialog
+--layer -- the same layer the full character sheet uses, above trigger cards
+--and roll dialogs but below modals, story screens and the "Waiting for..."
+--banner. In town it is the town screen itself.
 ---@param ctx table
 ---@return Panel|nil host
 local function FindHost(ctx)
@@ -4739,12 +4739,7 @@ local function FindHost(ctx)
         end
         return host
     end
-    local host = EncounterOfTheWeek.TownScreen()
-    if host ~= nil then
-        ctx.stageWidth = host.data.stageWidth or 1920
-        ctx.stageHeight = host.data.stageHeight or 1080
-    end
-    return host
+    return EncounterOfTheWeek.TownScreen()
 end
 
 --How often the sheet checks the arrow keys while one of its controls has
@@ -4859,8 +4854,6 @@ function EotwHeroSheet.Show(args)
         charid = charid,
         context = context,
         inGame = context == "game",
-        stageWidth = 1920,
-        stageHeight = 1080,
         --"loading", "ready" or "failed"
         state = "loading",
         --whether the regions build their loading placeholders. Off when the

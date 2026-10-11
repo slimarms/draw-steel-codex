@@ -1463,7 +1463,7 @@ function CharSheet.CreateCharacterSheet(params)
 					and GameHud.CustomInterfaceOpenSheet(token, tabid) then
 				element:SetClass("collapsed", true)
 				dmhub.Schedule(0.01, function()
-					if dmhub.inCharacterSheet then
+					if not mod.unloaded and dmhub.inCharacterSheet then
 						dmhub.CloseCharacterSheet()
 					end
 				end)

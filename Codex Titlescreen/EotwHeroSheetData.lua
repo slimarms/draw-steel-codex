@@ -130,7 +130,7 @@ local function SortedKeys(t)
     return result
 end
 
---A creature's tags as a sorted list, without the display-kind tags.
+--A feature's tags as a sorted list, without the display-kind tags.
 ---@param feature any
 ---@return string[]
 local function FeatureTags(feature)
