@@ -13,6 +13,9 @@ local mod = dmhub.GetModLoading()
 --references the UI hands to the codex's own tooltips, all named so a dump can
 --skip them.
 
+--Shared with EotwHeroSheet.lua; either file may run first or alone (a reload).
+EotwHeroSheet = rawget(_G, "EotwHeroSheet") or {}
+
 local CHARACTERISTIC_IDS = { "mgt", "agl", "rea", "inu", "prs" }
 
 --Ability groups in display order (A2). Free strikes and Standard actions are
@@ -236,7 +239,8 @@ function Sections.titles(d, tok, p, ctx)
             elseif e.displayKind == "normal" and not IsChoice(e) then
                 local text = nil
                 pcall(function() text = Clean(e.feature:GetDescription()) end)
-                list[#list+1] = { name = e.name, text = text }
+                --a title entry carries the title as its name and the benefit as subName
+                list[#list+1] = { name = e.subName or e.name, text = text }
             end
         end
     end
@@ -689,6 +693,8 @@ function Sections.kit(d, tok, p, ctx)
     end
     --the gear the No benefit tooltips name (nil = no kit)
     d.kitGear = ctx.kitGear
+    --the kit read finished, so a nil kitGear really means no kit (see treasures)
+    ctx.kitRead = true
 end
 
 --Why a weapon or armor treasure gives no benefit, or nil when it does (R5, N8).
@@ -783,7 +789,8 @@ function Sections.treasures(d, tok, p, ctx)
             quantity = quantity or 1,
             echelon = echelon,
             description = Clean(item:try_get("description")),
-            noBenefit = NoBenefitReason(keywords, ctx.kitGear),
+            --if the kit section failed, the kit is unknown: claim nothing
+            noBenefit = ctx.kitRead and NoBenefitReason(keywords, ctx.kitGear) or nil,
             item = item,
         }
         local list = groups[kind]
@@ -881,12 +888,16 @@ end
 --- @param tok CharacterToken
 --- @param itemid string
 --- @return string|nil slot the free equipment slot
---- @return string|nil reason "cap" (LEVELED_EQUIP_CAP leveled treasures already equipped), "full" or "noslot"
+--- @return string|nil reason "none" (none left in the inventory), "cap" (LEVELED_EQUIP_CAP leveled treasures already equipped), "full" or "noslot"
 function EotwHeroSheet.EquipSlot(tok, itemid)
     local p = tok.properties
     local item = (dmhub.GetTable("tbl_Gear") or {})[itemid]
     if p == nil or item == nil then
         return nil, "noslot"
+    end
+    --a second click before the sheet re-reads would otherwise equip a copy the Hero does not have
+    if (p:GetItemQuantity(itemid) or 0) < 1 then
+        return nil, "none"
     end
     local slotType = SlotTypeFor(item)
     if slotType == nil then
@@ -1495,6 +1506,10 @@ local SECTION_ORDER = {
 --costly part of a read.
 local INDEX_SECTIONS = { titles = true, kit = true, abilities = true, features = true }
 
+--Errors already sent to the debug console. The sheet re-reads on every
+--character change, so each distinct error is logged once a session.
+local g_loggedErrors = {}
+
 --- Reads everything the EotW hero sheet shows for one Hero into one table.
 --- Pass the Hero's token (a map token in game or a lobby character in town).
 --- Returns nil when the Hero has no properties yet (still loading). Sections
@@ -1544,6 +1559,12 @@ function EotwHeroSheet.Data(tok, only)
             if not okSection then
                 d.errors[#d.errors+1] = name .. ": " .. tostring(errSection)
             end
+        end
+    end
+    for _,err in ipairs(d.errors) do
+        if not g_loggedErrors[err] then
+            g_loggedErrors[err] = true
+            dmhub.Error(string.format("EotW hero sheet: %s", err))
         end
     end
     return d

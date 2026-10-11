@@ -723,9 +723,24 @@ end
 
 --- writes -----------------------------------------------------------------
 
+--Pushes waiting for the city's reply, by hero. Two pushes in flight would
+--send the same baseRev and the city would reject the later one as stale, so
+--a push asked for meanwhile waits and runs once the first lands.
+--heroid -> { again = bool, waiting = { onDone... } }
+local m_pushing = {}
+
 --Push a working copy to the city: creates the hero there the first time,
 --replaces it afterwards (revision-checked). onDone(ok, message) optional.
 function EotwRoster.PushHero(charid, onDone)
+    local inFlight = m_pushing[charid]
+    if inFlight ~= nil then
+        inFlight.again = true
+        if onDone ~= nil then
+            inFlight.waiting[#inFlight.waiting+1] = onDone
+        end
+        return
+    end
+
     local tok = dmhub.GetCharacterById(charid)
     if tok == nil or m_conn == nil then
         if onDone ~= nil then
@@ -742,6 +757,26 @@ function EotwRoster.PushHero(charid, onDone)
         return
     end
     local baseRev = GetRevs()[charid] or 0
+    local state = { again = false, waiting = {} }
+    m_pushing[charid] = state
+
+    --the push landed or failed: let a push asked for meanwhile go (with the new
+    --rev), or after a failure tell its callers it did not happen
+    local function Settle(ok, message)
+        m_pushing[charid] = nil
+        if ok and state.again then
+            EotwRoster.PushHero(charid, function(againOk, againMessage)
+                for _,fn in ipairs(state.waiting) do
+                    fn(againOk, againMessage)
+                end
+            end)
+            return
+        end
+        for _,fn in ipairs(state.waiting) do
+            fn(ok, message)
+        end
+    end
+
     m_conn:Request{
         action = "put-hero",
         args = {
@@ -754,6 +789,7 @@ function EotwRoster.PushHero(charid, onDone)
         success = function(result)
             SetRev(charid, result.rev)
             EotwRoster.lastError = nil
+            Settle(true)
             EotwRoster.Refresh()
             if onDone ~= nil then
                 onDone(true)
@@ -761,6 +797,7 @@ function EotwRoster.PushHero(charid, onDone)
         end,
         error = function(message)
             Fail(message)
+            Settle(false, message)
             --a stale revision means another machine saved this hero first:
             --reload the city's copy.
             EotwRoster.Refresh()

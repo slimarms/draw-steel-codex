@@ -15,7 +15,8 @@ local mod = dmhub.GetModLoading()
 
 ---@class EotwHeroSheet
 ---@field debugNeededLine string|nil test switch: shows this line on the gold you're-needed bar in a game
-EotwHeroSheet = {}
+--Kept across a reload of this file alone: EotwHeroSheetData.lua adds to the same table.
+EotwHeroSheet = rawget(_G, "EotwHeroSheet") or {}
 
 --The fixed dark skin (EotW does not follow colour schemes yet): the
 --builder's cream/tan on near-black frosted plates.
@@ -2901,21 +2902,31 @@ local function TreasuresRegion(ctx)
                     dehover = function(element)
                         ctx.Preview(nil)
                     end,
-                    data = { changes = nil },
+                    data = { changes = nil, busy = false },
                     click = function(element)
+                        --one action per button: the row is rebuilt when the sheet re-reads
+                        if element.data.busy then
+                            return
+                        end
                         if offTip ~= nil or tok == nil then
                             audio.FireSoundEvent("UI.Error_Generic")
                             return
                         end
-                        --the changed values stay gold a moment after they land
-                        ctx.HoldPreview(element.data.changes)
+                        element.data.busy = true
+                        local done = true
                         if it.equipped then
-                            audio.FireSoundEvent("UI.Inv_Grab")
                             EotwHeroSheet.Unequip(tok, it.slot)
                         else
-                            audio.FireSoundEvent("UI.Inv_Place")
-                            EotwHeroSheet.Equip(tok, it.itemid)
+                            done = EotwHeroSheet.Equip(tok, it.itemid)
                         end
+                        if not done then
+                            audio.FireSoundEvent("UI.Error_Generic")
+                            ctx.Reread()
+                            return
+                        end
+                        audio.FireSoundEvent(cond(it.equipped, "UI.Inv_Grab", "UI.Inv_Place"))
+                        --the changed values stay gold a moment after they land
+                        ctx.HoldPreview(element.data.changes)
                         ctx.PushToCity()
                         ctx.Reread()
                     end,

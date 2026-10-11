@@ -1067,7 +1067,11 @@ GameHud.CustomInterfaceOpenSheet = function(token, tabid)
 		return false
 	end
 	local ok, handled = pcall(provider.openSheet, token, tabid)
-	return ok and handled == true
+	if not ok then
+		dmhub.Error(string.format("custom interface openSheet failed: %s", tostring(handled)))
+		return false
+	end
+	return handled == true
 end
 
 --Whether the active interface will show its own view of this token's sheet
@@ -1079,7 +1083,11 @@ GameHud.CustomInterfaceOwnsSheet = function(token)
 		return false
 	end
 	local ok, owns = pcall(provider.ownsSheet, token)
-	return ok and owns == true
+	if not ok then
+		dmhub.Error(string.format("custom interface ownsSheet failed: %s", tostring(owns)))
+		return false
+	end
+	return owns == true
 end
 
 --Offer the active interface a say in the user leaving the game ("leave")
