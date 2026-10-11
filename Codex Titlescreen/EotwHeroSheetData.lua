@@ -220,15 +220,19 @@ function Sections.identity(d, tok, p)
 end
 
 --Titles, with the benefit each one's choice picked (C14/C15: name, echelon,
---flavour, the deed, the benefit).
+--flavour, the deed, the benefit). A title with no choice shows its effect text.
 function Sections.titles(d, tok, p, ctx)
     --benefits come from the feature index: a title's chosen benefit is an
     --entry in the "title" bucket whose origin is the title.
     local benefits = {}
+    local hasChoice = {}
     for _,e in ipairs(ctx.index.features) do
         if e.bucket == "title" and e.originName ~= nil then
             local list = benefits[e.originName] or {}
             benefits[e.originName] = list
+            if IsChoice(e) then
+                hasChoice[e.originName] = true
+            end
             local chosen = e.chosen
             if chosen ~= nil and #chosen > 0 then
                 for _,c in ipairs(chosen) do
@@ -247,13 +251,24 @@ function Sections.titles(d, tok, p, ctx)
 
     d.titles = {}
     for _,title in ipairs(p:Titles()) do
+        local list = benefits[title.name] or {}
+        --a title with a single fixed benefit (Angler, Scarred) keeps its rules
+        --text in `effect`; its feature is Hidden plumbing, so nothing above
+        --listed it. A choice title's effect only introduces the options.
+        if #list == 0 and not hasChoice[title.name] then
+            local effect = nil
+            pcall(function() effect = Clean((string.gsub(title:try_get("effect") or "", "\v", "\n"))) end)
+            if effect ~= nil and effect ~= "" then
+                list = { { text = effect } }
+            end
+        end
         d.titles[#d.titles+1] = {
             id = title.id,
             name = title.name,
             echelon = tonumber(title.echelon) or 1,
             flavor = Clean(title.description),
             deed = Clean(title.prerequisite),
-            benefits = benefits[title.name] or {},
+            benefits = list,
         }
     end
     table.sort(d.titles, function(a, b) return a.name < b.name end)
